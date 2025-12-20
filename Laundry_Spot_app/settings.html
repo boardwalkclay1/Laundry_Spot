@@ -1,15 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Settings – Laundry Bubbles</title>
-</head>
-<body>
-    <h1>Settings</h1>
+  <meta charset="UTF-8" />
+  <title>Settings – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <a href="account-info.html">Account Info</a><br>
-    <a href="payment-methods.html">Payment Methods</a><br>
-    <a href="notifications.html">Notifications</a><br>
-    <a href="dashboard.html">Back to Dashboard</a>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #d96e30, #f4c542);
+      min-height: 100vh;
+      padding: 20px;
+      color: #5a3e2b;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .card {
+      background: #fff4d9;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .link-btn {
+      display: block;
+      padding: 14px;
+      background: #d96e30;
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      margin-top: 10px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .secondary {
+      background: #f4c542;
+      color: #5a3e2b;
+      border: 2px solid #d96e30;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Settings</h1>
+
+  <div class="card">
+    <a class="link-btn" href="account-info.html">Account Info</a>
+    <a class="link-btn" href="payment-methods.html">Payment Methods</a>
+    <a class="link-btn" href="notifications.html">Notifications</a>
+    <a class="link-btn secondary" href="dashboard.html">Back to Dashboard</a>
+  </div>
 </body>
 </html>

@@ -24,6 +24,25 @@
       margin:0 auto 20px;
     }
     .label { font-weight:bold; }
+    .btn {
+      display:block;
+      width:100%;
+      padding:14px;
+      background:#d96e30;
+      color:white;
+      text-align:center;
+      border-radius:10px;
+      font-weight:bold;
+      text-decoration:none;
+      margin-top:14px;
+      border:none;
+      cursor:pointer;
+    }
+    .secondary {
+      background:#f4c542;
+      color:#5a3e2b;
+      border:2px solid #d96e30;
+    }
   </style>
 </head>
 
@@ -31,6 +50,9 @@
   <h1>Order Details</h1>
 
   <div class="card" id="orderCard">Loading...</div>
+
+  <a class="btn" id="mapBtn" style="display:none;">Track on Map</a>
+  <a class="btn secondary" href="client-orders.html">Back to My Orders</a>
 
   <script type="module">
     import { supabase } from "./supabase.js";
@@ -45,28 +67,31 @@
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) window.location.href = "login.html";
 
-    // REAL-TIME SUBSCRIPTION
+    // Real-time subscription for this order
     supabase
-      .channel("client-order")
+      .channel("client-order-" + orderId)
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "orders" },
+        { event:"UPDATE", schema:"public", table:"orders", filter:`id=eq.${orderId}` },
         payload => {
-          if (payload.new.id === orderId) {
-            order = payload.new;
-            renderOrder();
-          }
+          order = payload.new;
+          renderOrder();
         }
       )
       .subscribe();
 
     async function loadOrder() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("orders")
         .select("*")
         .eq("id", orderId)
         .eq("client_id", session.user.id)
         .single();
+
+      if (error || !data) {
+        document.getElementById("orderCard").innerText = "Order not found.";
+        return;
+      }
 
       order = data;
       renderOrder();
@@ -74,6 +99,8 @@
 
     function renderOrder() {
       const card = document.getElementById("orderCard");
+      const mapBtn = document.getElementById("mapBtn");
+      if (!order) return;
 
       const pickup = order.pickup_time
         ? new Date(order.pickup_time).toLocaleString()
@@ -87,6 +114,14 @@
         <div><span class="label">Pickup:</span> ${pickup}</div>
         <div><span class="label">Notes:</span> ${order.notes || "None"}</div>
       `;
+
+      // Show map button if we have a washer assigned
+      if (order.washer_id) {
+        mapBtn.style.display = "block";
+        mapBtn.href = `map.html?order_id=${order.id}`;
+      } else {
+        mapBtn.style.display = "none";
+      }
     }
 
     await loadOrder();

@@ -8,7 +8,7 @@
     <style>
         body {
             margin: 0;
-            font-family: "Arial", sans-serif;
+            font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #D96E30, #F4C542);
             height: 100vh;
             display: flex;
@@ -25,12 +25,6 @@
             text-align: center;
             width: 90%;
             max-width: 420px;
-        }
-
-        h2 {
-            font-size: 2rem;
-            margin-bottom: 20px;
-            font-weight: bold;
         }
 
         input {
@@ -53,23 +47,12 @@
             border-radius: 10px;
             font-size: 1.1rem;
             font-weight: bold;
-            transition: 0.2s;
         }
 
-        .btn:hover {
-            background: #B85D28;
-        }
-
-        .back {
-            margin-top: 20px;
-            display: inline-block;
+        .secondary {
+            background: #F4C542;
             color: #5A3E2B;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .back:hover {
-            text-decoration: underline;
+            border: 2px solid #D96E30;
         }
     </style>
 </head>
@@ -78,12 +61,23 @@
     <div class="container">
         <h2>Login</h2>
 
-        <input type="text" placeholder="Email">
-        <input type="password" placeholder="Password">
+        <input id="email" type="text" placeholder="Email">
+        <input id="password" type="password" placeholder="Password">
 
-        <a href="client.html" class="btn">Login</a>
+        <button class="btn" onclick="handleLogin()">Login</button>
 
-        <a href="index.html" class="back">Back to Home</a>
+        <a href="signup.html" class="btn secondary">Sign Up</a>
+        <a href="client.html" class="btn secondary">Continue as Guest</a>
     </div>
+
+    <script type="module">
+        import { login } from "./auth.js";
+
+        window.handleLogin = async function () {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            await login(email, password);
+        }
+    </script>
 </body>
 </html>

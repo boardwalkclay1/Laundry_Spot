@@ -1,88 +1,75 @@
-<!-- booking.html (creates real orders) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Book a Wash – Laundry Bubbles</title>
+  <title>Book Laundry Pickup – Laundry Bubbles</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #d96e30, #f4c542);
-      min-height: 100vh;
-      padding: 20px;
-      color: #5a3e2b;
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:linear-gradient(135deg,#d96e30,#f4c542);
+      min-height:100vh;
+      padding:20px;
+      color:#5a3e2b;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
+    h1 { text-align:center; margin-bottom:20px; }
     .card {
-      background: #fff4d9;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-      margin-bottom: 20px;
-      max-width: 520px;
-      margin-left: auto;
-      margin-right: auto;
+      background:#fff4d9;
+      padding:20px;
+      border-radius:16px;
+      box-shadow:0 6px 16px rgba(0,0,0,0.25);
+      max-width:480px;
+      margin:0 auto;
     }
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 10px;
+    label { font-weight:bold; display:block; margin-top:10px; }
+    input, textarea, select {
+      width:100%;
+      padding:12px;
+      margin-top:6px;
+      border-radius:10px;
+      border:2px solid #d96e30;
+      background:white;
+      box-sizing:border-box;
     }
-    input, textarea {
-      width: 100%;
-      padding: 12px;
-      margin-top: 6px;
-      border-radius: 10px;
-      border: 2px solid #d96e30;
-      box-sizing: border-box;
-    }
-    textarea {
-      height: 80px;
-      resize: none;
-    }
+    textarea { height:90px; resize:none; }
     .btn {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      background: #d96e30;
-      color: white;
-      text-align: center;
-      border-radius: 10px;
-      font-weight: bold;
-      text-decoration: none;
-      margin-top: 14px;
-      border: none;
-      cursor: pointer;
+      display:block;
+      width:100%;
+      padding:14px;
+      background:#d96e30;
+      color:white;
+      text-align:center;
+      border-radius:10px;
+      font-weight:bold;
+      text-decoration:none;
+      margin-top:14px;
+      border:none;
+      cursor:pointer;
     }
     .secondary {
-      background: #f4c542;
-      color: #5a3e2b;
-      border: 2px solid #d96e30;
+      background:#f4c542;
+      color:#5a3e2b;
+      border:2px solid #d96e30;
     }
   </style>
 </head>
+
 <body>
-  <h1>Book a Wash</h1>
+  <h1>Book Laundry Pickup</h1>
 
   <div class="card">
-    <label for="date">Pickup Date</label>
-    <input id="date" type="date" />
+    <label>Number of Loads</label>
+    <input id="loads" type="number" min="1" max="20" value="1" />
 
-    <label for="time">Pickup Time</label>
-    <input id="time" type="time" />
+    <label>Pickup Date & Time</label>
+    <input id="pickupTime" type="datetime-local" />
 
-    <label for="loads">Number of Loads</label>
-    <input id="loads" type="number" min="1" max="10" />
+    <label>Notes for Your Washer</label>
+    <textarea id="notes" placeholder="Any special instructions?"></textarea>
 
-    <label for="special">Special Instructions</label>
-    <textarea id="special" placeholder="Gate code, detergent preferences, etc."></textarea>
-
-    <button class="btn" onclick="submitBooking()">Request Pickup</button>
+    <button class="btn" onclick="createOrder()">Confirm Booking</button>
     <a class="btn secondary" href="dashboard.html">Back to Dashboard</a>
   </div>
 
@@ -92,34 +79,42 @@
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) window.location.href = "login.html";
 
-    window.submitBooking = async function () {
-      const date = document.getElementById("date").value;
-      const time = document.getElementById("time").value;
-      const loads = document.getElementById("loads").value;
-      const notes = document.getElementById("special").value;
+    window.createOrder = async function () {
+      const loads = Number(document.getElementById("loads").value);
+      const pickupInput = document.getElementById("pickupTime").value;
+      const notes = document.getElementById("notes").value.trim();
 
-      if (!date || !time || !loads) {
-        alert("Please fill out date, time, and loads.");
+      if (!loads || loads < 1) {
+        alert("Please enter a valid number of loads.");
+        return;
+      }
+      if (!pickupInput) {
+        alert("Please select a pickup date and time.");
         return;
       }
 
-      const pickup_time = new Date(`${date}T${time}`);
+      const pickup_time = new Date(pickupInput).toISOString();
 
-      const { error } = await supabase.from("orders").insert({
-        client_id: session.user.id,
-        loads: Number(loads),
-        pickup_time,
-        notes,
-        status: "requested"
-      });
+      const { data, error } = await supabase
+        .from("orders")
+        .insert({
+          client_id: session.user.id,
+          status: "requested",
+          loads,
+          pickup_time,
+          notes
+        })
+        .select("id")
+        .single();
 
       if (error) {
+        console.error("Create order error:", error);
         alert("Error creating order.");
         return;
       }
 
-      alert("Order created!");
-      window.location.href = "client-orders.html";
+      alert("Your order has been created!");
+      window.location.href = `client-order-detail.html?order_id=${data.id}`;
     };
   </script>
 </body>

@@ -1,52 +1,110 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Account Info – Laundry Bubbles</title>
-</head>
-<body>
-    <h1>Account Info</h1>
+  <meta charset="UTF-8" />
+  <title>Account Info – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #d96e30, #f4c542);
+      min-height: 100vh;
+      padding: 20px;
+      color: #5a3e2b;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .card {
+      background: #fff4d9;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border-radius: 10px;
+      border: 2px solid #d96e30;
+      box-sizing: border-box;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: #d96e30;
+      color: white;
+      text-align: center;
+      border-radius: 10px;
+      font-weight: bold;
+      text-decoration: none;
+      margin-top: 14px;
+      border: none;
+      cursor: pointer;
+    }
+    .secondary {
+      background: #f4c542;
+      color: #5a3e2b;
+      border: 2px solid #d96e30;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Account Info</h1>
+
+  <div class="card">
     <label>Name</label>
-    <input id="name">
+    <input id="name" type="text" />
 
     <label>Email</label>
-    <input id="email" disabled>
+    <input id="email" type="text" disabled />
 
     <label>Phone</label>
-    <input id="phone">
+    <input id="phone" type="text" />
 
-    <button onclick="saveAccountInfo()">Save</button>
-    <br><br>
-    <a href="settings.html">Back</a>
+    <button class="btn" onclick="saveAccountInfo()">Save Changes</button>
+    <a class="btn secondary" href="settings.html">Back to Settings</a>
+  </div>
 
-    <script type="module">
-        import { supabase } from "./supabase.js";
+  <script type="module">
+    import { supabase } from "./supabase.js";
 
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) window.location.href = "login.html";
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) window.location.href = "login.html";
 
-        const { data: profile } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", session.user.id)
-            .single();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", session.user.id)
+      .single();
 
-        document.getElementById("name").value = profile.name || "";
-        document.getElementById("email").value = profile.email || "";
-        document.getElementById("phone").value = profile.phone || "";
+    document.getElementById("name").value = profile.name || "";
+    document.getElementById("email").value = profile.email || "";
+    document.getElementById("phone").value = profile.phone || "";
 
-        window.saveAccountInfo = async function () {
-            await supabase
-                .from("profiles")
-                .update({
-                    name: document.getElementById("name").value,
-                    phone: document.getElementById("phone").value
-                })
-                .eq("id", session.user.id);
+    window.saveAccountInfo = async function () {
+      await supabase
+        .from("profiles")
+        .update({
+          name: document.getElementById("name").value,
+          phone: document.getElementById("phone").value
+        })
+        .eq("id", session.user.id);
 
-            alert("Saved!");
-        }
-    </script>
+      alert("Account info updated!");
+    };
+  </script>
 </body>
 </html>

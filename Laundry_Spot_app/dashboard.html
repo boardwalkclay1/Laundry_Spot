@@ -1,3 +1,4 @@
+<!-- dashboard.html (client dashboard) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,7 +25,7 @@
       border-radius: 16px;
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
       margin-bottom: 20px;
-      max-width: 480px;
+      max-width: 520px;
       margin-left: auto;
       margin-right: auto;
     }
@@ -49,14 +50,17 @@
 </head>
 
 <body>
-  <h1>Dashboard</h1>
+  <h1>Client Dashboard</h1>
 
   <div class="card">
     <p id="welcomeText">Loading...</p>
 
+    <a class="btn" href="booking.html">Book a Wash</a>
+    <a class="btn secondary" href="client-orders.html">My Orders</a>
     <a class="btn" href="settings.html">Settings</a>
-    <a class="btn secondary" href="booking.html">Book a Wash (soon)</a>
-    <a class="btn secondary" href="client-orders.html">My Orders (soon)</a>
+    <a class="btn secondary" id="washerDash" href="washer-dashboard.html" style="display:none;">
+      Washer Dashboard
+    </a>
     <a class="btn" onclick="logout()">Logout</a>
   </div>
 
@@ -72,8 +76,16 @@
       .eq("id", session.user.id)
       .single();
 
+    if (profile.role === "washer") {
+      window.location.href = "washer-dashboard.html";
+    }
+
     document.getElementById("welcomeText").textContent =
       `Hello, ${profile.name || profile.email}!`;
+
+    if (profile.role === "washer") {
+      document.getElementById("washerDash").style.display = "block";
+    }
 
     window.logout = async function () {
       await supabase.auth.signOut();

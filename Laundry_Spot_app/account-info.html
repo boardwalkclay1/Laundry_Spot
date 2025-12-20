@@ -1,70 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account Info – Laundry Bubbles</title>
-
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #D96E30, #F4C542);
-            min-height: 100vh;
-            padding: 20px;
-            color: #5A3E2B;
-        }
-        h1 { text-align: center; margin-bottom: 30px; }
-        .card {
-            background: #FFF4D9;
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-        }
-        label { font-weight: bold; }
-        input {
-            width: 100%;
-            padding: 14px;
-            margin: 10px 0 20px;
-            border-radius: 10px;
-            border: 2px solid #D96E30;
-        }
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 14px;
-            background: #D96E30;
-            color: white;
-            text-align: center;
-            border-radius: 10px;
-            font-weight: bold;
-            text-decoration: none;
-            margin-top: 10px;
-        }
-        .secondary {
-            background: #F4C542;
-            color: #5A3E2B;
-            border: 2px solid #D96E30;
-        }
-    </style>
 </head>
-
 <body>
     <h1>Account Info</h1>
 
-    <div class="card">
-        <label>Name</label>
-        <input id="name" type="text">
+    <label>Name</label>
+    <input id="name">
 
-        <label>Email</label>
-        <input id="email" type="text" disabled>
+    <label>Email</label>
+    <input id="email" disabled>
 
-        <label>Phone</label>
-        <input id="phone" type="text">
+    <label>Phone</label>
+    <input id="phone">
 
-        <a class="btn" onclick="saveAccountInfo()">Save Changes</a>
-        <a class="btn secondary" href="settings.html">Back to Settings</a>
-    </div>
+    <button onclick="saveAccountInfo()">Save</button>
+    <br><br>
+    <a href="settings.html">Back</a>
 
     <script type="module">
         import { supabase } from "./supabase.js";
@@ -78,20 +32,20 @@
             .eq("id", session.user.id)
             .single();
 
-        document.querySelector("#name").value = profile.name || "";
-        document.querySelector("#email").value = profile.email || "";
-        document.querySelector("#phone").value = profile.phone || "";
+        document.getElementById("name").value = profile.name || "";
+        document.getElementById("email").value = profile.email || "";
+        document.getElementById("phone").value = profile.phone || "";
 
         window.saveAccountInfo = async function () {
-            const name = document.querySelector("#name").value;
-            const phone = document.querySelector("#phone").value;
-
             await supabase
                 .from("profiles")
-                .update({ name, phone })
+                .update({
+                    name: document.getElementById("name").value,
+                    phone: document.getElementById("phone").value
+                })
                 .eq("id", session.user.id);
 
-            alert("Account info updated!");
+            alert("Saved!");
         }
     </script>
 </body>

@@ -1,10 +1,10 @@
+<!-- client-orders.html (real orders list) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>My Orders – Laundry Bubbles</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <style>
     body {
       margin: 0;
@@ -47,14 +47,14 @@
     .btn {
       display: block;
       width: 100%;
-      padding: 14px;
+      padding: 10px;
       background: #d96e30;
       color: white;
       text-align: center;
       border-radius: 10px;
       font-weight: bold;
       text-decoration: none;
-      margin-top: 14px;
+      margin-top: 8px;
       border: none;
       cursor: pointer;
     }
@@ -65,7 +65,6 @@
     }
   </style>
 </head>
-
 <body>
   <h1>My Orders</h1>
 
@@ -78,52 +77,36 @@
   <script type="module">
     import { supabase } from "./supabase.js";
 
-    // Protect page
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) window.location.href = "login.html";
 
-    // Placeholder orders (replace with Supabase query later)
-    const sampleOrders = [
-      {
-        id: 101,
-        status: "In Progress",
-        date: "2025-01-10",
-        loads: 2,
-        washer: "Sarah M."
-      },
-      {
-        id: 102,
-        status: "Completed",
-        date: "2025-01-05",
-        loads: 3,
-        washer: "James T."
-      },
-      {
-        id: 103,
-        status: "Pending Pickup",
-        date: "2025-01-12",
-        loads: 1,
-        washer: "Pending Assignment"
-      }
-    ];
-
     const ordersList = document.getElementById("ordersList");
-    ordersList.innerHTML = "";
 
-    sampleOrders.forEach(order => {
-      const box = document.createElement("div");
-      box.className = "order-box";
+    const { data: orders, error } = await supabase
+      .from("orders")
+      .select("*")
+      .eq("client_id", session.user.id)
+      .order("created_at", { ascending: false });
 
-      box.innerHTML = `
-        <div class="status">${order.status}</div>
-        <div><strong>Order #${order.id}</strong></div>
-        <div>Date: ${order.date}</div>
-        <div>Loads: ${order.loads}</div>
-        <div>Washer: ${order.washer}</div>
-      `;
-
-      ordersList.appendChild(box);
-    });
+    if (error) {
+      ordersList.innerHTML = "<p>Error loading orders.</p>";
+    } else if (!orders || orders.length === 0) {
+      ordersList.innerHTML = "<p>You have no orders yet.</p>";
+    } else {
+      ordersList.innerHTML = "";
+      orders.forEach(order => {
+        const box = document.createElement("div");
+        box.className = "order-box";
+        box.innerHTML = `
+          <div class="status">${order.status}</div>
+          <div><strong>Order #${order.id}</strong></div>
+          <div>Loads: ${order.loads}</div>
+          <div>Pickup: ${order.pickup_time ? new Date(order.pickup_time).toLocaleString() : "Not set"}</div>
+          <a class="btn" href="client-order-detail.html?id=${order.id}">View Details</a>
+        `;
+        ordersList.appendChild(box);
+      });
+    }
   </script>
 </body>
 </html>

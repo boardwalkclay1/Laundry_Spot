@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Washer Dashboard – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #d96e30, #f4c542);
+      min-height: 100vh;
+      padding: 20px;
+      color: #5a3e2b;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: #fff4d9;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+      margin-bottom: 20px;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border-radius: 10px;
+      border: 2px solid #d96e30;
+      box-sizing: border-box;
+      background: white;
+    }
+    textarea {
+      height: 100px;
+      resize: none;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: #d96e30;
+      color: white;
+      text-align: center;
+      border-radius: 10px;
+      font-weight: bold;
+      text-decoration: none;
+      margin-top: 14px;
+      border: none;
+      cursor: pointer;
+    }
+    .secondary {
+      background: #f4c542;
+      color: #5a3e2b;
+      border: 2px solid #d96e30;
+    }
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+    }
+    .order-box {
+      background: #ffe9b8;
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      border: 2px solid #d96e30;
+    }
+    .order-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .accept {
+      background: #4caf50;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      flex: 1;
+      text-align: center;
+      cursor: pointer;
+    }
+    .decline {
+      background: #b00020;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      flex: 1;
+      text-align: center;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Washer Dashboard</h1>
+
+  <!-- Washer Profile -->
+  <div class="card">
+    <h2>Your Washer Profile</h2>
+
+    <label>Name</label>
+    <input id="name">
+
+    <label>Email</label>
+    <input id="email" disabled>
+
+    <label>Phone</label>
+    <input id="phone">
+
+    <label>Bio / Description</label>
+    <textarea id="bio" placeholder="Tell clients about your service..."></textarea>
+
+    <label>Service Radius (miles)</label>
+    <input id="radius" type="number" min="1" max="50">
+
+    <label>Price Per Load ($)</label>
+    <input id="price" type="number" min="5" max="100">
+
+    <div class="toggle-row">
+      <span>Available for Orders</span>
+      <input type="checkbox" id="available">
+    </div>
+
+    <button class="btn" onclick="saveWasherProfile()">Save Washer Profile</button>
+  </div>
+
+  <!-- Incoming Orders -->
+  <div class="card">
+    <h2>Incoming Orders</h2>
+
+    <div id="ordersList">
+      <p>No incoming orders yet.</p>
+    </div>
+  </div>
+
+  <a class="btn secondary" href="dashboard.html">Back to Dashboard</a>
+
+  <script type="module">
+    import { supabase } from "./supabase.js";
+
+    // Protect page
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) window.location.href = "login.html";
+
+    // Load washer profile
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", session.user.id)
+      .single();
+
+    // Pre-fill fields
+    document.getElementById("name").value = profile.name || "";
+    document.getElementById("email").value = profile.email || "";
+    document.getElementById("phone").value = profile.phone || "";
+    document.getElementById("bio").value = profile.bio || "";
+    document.getElementById("radius").value = profile.radius || 5;
+    document.getElementById("price").value = profile.price || 15;
+    document.getElementById("available").checked = profile.available || false;
+
+    // Save washer profile
+    window.saveWasherProfile = async function () {
+      await supabase
+        .from("profiles")
+        .update({
+          name: document.getElementById("name").value,
+          phone: document.getElementById("phone").value,
+          bio: document.getElementById("bio").value,
+          radius: document.getElementById("radius").value,
+          price: document.getElementById("price").value,
+          available: document.getElementById("available").checked
+        })
+        .eq("id", session.user.id);
+
+      alert("Washer profile updated!");
+    };
+
+    // Placeholder incoming orders (replace with real DB later)
+    const ordersList = document.getElementById("ordersList");
+
+    const sampleOrders = [
+      {
+        id: 1,
+        customer: "Sarah M.",
+        loads: 2,
+        notes: "Please use hypoallergenic detergent."
+      },
+      {
+        id: 2,
+        customer: "James T.",
+        loads: 1,
+        notes: "Pickup after 5pm."
+      }
+    ];
+
+    ordersList.innerHTML = "";
+
+    sampleOrders.forEach(order => {
+      const box = document.createElement("div");
+      box.className = "order-box";
+
+      box.innerHTML = `
+        <strong>${order.customer}</strong><br>
+        Loads: ${order.loads}<br>
+        Notes: ${order.notes}
+        <div class="order-actions">
+          <div class="accept" onclick="acceptOrder(${order.id})">Accept</div>
+          <div class="decline" onclick="declineOrder(${order.id})">Decline</div>
+        </div>
+      `;
+
+      ordersList.appendChild(box);
+    });
+
+    window.acceptOrder = function (id) {
+      alert("Order " + id + " accepted!");
+    };
+
+    window.declineOrder = function (id) {
+      alert("Order " + id + " declined.");
+    };
+  </script>
+</body>
+</html>

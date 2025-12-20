@@ -7,133 +7,179 @@
 
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #d96e30, #f4c542);
-      min-height: 100vh;
-      padding: 20px;
-      color: #5a3e2b;
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:linear-gradient(135deg,#d96e30,#f4c542);
+      min-height:100vh;
+      padding:20px;
+      color:#5a3e2b;
     }
-    h1 { text-align: center; margin-bottom: 30px; }
+    h1 {
+      text-align:center;
+      margin-bottom:10px;
+    }
+    .subtitle {
+      text-align:center;
+      font-size:0.9rem;
+      opacity:0.85;
+      margin-bottom:20px;
+    }
     .card {
-      background: #fff4d9;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-      max-width: 480px;
-      margin: 0 auto;
+      background:#fff4d9;
+      padding:20px;
+      border-radius:16px;
+      box-shadow:0 6px 16px rgba(0,0,0,0.25);
+      max-width:520px;
+      margin:0 auto 20px;
     }
-    .link-btn {
-      display: block;
-      padding: 14px;
-      background: #d96e30;
-      color: white;
-      text-decoration: none;
-      border-radius: 12px;
-      margin-top: 10px;
-      text-align: center;
-      font-weight: bold;
+    .label {
+      font-weight:bold;
+      display:block;
+      margin-bottom:6px;
+    }
+    input, select {
+      width:100%;
+      padding:12px;
+      margin-bottom:14px;
+      border-radius:10px;
+      border:2px solid #d96e30;
+      background:white;
+      box-sizing:border-box;
+    }
+    .btn {
+      display:block;
+      width:100%;
+      padding:14px;
+      background:#d96e30;
+      color:white;
+      text-align:center;
+      border-radius:10px;
+      font-weight:bold;
+      text-decoration:none;
+      margin-top:12px;
+      border:none;
+      cursor:pointer;
+      box-sizing:border-box;
     }
     .secondary {
-      background: #f4c542;
-      color: #5a3e2b;
-      border: 2px solid #d96e30;
+      background:#f4c542;
+      color:#5a3e2b;
+      border:2px solid #d96e30;
     }
-    label { font-weight: bold; display: block; margin-top: 20px; }
-    select {
-      width: 100%;
-      padding: 12px;
-      margin-top: 6px;
-      border-radius: 10px;
-      border: 2px solid #d96e30;
-      background: white;
+    .danger {
+      background:#b83a2e;
     }
-    .btn-save {
-      margin-top: 20px;
-      background: #d96e30;
-      color: white;
-      padding: 14px;
-      border-radius: 10px;
-      border: none;
-      width: 100%;
-      font-weight: bold;
-      cursor: pointer;
+    .admin-badge {
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:999px;
+      background:#3a9e3a;
+      color:white;
+      font-size:0.8rem;
+      margin-left:6px;
     }
   </style>
 </head>
 
 <body>
   <h1>Settings</h1>
+  <div class="subtitle">Manage your profile, role, and preferences</div>
 
+  <!-- PROFILE FORM -->
   <div class="card">
+    <h2>Your Profile</h2>
 
-    <a class="link-btn" href="account-info.html">Account Info</a>
-    <a class="link-btn" href="payment-methods.html">Payment Methods</a>
-    <a class="link-btn" href="notifications.html">Notifications</a>
-    <a class="link-btn" href="help-support.html">Help & Support</a>
+    <label class="label">Name</label>
+    <input id="nameInput" placeholder="Your name" />
 
-    <a class="link-btn" id="washerLink" href="washer-dashboard.html" style="display:none;">
-      Washer Dashboard
-    </a>
+    <label class="label">Phone</label>
+    <input id="phoneInput" placeholder="Your phone number" />
 
-    <label>Your Role</label>
-    <select id="role">
+    <label class="label">Role</label>
+    <select id="roleInput">
       <option value="client">Client</option>
       <option value="washer">Washer</option>
+      <option value="admin">Admin</option>
     </select>
 
-    <button class="btn-save" onclick="saveRole()">Save Role</button>
+    <label class="label">Verification Status</label>
+    <div id="verificationStatus" style="margin-bottom:14px; font-weight:bold;"></div>
 
-    <a class="link-btn secondary" href="dashboard.html">Back to Dashboard</a>
+    <button class="btn" id="saveBtn">Save Settings</button>
   </div>
+
+  <!-- ADMIN ACCESS -->
+  <div class="card" id="adminSection" style="display:none;">
+    <h2>Admin Access</h2>
+    <p>You have admin privileges.</p>
+    <a class="btn" href="admin-dashboard.html">Go to Admin Dashboard</a>
+  </div>
+
+  <!-- LOGOUT -->
+  <button class="btn danger" id="logoutBtn">Log Out</button>
 
   <script type="module">
     import { supabase } from "./supabase.js";
 
+    const nameInput = document.getElementById("nameInput");
+    const phoneInput = document.getElementById("phoneInput");
+    const roleInput = document.getElementById("roleInput");
+    const verificationStatus = document.getElementById("verificationStatus");
+    const adminSection = document.getElementById("adminSection");
+
+    const saveBtn = document.getElementById("saveBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    // AUTH CHECK
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) window.location.href = "login.html";
 
-    async function loadProfile() {
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .single();
+    // LOAD PROFILE
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", session.user.id)
+      .single();
 
-      if (error) {
-        console.error("Profile load error:", error);
-        return;
+    if (profile) {
+      nameInput.value = profile.name || "";
+      phoneInput.value = profile.phone || "";
+      roleInput.value = profile.role || "client";
+      verificationStatus.innerText = profile.verification_status.toUpperCase();
+
+      if (profile.role === "admin") {
+        adminSection.style.display = "block";
       }
-
-      document.getElementById("role").value = profile.role || "client";
-
-      document.getElementById("washerLink").style.display =
-        profile.role === "washer" ? "block" : "none";
     }
 
-    await loadProfile();
-
-    window.saveRole = async function () {
-      const newRole = document.getElementById("role").value;
+    // SAVE PROFILE
+    saveBtn.onclick = async () => {
+      const updates = {
+        name: nameInput.value,
+        phone: phoneInput.value,
+        role: roleInput.value
+      };
 
       const { error } = await supabase
         .from("profiles")
-        .update({ role: newRole })
+        .update(updates)
         .eq("id", session.user.id);
 
       if (error) {
-        console.error("Save role error:", error);
-        alert("Error saving role.");
-        return;
-      }
-
-      await loadProfile();
-
-      if (newRole === "washer") {
-        window.location.href = "washer-dashboard.html";
+        alert("Error saving settings.");
+        console.error(error);
       } else {
-        window.location.href = "dashboard.html";
+        alert("Settings saved!");
+        if (roleInput.value === "admin") {
+          adminSection.style.display = "block";
+        }
       }
+    };
+
+    // LOGOUT
+    logoutBtn.onclick = async () => {
+      await supabase.auth.signOut();
+      window.location.href = "login.html";
     };
   </script>
 </body>

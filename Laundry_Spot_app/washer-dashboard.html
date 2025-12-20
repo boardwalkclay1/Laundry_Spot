@@ -5,7 +5,6 @@
   <meta charset="UTF-8" />
   <title>Washer Dashboard – Laundry Bubbles</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <style>
     body {
       margin: 0;
@@ -72,39 +71,8 @@
       align-items: center;
       margin-top: 12px;
     }
-    .order-box {
-      background: #ffe9b8;
-      padding: 14px;
-      border-radius: 12px;
-      margin-bottom: 12px;
-      border: 2px solid #d96e30;
-    }
-    .order-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .accept {
-      background: #4caf50;
-      color: white;
-      padding: 10px;
-      border-radius: 8px;
-      flex: 1;
-      text-align: center;
-      cursor: pointer;
-    }
-    .decline {
-      background: #b00020;
-      color: white;
-      padding: 10px;
-      border-radius: 8px;
-      flex: 1;
-      text-align: center;
-      cursor: pointer;
-    }
   </style>
 </head>
-
 <body>
   <h1>Washer Dashboard</h1>
 
@@ -138,11 +106,11 @@
   </div>
 
   <div class="card">
-    <h2>Incoming Orders</h2>
-
-    <div id="ordersList">
-      <p>No incoming orders yet.</p>
-    </div>
+    <h2>Quick Links</h2>
+    <a class="btn" href="washer-orders.html">My Orders</a>
+    <a class="btn" href="washer-availability.html">Availability</a>
+    <a class="btn" href="washer-earnings.html">Earnings</a>
+    <a class="btn" href="washer-verification.html">Verification</a>
   </div>
 
   <a class="btn secondary" href="dashboard.html">Client Dashboard</a>
@@ -180,57 +148,13 @@
           name: document.getElementById("name").value,
           phone: document.getElementById("phone").value,
           bio: document.getElementById("bio").value,
-          radius: document.getElementById("radius").value,
-          price: document.getElementById("price").value,
+          radius: Number(document.getElementById("radius").value),
+          price: Number(document.getElementById("price").value),
           available: document.getElementById("available").checked
         })
         .eq("id", session.user.id);
 
       alert("Washer profile updated!");
-    };
-
-    const ordersList = document.getElementById("ordersList");
-
-    const sampleOrders = [
-      {
-        id: 1,
-        customer: "Sarah M.",
-        loads: 2,
-        notes: "Please use hypoallergenic detergent."
-      },
-      {
-        id: 2,
-        customer: "James T.",
-        loads: 1,
-        notes: "Pickup after 5pm."
-      }
-    ];
-
-    ordersList.innerHTML = "";
-
-    sampleOrders.forEach(order => {
-      const box = document.createElement("div");
-      box.className = "order-box";
-
-      box.innerHTML = `
-        <strong>${order.customer}</strong><br>
-        Loads: ${order.loads}<br>
-        Notes: ${order.notes}
-        <div class="order-actions">
-          <div class="accept" onclick="acceptOrder(${order.id})">Accept</div>
-          <div class="decline" onclick="declineOrder(${order.id})">Decline</div>
-        </div>
-      `;
-
-      ordersList.appendChild(box);
-    });
-
-    window.acceptOrder = function (id) {
-      alert("Order " + id + " accepted!");
-    };
-
-    window.declineOrder = function (id) {
-      alert("Order " + id + " declined.");
     };
 
     window.logout = async function () {

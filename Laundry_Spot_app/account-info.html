@@ -1,65 +1,59 @@
-<!-- account-info.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Account Info – Laundry Bubbles</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #d96e30, #f4c542);
+      background: linear-gradient(135deg,#d96e30,#f4c542);
       min-height: 100vh;
       padding: 20px;
       color: #5a3e2b;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-    }
+    h1 { text-align:center; margin-bottom:30px; }
     .card {
-      background: #fff4d9;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-      max-width: 480px;
-      margin: 0 auto;
+      background:#fff4d9;
+      padding:20px;
+      border-radius:16px;
+      box-shadow:0 6px 16px rgba(0,0,0,0.25);
+      max-width:480px;
+      margin:0 auto;
     }
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 10px;
-    }
+    label { font-weight:bold; display:block; margin-top:10px; }
     input {
-      width: 100%;
-      padding: 12px;
-      margin-top: 6px;
-      border-radius: 10px;
-      border: 2px solid #d96e30;
-      box-sizing: border-box;
+      width:100%;
+      padding:12px;
+      margin-top:6px;
+      border-radius:10px;
+      border:2px solid #d96e30;
+      background:white;
     }
     .btn {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      background: #d96e30;
-      color: white;
-      text-align: center;
-      border-radius: 10px;
-      font-weight: bold;
-      text-decoration: none;
-      margin-top: 14px;
-      border: none;
-      cursor: pointer;
+      display:block;
+      width:100%;
+      padding:14px;
+      background:#d96e30;
+      color:white;
+      text-align:center;
+      border-radius:10px;
+      font-weight:bold;
+      text-decoration:none;
+      margin-top:14px;
+      border:none;
+      cursor:pointer;
     }
     .secondary {
-      background: #f4c542;
-      color: #5a3e2b;
-      border: 2px solid #d96e30;
+      background:#f4c542;
+      color:#5a3e2b;
+      border:2px solid #d96e2b;
     }
   </style>
 </head>
+
 <body>
   <h1>Account Info</h1>
 
@@ -83,24 +77,42 @@
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) window.location.href = "login.html";
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", session.user.id)
-      .single();
+    async function loadProfile() {
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .single();
 
-    document.getElementById("name").value = profile.name || "";
-    document.getElementById("email").value = profile.email || "";
-    document.getElementById("phone").value = profile.phone || "";
+      if (error) {
+        console.error("Load profile error:", error);
+        return;
+      }
+
+      document.getElementById("name").value = profile.name || "";
+      document.getElementById("email").value = profile.email || "";
+      document.getElementById("phone").value = profile.phone || "";
+    }
+
+    await loadProfile();
 
     window.saveAccountInfo = async function () {
-      await supabase
+      const name = document.getElementById("name").value;
+      const phone = document.getElementById("phone").value;
+
+      const { error } = await supabase
         .from("profiles")
         .update({
-          name: document.getElementById("name").value,
-          phone: document.getElementById("phone").value
+          name,
+          phone
         })
         .eq("id", session.user.id);
+
+      if (error) {
+        console.error("Save account info error:", error);
+        alert("Error saving account info.");
+        return;
+      }
 
       alert("Account info updated!");
     };

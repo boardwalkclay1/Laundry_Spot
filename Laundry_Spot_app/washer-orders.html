@@ -1,0 +1,169 @@
+<!-- washer-orders.html (washer order queue, simple version) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Washer Orders – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #d96e30, #f4c542);
+      min-height: 100vh;
+      padding: 20px;
+      color: #5a3e2b;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: #fff4d9;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+      max-width: 520px;
+      margin: 0 auto 20px;
+    }
+    .order-box {
+      background: #ffe9b8;
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      border: 2px solid #d96e30;
+    }
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+    .status-pill {
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      background: #f4c542;
+      border: 1px solid #d96e30;
+    }
+    .order-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .accept {
+      background: #4caf50;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      flex: 1;
+      text-align: center;
+      cursor: pointer;
+    }
+    .decline {
+      background: #b00020;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      flex: 1;
+      text-align: center;
+      cursor: pointer;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: #d96e30;
+      color: white;
+      text-align: center;
+      border-radius: 10px;
+      font-weight: bold;
+      text-decoration: none;
+      margin-top: 14px;
+      border: none;
+      cursor: pointer;
+    }
+    .secondary {
+      background: #f4c542;
+      color: #5a3e2b;
+      border: 2px solid #d96e30;
+    }
+  </style>
+</head>
+<body>
+  <h1>Washer Orders</h1>
+
+  <div class="card" id="ordersList">
+    <p>Loading orders...</p>
+  </div>
+
+  <a class="btn secondary" href="washer-dashboard.html">Back to Washer Dashboard</a>
+
+  <script type="module">
+    import { supabase } from "./supabase.js";
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) window.location.href = "login.html";
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", session.user.id)
+      .single();
+
+    if (profile.role !== "washer") {
+      window.location.href = "dashboard.html";
+    }
+
+    const ordersList = document.getElementById("ordersList");
+
+    const sampleOrders = [
+      {
+        id: 301,
+        customer: "Alex J.",
+        status: "New",
+        loads: 2,
+        pickup: "2025-01-11 4:00 PM",
+        notes: "Use fragrance-free detergent."
+      },
+      {
+        id: 302,
+        customer: "Renee P.",
+        status: "Accepted",
+        loads: 3,
+        pickup: "2025-01-12 10:00 AM",
+        notes: "Text when on the way."
+      }
+    ];
+
+    ordersList.innerHTML = "";
+
+    sampleOrders.forEach(order => {
+      const box = document.createElement("div");
+      box.className = "order-box";
+      box.innerHTML = `
+        <div class="order-header">
+          <span>Order #${order.id} – ${order.customer}</span>
+          <span class="status-pill">${order.status}</span>
+        </div>
+        <div>Loads: ${order.loads}</div>
+        <div>Pickup: ${order.pickup}</div>
+        <div>Notes: ${order.notes}</div>
+        <div class="order-actions">
+          <div class="accept" onclick="acceptOrder(${order.id})">Accept</div>
+          <div class="decline" onclick="declineOrder(${order.id})">Decline</div>
+        </div>
+      `;
+      ordersList.appendChild(box);
+    });
+
+    window.acceptOrder = function (id) {
+      alert("Order " + id + " accepted! (wire to orders table later)");
+    };
+
+    window.declineOrder = function (id) {
+      alert("Order " + id + " declined. (wire to orders table later)");
+    };
+  </script>
+</body>
+</html>

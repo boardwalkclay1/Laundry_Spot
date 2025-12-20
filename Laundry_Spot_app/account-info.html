@@ -14,23 +14,14 @@
             padding: 20px;
             color: #5A3E2B;
         }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
+        h1 { text-align: center; margin-bottom: 30px; }
         .card {
             background: #FFF4D9;
             padding: 20px;
             border-radius: 16px;
             box-shadow: 0 6px 16px rgba(0,0,0,0.2);
         }
-
-        label {
-            font-weight: bold;
-        }
-
+        label { font-weight: bold; }
         input {
             width: 100%;
             padding: 14px;
@@ -38,7 +29,6 @@
             border-radius: 10px;
             border: 2px solid #D96E30;
         }
-
         .btn {
             display: block;
             width: 100%;
@@ -51,7 +41,6 @@
             text-decoration: none;
             margin-top: 10px;
         }
-
         .secondary {
             background: #F4C542;
             color: #5A3E2B;
@@ -65,16 +54,45 @@
 
     <div class="card">
         <label>Name</label>
-        <input type="text" placeholder="Your name">
+        <input id="name" type="text">
 
         <label>Email</label>
-        <input type="text" placeholder="Your email" disabled>
+        <input id="email" type="text" disabled>
 
         <label>Phone</label>
-        <input type="text" placeholder="Your phone number">
+        <input id="phone" type="text">
 
-        <a class="btn" href="#">Save Changes</a>
+        <a class="btn" onclick="saveAccountInfo()">Save Changes</a>
         <a class="btn secondary" href="settings.html">Back to Settings</a>
     </div>
+
+    <script type="module">
+        import { supabase } from "./supabase.js";
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) window.location.href = "login.html";
+
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", session.user.id)
+            .single();
+
+        document.querySelector("#name").value = profile.name || "";
+        document.querySelector("#email").value = profile.email || "";
+        document.querySelector("#phone").value = profile.phone || "";
+
+        window.saveAccountInfo = async function () {
+            const name = document.querySelector("#name").value;
+            const phone = document.querySelector("#phone").value;
+
+            await supabase
+                .from("profiles")
+                .update({ name, phone })
+                .eq("id", session.user.id);
+
+            alert("Account info updated!");
+        }
+    </script>
 </body>
 </html>

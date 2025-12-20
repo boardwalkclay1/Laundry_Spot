@@ -1,205 +1,133 @@
-<!-- washer-availability.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Washer Availability – Laundry Bubbles</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #d96e30, #f4c542);
-      min-height: 100vh;
-      padding: 20px;
-      color: #5a3e2b;
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:linear-gradient(135deg,#d96e30,#f4c542);
+      min-height:100vh;
+      padding:20px;
+      color:#5a3e2b;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
+    h1 { text-align:center; margin-bottom:20px; }
     .card {
-      background: #fff4d9;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-      max-width: 520px;
-      margin: 0 auto 20px;
+      background:#fff4d9;
+      padding:20px;
+      border-radius:16px;
+      box-shadow:0 6px 16px rgba(0,0,0,0.25);
+      max-width:520px;
+      margin:0 auto;
     }
-    .day-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .day-label {
-      font-weight: bold;
-      width: 80px;
-    }
-    .time-inputs {
-      display: flex;
-      gap: 6px;
-      flex: 1;
-      justify-content: flex-end;
-    }
-    input[type="time"] {
-      padding: 6px;
-      border-radius: 8px;
-      border: 2px solid #d96e30;
-      background: white;
+    .day {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin:10px 0;
     }
     .btn {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      background: #d96e30;
-      color: white;
-      text-align: center;
-      border-radius: 10px;
-      font-weight: bold;
-      text-decoration: none;
-      margin-top: 14px;
-      border: none;
-      cursor: pointer;
+      display:block;
+      width:100%;
+      padding:14px;
+      background:#d96e30;
+      color:white;
+      text-align:center;
+      border-radius:10px;
+      font-weight:bold;
+      text-decoration:none;
+      margin-top:14px;
+      border:none;
+      cursor:pointer;
     }
     .secondary {
-      background: #f4c542;
-      color: #5a3e2b;
-      border: 2px solid #d96e30;
-    }
-    .note {
-      font-size: 0.9rem;
-      margin-top: 6px;
+      background:#f4c542;
+      color:#5a3e2b;
+      border:2px solid #d96e30;
     }
   </style>
 </head>
+
 <body>
-  <h1>Washer Availability</h1>
+  <h1>Weekly Availability</h1>
 
-  <div class="card">
-    <p class="note">
-      Set your weekly availability so clients know when you can pick up and drop off laundry.
-    </p>
-
-    <div id="availabilityForm">
-      <div class="day-row">
-        <span class="day-label">Monday</span>
-        <div class="time-inputs">
-          <input type="time" id="monStart">
-          <input type="time" id="monEnd">
-        </div>
-      </div>
-      <div class="day-row">
-        <span class="day-label">Tuesday</span>
-        <div class="time-inputs">
-          <input type="time" id="tueStart">
-          <input type="time" id="tueEnd">
-        </div>
-      </div>
-      <div class="day-row">
-        <span class="day-label">Wednesday</span>
-        <div class="time-inputs">
-          <input type="time" id="wedStart">
-          <input type="time" id="wedEnd">
-        </div>
-      </div>
-      <div class="day-row">
-        <span class="day-label">Thursday</span>
-        <div class="time-inputs">
-          <input type="time" id="thuStart">
-          <input type="time" id="thuEnd">
-        </div>
-      </div>
-      <div class="day-row">
-        <span class="day-label">Friday</span>
-        <div class="time-inputs">
-          <input type="time" id="friStart">
-          <input type="time" id="friEnd">
-        </div>
-      </div>
-      <div class="day-row">
-        <span class="day-label">Saturday</span>
-        <div class="time-inputs">
-          <input type="time" id="satStart">
-          <input type="time" id="satEnd">
-        </div>
-      </div>
-      <div class="day-row">
-        <span class="day-label">Sunday</span>
-        <div class="time-inputs">
-          <input type="time" id="sunStart">
-          <input type="time" id="sunEnd">
-        </div>
-      </div>
-    </div>
-
-    <button class="btn" onclick="saveAvailability()">Save Availability</button>
-    <a class="btn secondary" href="washer-dashboard.html">Back to Washer Dashboard</a>
+  <div class="card" id="availabilityCard">
+    Loading...
   </div>
+
+  <a class="btn secondary" href="washer-dashboard.html">Back to Washer Dashboard</a>
 
   <script type="module">
     import { supabase } from "./supabase.js";
 
+    const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) window.location.href = "login.html";
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", session.user.id)
-      .single();
+    async function loadAvailability() {
+      const card = document.getElementById("availabilityCard");
 
-    if (profile.role !== "washer") {
-      window.location.href = "dashboard.html";
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("availability")
+        .eq("id", session.user.id)
+        .single();
+
+      if (error) {
+        console.error("Load availability error:", error);
+        card.innerText = "Error loading availability.";
+        return;
+      }
+
+      const availability = profile.availability || {};
+
+      card.innerHTML = "";
+
+      days.forEach(day => {
+        const row = document.createElement("div");
+        row.className = "day";
+
+        row.innerHTML = `
+          <span>${day}</span>
+          <input type="checkbox" id="${day}" ${availability[day] ? "checked" : ""}>
+        `;
+
+        card.appendChild(row);
+      });
+
+      const saveBtn = document.createElement("button");
+      saveBtn.className = "btn";
+      saveBtn.innerText = "Save Availability";
+      saveBtn.onclick = saveAvailability;
+
+      card.appendChild(saveBtn);
     }
 
-    const defaultAvailability = profile.availability || {
-      monStart: "09:00",
-      monEnd: "17:00",
-      tueStart: "09:00",
-      tueEnd: "17:00",
-      wedStart: "09:00",
-      wedEnd: "17:00",
-      thuStart: "09:00",
-      thuEnd: "17:00",
-      friStart: "09:00",
-      friEnd: "17:00",
-      satStart: "",
-      satEnd: "",
-      sunStart: "",
-      sunEnd: ""
-    };
+    async function saveAvailability() {
+      const availability = {};
+      days.forEach(day => {
+        availability[day] = document.getElementById(day).checked;
+      });
 
-    Object.keys(defaultAvailability).forEach(key => {
-      const el = document.getElementById(key);
-      if (el) el.value = defaultAvailability[key];
-    });
-
-    window.saveAvailability = async function () {
-      const availability = {
-        monStart: document.getElementById("monStart").value,
-        monEnd: document.getElementById("monEnd").value,
-        tueStart: document.getElementById("tueStart").value,
-        tueEnd: document.getElementById("tueEnd").value,
-        wedStart: document.getElementById("wedStart").value,
-        wedEnd: document.getElementById("wedEnd").value,
-        thuStart: document.getElementById("thuStart").value,
-        thuEnd: document.getElementById("thuEnd").value,
-        friStart: document.getElementById("friStart").value,
-        friEnd: document.getElementById("friEnd").value,
-        satStart: document.getElementById("satStart").value,
-        satEnd: document.getElementById("satEnd").value,
-        sunStart: document.getElementById("sunStart").value,
-        sunEnd: document.getElementById("sunEnd").value
-      };
-
-      await supabase
+      const { error } = await supabase
         .from("profiles")
         .update({ availability })
         .eq("id", session.user.id);
 
-      alert("Availability saved!");
-    };
+      if (error) {
+        console.error("Save availability error:", error);
+        alert("Error saving availability.");
+        return;
+      }
+
+      alert("Availability updated!");
+    }
+
+    await loadAvailability();
   </script>
 </body>
 </html>

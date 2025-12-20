@@ -14,15 +14,12 @@
       padding: 20px;
       color: #5a3e2b;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-    }
+    h1 { text-align: center; margin-bottom: 30px; }
     .card {
       background: #fff4d9;
       padding: 20px;
       border-radius: 16px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
       max-width: 480px;
       margin: 0 auto;
     }
@@ -33,7 +30,6 @@
       color: white;
       text-decoration: none;
       border-radius: 12px;
-      font-size: 1rem;
       margin-top: 10px;
       text-align: center;
       font-weight: bold;
@@ -43,11 +39,7 @@
       color: #5a3e2b;
       border: 2px solid #d96e30;
     }
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 20px;
-    }
+    label { font-weight: bold; display: block; margin-top: 20px; }
     select {
       width: 100%;
       padding: 12px;
@@ -55,7 +47,6 @@
       border-radius: 10px;
       border: 2px solid #d96e30;
       background: white;
-      box-sizing: border-box;
     }
     .btn-save {
       margin-top: 20px;
@@ -85,7 +76,7 @@
       Washer Dashboard
     </a>
 
-    <label for="role">Your Role</label>
+    <label>Your Role</label>
     <select id="role">
       <option value="client">Client</option>
       <option value="washer">Washer</option>
@@ -103,19 +94,21 @@
     if (!session) window.location.href = "login.html";
 
     async function loadProfile() {
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", session.user.id)
         .single();
 
+      if (error) {
+        console.error("Profile load error:", error);
+        return;
+      }
+
       document.getElementById("role").value = profile.role || "client";
 
-      if (profile.role === "washer") {
-        document.getElementById("washerLink").style.display = "block";
-      } else {
-        document.getElementById("washerLink").style.display = "none";
-      }
+      document.getElementById("washerLink").style.display =
+        profile.role === "washer" ? "block" : "none";
     }
 
     await loadProfile();
@@ -129,6 +122,7 @@
         .eq("id", session.user.id);
 
       if (error) {
+        console.error("Save role error:", error);
         alert("Error saving role.");
         return;
       }

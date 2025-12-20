@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Washer Order Page – Laundry Bubbles</title>
+  <title>Washer Order – Laundry Bubbles</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -24,6 +24,16 @@
       margin:0 auto 20px;
     }
     .label { font-weight:bold; }
+    select, textarea {
+      width:100%;
+      padding:12px;
+      margin-top:6px;
+      border-radius:10px;
+      border:2px solid #d96e30;
+      background:white;
+      box-sizing:border-box;
+    }
+    textarea { height:80px; resize:none; }
     .btn {
       display:block;
       width:100%;
@@ -43,42 +53,39 @@
       color:#5a3e2b;
       border:2px solid #d96e30;
     }
-    select, textarea {
-      width:100%;
-      padding:12px;
-      margin-top:6px;
-      border-radius:10px;
-      border:2px solid #d96e30;
-      background:white;
-      box-sizing:border-box;
+    .small {
+      font-size:0.85rem;
+      opacity:0.8;
+      margin-top:4px;
     }
-    textarea { height:80px; resize:none; }
   </style>
 </head>
 
 <body>
-  <h1>Order Management</h1>
+  <h1>Manage Order</h1>
 
   <div class="card" id="orderCard">Loading...</div>
 
   <div class="card">
     <h2>Update Status</h2>
-
-    <label class="label">New Status</label>
     <select id="statusSelect">
-      <option value="accepted">Accepted</option>
       <option value="picked_up">Picked Up</option>
       <option value="washing">Washing</option>
       <option value="drying">Drying</option>
       <option value="folding">Folding</option>
-      <option value="ready">Ready for Delivery</option>
+      <option value="ready">Ready</option>
       <option value="delivered">Delivered</option>
     </select>
 
-    <label class="label">Message (optional)</label>
-    <textarea id="message"></textarea>
+    <textarea id="message" placeholder="Optional message for the client"></textarea>
 
     <button class="btn" onclick="updateStatus()">Save Update</button>
+  </div>
+
+  <div class="card">
+    <h2>Live Location Sharing</h2>
+    <button class="btn secondary" onclick="startLocationSharing()">Share My Location</button>
+    <div class="small" id="locationStatus">Location sharing is off.</div>
   </div>
 
   <a class="btn secondary" href="washer-orders.html">Back to Washer Orders</a>
@@ -91,24 +98,45 @@
     }
 
     const orderId = getOrderId();
+    let order = null;
+    let watchId = null;
+
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) window.location.href = "login.html";
 
-    async function loadOrder() {
-      const card = document.getElementById("orderCard");
+    // Real-time subscription to keep order fresh
+    supabase
+      .channel("washer-order-" + orderId)
+      .on(
+        "postgres_changes",
+        { event:"UPDATE", schema:"public", table:"orders", filter:`id=eq.${orderId}` },
+        payload => {
+          order = payload.new;
+          renderOrder();
+        }
+      )
+      .subscribe();
 
-      const { data: order, error } = await supabase
+    async function loadOrder() {
+      const { data, error } = await supabase
         .from("orders")
         .select("*")
         .eq("id", orderId)
         .eq("washer_id", session.user.id)
         .single();
 
-      if (error || !order) {
-        console.error("Load order error:", error);
-        card.innerText = "Order not found.";
+      if (error || !data) {
+        document.getElementById("orderCard").innerText = "Order not found.";
         return;
       }
+
+      order = data;
+      renderOrder();
+    }
+
+    function renderOrder() {
+      const card = document.getElementById("orderCard");
+      if (!order) return;
 
       const pickup = order.pickup_time
         ? new Date(order.pickup_time).toLocaleString()
@@ -123,33 +151,83 @@
       `;
     }
 
-    await loadOrder();
-
     window.updateStatus = async function () {
       const newStatus = document.getElementById("statusSelect").value;
       const message = document.getElementById("message").value;
 
-      const { error: updateError } = await supabase
+      const { error: orderError } = await supabase
         .from("orders")
         .update({ status: newStatus })
         .eq("id", orderId)
         .eq("washer_id", session.user.id);
 
-      if (updateError) {
-        console.error("Update status error:", updateError);
+      if (orderError) {
+        console.error(orderError);
         alert("Error updating order.");
         return;
       }
 
-      await supabase.from("order_events").insert({
-        order_id: orderId,
-        status: newStatus,
-        message
-      });
+      const { error: eventError } = await supabase
+        .from("order_events")
+        .insert({
+          order_id: orderId,
+          status: newStatus,
+          message
+        });
 
-      alert("Order updated!");
-      location.reload();
+      if (eventError) {
+        console.error(eventError);
+      }
+
+      alert("Status updated!");
     };
+
+    // LOCATION SHARING
+    const locationStatus = document.getElementById("locationStatus");
+
+    window.startLocationSharing = function () {
+      if (!navigator.geolocation) {
+        alert("Location is not supported on this device.");
+        return;
+      }
+
+      if (watchId !== null) {
+        alert("Location sharing is already on.");
+        return;
+      }
+
+      watchId = navigator.geolocation.watchPosition(
+        async pos => {
+          const { error } = await supabase
+            .from("locations")
+            .upsert({
+              user_id: session.user.id,
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude
+            });
+
+          if (error) {
+            console.error("Location update error:", error);
+            locationStatus.innerText = "Error sending location.";
+          } else {
+            locationStatus.innerText = "Location sharing is ON.";
+          }
+        },
+        err => {
+          console.error("Geolocation error:", err);
+          alert("Could not get your location.");
+        },
+        {
+          enableHighAccuracy:true,
+          maximumAge:5000,
+          timeout:10000
+        }
+      );
+
+      locationStatus.innerText = "Trying to get your location...";
+    };
+
+    await loadOrder();
   </script>
 </body>
 </html>

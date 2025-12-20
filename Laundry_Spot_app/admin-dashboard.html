@@ -2,9 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Admin Dashboard – Laundry Bubbles</title>
+  <title>Admin Dashboard – Laundry Spot</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <style>
     body {
       margin:0;
@@ -14,85 +13,200 @@
       padding:20px;
       color:#5a3e2b;
     }
-    h1 { text-align:center; margin-bottom:20px; }
+    h1 {
+      text-align:center;
+      margin-top:0;
+      margin-bottom:10px;
+    }
+    .subtitle {
+      text-align:center;
+      font-size:0.9rem;
+      opacity:0.85;
+      margin-bottom:20px;
+    }
     .card {
       background:#fff4d9;
-      padding:20px;
+      padding:16px;
       border-radius:16px;
       box-shadow:0 6px 16px rgba(0,0,0,0.25);
-      max-width:520px;
+      max-width:900px;
       margin:0 auto 20px;
     }
-    .btn {
-      display:block;
+    table {
       width:100%;
-      padding:14px;
+      border-collapse:collapse;
+      font-size:0.9rem;
+    }
+    th, td {
+      border-bottom:1px solid #e2c9a5;
+      padding:8px;
+      text-align:left;
+    }
+    th {
+      background:#fce8b9;
+    }
+    select {
+      padding:4px 6px;
+      border-radius:6px;
+      border:1px solid #d96e30;
+    }
+    .btn {
+      display:inline-block;
+      padding:8px 12px;
+      margin-top:10px;
+      border-radius:10px;
+      border:none;
       background:#d96e30;
       color:white;
-      text-align:center;
-      border-radius:10px;
       font-weight:bold;
-      text-decoration:none;
-      margin-top:14px;
-      border:none;
       cursor:pointer;
+      text-decoration:none;
     }
-    .stat {
-      font-size:1.2rem;
-      font-weight:bold;
-      margin:6px 0;
+    .danger {
+      background:#b83a2e;
+    }
+    #statusText {
+      font-size:0.85rem;
+      margin-top:6px;
     }
   </style>
 </head>
-
 <body>
   <h1>Admin Dashboard</h1>
-
-  <div class="card" id="statsCard">Loading stats...</div>
+  <div class="subtitle">Manage users and roles</div>
 
   <div class="card">
-    <h2>Admin Tools</h2>
-    <a class="btn" href="admin-washers.html">Washer Verification</a>
-    <a class="btn" href="admin-orders.html">All Orders</a>
-    <a class="btn" href="admin-notifications.html">Send Notifications</a>
+    <button class="btn" onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+    <button class="btn danger" id="logoutBtn">Log Out</button>
+    <div id="statusText"></div>
   </div>
 
-  <a class="btn" href="dashboard.html">Back to User Dashboard</a>
+  <div class="card">
+    <h2>All Users</h2>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Verification</th>
+            <th>Save</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody"></tbody>
+      </table>
+    </div>
+  </div>
 
   <script type="module">
     import { supabase } from "./supabase.js";
 
-    // AUTH CHECK
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) window.location.href = "login.html";
+    const statusText = document.getElementById("statusText");
+    const usersTableBody = document.getElementById("usersTableBody");
+    const logoutBtn = document.getElementById("logoutBtn");
 
-    const { data: profile } = await supabase
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData?.session;
+    if (!session) {
+      window.location.href = "login.html";
+    }
+
+    const userId = session.user.id;
+
+    // Ensure current user is admin
+    const { data: me, error: meError } = await supabase
       .from("profiles")
-      .select("role")
-      .eq("id", session.user.id)
+      .select("*")
+      .eq("id", userId)
       .single();
 
-    if (profile.role !== "admin") {
+    if (meError || !me || me.role !== "admin") {
+      alert("You are not an admin.");
       window.location.href = "dashboard.html";
     }
 
-    async function loadStats() {
-      const card = document.getElementById("statsCard");
+    statusText.innerText = "Loading users...";
 
-      const [{ data: pending }, { data: active }, { data: washers }] = await Promise.all([
-        supabase.from("profiles").select("*").eq("verification_status", "pending"),
-        supabase.from("orders").select("*").neq("status", "delivered"),
-        supabase.from("profiles").select("*").eq("role", "washer")
-      ]);
+    const { data: users, error: usersError } = await supabase
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: true });
 
-      card.innerHTML = `
-        <div class="stat">Pending Verifications: ${pending.length}</div>
-        <div class="stat">Active Orders: ${active.length}</div>
-        <div class="stat">Total Washers: ${washers.length}</div>
-      `;
+    if (usersError) {
+      console.error("Users load error:", usersError);
+      statusText.innerText = "Error loading users: " + usersError.message;
+    } else {
+      statusText.innerText = `Loaded ${users.length} users.`;
+      usersTableBody.innerHTML = "";
+
+      users.forEach((u) => {
+        const tr = document.createElement("tr");
+
+        const emailTd = document.createElement("td");
+        emailTd.textContent = u.email || "";
+        tr.appendChild(emailTd);
+
+        const nameTd = document.createElement("td");
+        nameTd.textContent = u.name || "";
+        tr.appendChild(nameTd);
+
+        const roleTd = document.createElement("td");
+        const roleSelect = document.createElement("select");
+        ["client","washer","admin"].forEach(r => {
+          const opt = document.createElement("option");
+          opt.value = r;
+          opt.textContent = r;
+          if (u.role === r) opt.selected = true;
+          roleSelect.appendChild(opt);
+        });
+        roleTd.appendChild(roleSelect);
+        tr.appendChild(roleTd);
+
+        const verTd = document.createElement("td");
+        const verSelect = document.createElement("select");
+        ["none","pending","approved","rejected"].forEach(v => {
+          const opt = document.createElement("option");
+          opt.value = v;
+          opt.textContent = v;
+          if (u.verification_status === v) opt.selected = true;
+          verSelect.appendChild(opt);
+        });
+        verTd.appendChild(verSelect);
+        tr.appendChild(verTd);
+
+        const saveTd = document.createElement("td");
+        const saveBtn = document.createElement("button");
+        saveBtn.className = "btn";
+        saveBtn.textContent = "Save";
+        saveBtn.onclick = async () => {
+          statusText.innerText = "Saving changes...";
+          const { error } = await supabase
+            .from("profiles")
+            .update({
+              role: roleSelect.value,
+              verification_status: verSelect.value,
+            })
+            .eq("id", u.id);
+
+          if (error) {
+            console.error("Update user error:", error);
+            statusText.innerText = "Error saving: " + error.message;
+          } else {
+            statusText.innerText = "Saved changes.";
+          }
+        };
+        saveTd.appendChild(saveBtn);
+        tr.appendChild(saveTd);
+
+        usersTableBody.appendChild(tr);
+      });
     }
 
-    await loadStats();
+    logoutBtn.onclick = async () => {
+      await supabase.auth.signOut();
+      window.location.href = "login.html";
+    };
   </script>
 </body>
 </html>

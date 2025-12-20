@@ -69,23 +69,25 @@
     .danger {
       background:#b83a2e;
     }
-    .admin-badge {
-      display:inline-block;
-      padding:4px 10px;
-      border-radius:999px;
-      background:#3a9e3a;
-      color:white;
-      font-size:0.8rem;
-      margin-left:6px;
+    #statusText {
+      font-size:0.85rem;
+      margin-top:8px;
+      opacity:0.9;
+    }
+    #errorText {
+      font-size:0.85rem;
+      margin-top:4px;
+      color:#b83a2e;
+      white-space:pre-wrap;
+      word-break:break-word;
     }
   </style>
 </head>
 
 <body>
   <h1>Settings</h1>
-  <div class="subtitle">Manage your profile, role, and preferences</div>
+  <div class="subtitle">Manage your profile, role, and access</div>
 
-  <!-- PROFILE FORM -->
   <div class="card">
     <h2>Your Profile</h2>
 
@@ -106,16 +108,16 @@
     <div id="verificationStatus" style="margin-bottom:14px; font-weight:bold;"></div>
 
     <button class="btn" id="saveBtn">Save Settings</button>
+    <div id="statusText"></div>
+    <div id="errorText"></div>
   </div>
 
-  <!-- ADMIN ACCESS -->
   <div class="card" id="adminSection" style="display:none;">
     <h2>Admin Access</h2>
     <p>You have admin privileges.</p>
     <a class="btn" href="admin-dashboard.html">Go to Admin Dashboard</a>
   </div>
 
-  <!-- LOGOUT -->
   <button class="btn danger" id="logoutBtn">Log Out</button>
 
   <script type="module">
@@ -126,57 +128,104 @@
     const roleInput = document.getElementById("roleInput");
     const verificationStatus = document.getElementById("verificationStatus");
     const adminSection = document.getElementById("adminSection");
-
     const saveBtn = document.getElementById("saveBtn");
     const logoutBtn = document.getElementById("logoutBtn");
+    const statusText = document.getElementById("statusText");
+    const errorText = document.getElementById("errorText");
 
-    // AUTH CHECK
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) window.location.href = "login.html";
+    statusText.innerText = "Loading profile...";
 
-    // LOAD PROFILE
-    const { data: profile } = await supabase
+    // 1) Get session
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      console.error("Session error:", sessionError);
+      errorText.innerText = "Session error: " + sessionError.message;
+    }
+
+    const session = sessionData?.session;
+    if (!session) {
+      statusText.innerText = "No active session, redirecting to login...";
+      window.location.href = "login.html";
+    }
+
+    const userId = session.user.id;
+    const userEmail = session.user.email;
+
+    // 2) Ensure profile exists (UPSERT minimal row)
+    async function ensureProfile() {
+      const baseProfile = {
+        id: userId,
+        email: userEmail,
+      };
+
+      const { error } = await supabase
+        .from("profiles")
+        .upsert(baseProfile);
+
+      if (error) {
+        console.error("Upsert base profile error:", error);
+        errorText.innerText = "Error ensuring profile exists:\n" + error.message;
+      }
+    }
+
+    await ensureProfile();
+
+    // 3) Load full profile
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("*")
-      .eq("id", session.user.id)
+      .eq("id", userId)
       .single();
+
+    if (profileError) {
+      console.error("Profile load error:", profileError);
+      statusText.innerText = "Error loading profile.";
+      errorText.innerText = "Profile load error:\n" + profileError.message;
+    }
 
     if (profile) {
       nameInput.value = profile.name || "";
       phoneInput.value = profile.phone || "";
       roleInput.value = profile.role || "client";
-      verificationStatus.innerText = profile.verification_status.toUpperCase();
+      verificationStatus.innerText = (profile.verification_status || "none").toUpperCase();
 
       if (profile.role === "admin") {
         adminSection.style.display = "block";
       }
+      statusText.innerText = "Profile loaded.";
     }
 
-    // SAVE PROFILE
+    // 4) Save profile (UPSERT)
     saveBtn.onclick = async () => {
+      statusText.innerText = "Saving...";
+      errorText.innerText = "";
+
       const updates = {
-        name: nameInput.value,
-        phone: phoneInput.value,
-        role: roleInput.value
+        id: userId,
+        email: userEmail,
+        name: nameInput.value || null,
+        phone: phoneInput.value || null,
+        role: roleInput.value,
       };
 
       const { error } = await supabase
         .from("profiles")
-        .update(updates)
-        .eq("id", session.user.id);
+        .upsert(updates);
 
       if (error) {
-        alert("Error saving settings.");
-        console.error(error);
+        console.error("Save error:", error);
+        statusText.innerText = "Error saving settings.";
+        errorText.innerText = "Save error:\n" + error.message;
+        alert("Error saving settings. Check the error text on this page and the browser console.");
       } else {
-        alert("Settings saved!");
+        statusText.innerText = "Settings saved!";
         if (roleInput.value === "admin") {
           adminSection.style.display = "block";
         }
       }
     };
 
-    // LOGOUT
+    // 5) Logout
     logoutBtn.onclick = async () => {
       await supabase.auth.signOut();
       window.location.href = "login.html";

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard – Laundry Bubbles</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #D96E30, #F4C542);
+            min-height: 100vh;
+            padding: 20px;
+            color: #5A3E2B;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: #FFF4D9;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: block;
+            padding: 16px;
+            background: #D96E30;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            margin-top: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Welcome!</h1>
+
+    <div class="card">
+        <p id="welcomeText">Loading...</p>
+
+        <a class="btn" href="settings.html">Settings</a>
+        <a class="btn" href="client-orders.html">My Orders</a>
+        <a class="btn" href="booking.html">Book a Wash</a>
+        <a class="btn" onclick="logout()">Logout</a>
+    </div>
+
+    <script type="module">
+        import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+        const supabase = createClient(
+            "https://iorpijdiswctyawndzna.supabase.co",
+            "YOUR_SUPABASE_ANON_KEY"
+        );
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) window.location.href = "login.html";
+
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", session.user.id)
+            .single();
+
+        document.getElementById("welcomeText").textContent =
+            `Hello, ${profile.name || profile.email}!`;
+
+        window.logout = async function () {
+            await supabase.auth.signOut();
+            window.location.href = "login.html";
+        }
+    </script>
+</body>
+</html>

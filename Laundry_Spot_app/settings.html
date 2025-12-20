@@ -9,56 +9,55 @@
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background: #FFF4D9;
-            color: #5A3E2B;
-        }
-
-        header {
-            background: #D96E30;
-            padding: 18px;
-            text-align: center;
-            color: white;
-            font-size: 1.4rem;
-            font-weight: bold;
-        }
-
-        .container {
+            background: linear-gradient(135deg, #D96E30, #F4C542);
+            min-height: 100vh;
             padding: 20px;
-        }
-
-        .setting {
-            background: white;
-            padding: 16px;
-            border-radius: 10px;
-            margin-bottom: 12px;
-            border: 2px solid #F4C542;
-            font-size: 1.1rem;
-        }
-
-        a {
-            text-decoration: none;
             color: #5A3E2B;
         }
 
-        .back {
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: #FFF4D9;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .link-btn {
             display: block;
-            margin-top: 20px;
+            padding: 16px;
+            background: #D96E30;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            margin-top: 12px;
             text-align: center;
             font-weight: bold;
+        }
+
+        .secondary {
+            background: #F4C542;
+            color: #5A3E2B;
+            border: 2px solid #D96E30;
         }
     </style>
 </head>
 
 <body>
-    <header>Settings</header>
+    <h1>Settings</h1>
 
-    <div class="container">
-        <div class="setting">Notifications</div>
-        <div class="setting">Payment Methods</div>
-        <div class="setting">Account Info</div>
-        <div class="setting">Help & Support</div>
-
-        <a href="client.html" class="back">Back to Dashboard</a>
+    <div class="card">
+        <a class="link-btn" href="account-info.html">Account Info</a>
+        <a class="link-btn" href="payment-methods.html">Payment Methods</a>
+        <a class="link-btn" href="notifications.html">Notifications</a>
+        <a class="link-btn" href="help-support.html">Help & Support</a>
+        <a class="link-btn secondary" href="client.html">Back to Home</a>
     </div>
 </body>
 </html>

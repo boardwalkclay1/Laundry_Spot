@@ -1,47 +1,111 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Payment Methods – Laundry Bubbles</title>
+  <meta charset="UTF-8" />
+  <title>Notifications – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #d96e30, #f4c542);
+      min-height: 100vh;
+      padding: 20px;
+      color: #5a3e2b;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .card {
+      background: #fff4d9;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      font-size: 1rem;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: #d96e30;
+      color: white;
+      text-align: center;
+      border-radius: 10px;
+      font-weight: bold;
+      text-decoration: none;
+      margin-top: 14px;
+      border: none;
+      cursor: pointer;
+    }
+    .secondary {
+      background: #f4c542;
+      color: #5a3e2b;
+      border: 2px solid #d96e30;
+    }
+  </style>
 </head>
+
 <body>
-    <h1>Payment Methods</h1>
+  <h1>Notifications</h1>
 
-    <p id="currentMethod">Loading...</p>
+  <div class="card">
+    <div class="toggle-row">
+      <span>Order Updates</span>
+      <input type="checkbox" id="orderUpdates" />
+    </div>
 
-    <button onclick="savePayment()">Add / Update Payment Method</button>
-    <br><br>
-    <a href="settings.html">Back</a>
+    <div class="toggle-row">
+      <span>Promotions</span>
+      <input type="checkbox" id="promotions" />
+    </div>
 
-    <script type="module">
-        import { supabase } from "./supabase.js";
+    <div class="toggle-row">
+      <span>Washer Arrival Alerts</span>
+      <input type="checkbox" id="washerAlerts" />
+    </div>
 
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) window.location.href = "login.html";
+    <button class="btn" onclick="saveNotifications()">Save Settings</button>
+    <a class="btn secondary" href="settings.html">Back to Settings</a>
+  </div>
 
-        const { data: profile } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", session.user.id)
-            .single();
+  <script type="module">
+    import { supabase } from "./supabase.js";
 
-        document.getElementById("currentMethod").textContent =
-            profile.payment_method
-            ? `Current: ${profile.payment_method}`
-            : "No payment method saved.";
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) window.location.href = "login.html";
 
-        window.savePayment = async function () {
-            const method = prompt("Enter payment method:");
-            if (!method) return;
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", session.user.id)
+      .single();
 
-            await supabase
-                .from("profiles")
-                .update({ payment_method: method })
-                .eq("id", session.user.id);
+    document.getElementById("orderUpdates").checked = profile.notify_order_updates;
+    document.getElementById("promotions").checked = profile.notify_promotions;
+    document.getElementById("washerAlerts").checked = profile.notify_washer_alerts;
 
-            alert("Saved!");
-            location.reload();
-        }
-    </script>
+    window.saveNotifications = async function () {
+      await supabase
+        .from("profiles")
+        .update({
+          notify_order_updates: document.getElementById("orderUpdates").checked,
+          notify_promotions: document.getElementById("promotions").checked,
+          notify_washer_alerts: document.getElementById("washerAlerts").checked
+        })
+        .eq("id", session.user.id);
+
+      alert("Notification settings saved!");
+    };
+  </script>
 </body>
 </html>

@@ -2,35 +2,42 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Account Info – Laundry Bubbles</title>
+  <title>Account Info – Laundry Spot</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg,#d96e30,#f4c542);
-      min-height: 100vh;
-      padding: 20px;
-      color: #5a3e2b;
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:linear-gradient(135deg,#d96e30,#f4c542);
+      min-height:100vh;
+      padding:20px;
+      color:#5a3e2b;
     }
-    h1 { text-align:center; margin-bottom:30px; }
+    h1 {
+      text-align:center;
+      margin-bottom:10px;
+    }
     .card {
       background:#fff4d9;
       padding:20px;
       border-radius:16px;
       box-shadow:0 6px 16px rgba(0,0,0,0.25);
-      max-width:480px;
-      margin:0 auto;
+      max-width:520px;
+      margin:0 auto 20px;
     }
-    label { font-weight:bold; display:block; margin-top:10px; }
+    .label {
+      font-weight:bold;
+      display:block;
+      margin-bottom:6px;
+    }
     input {
       width:100%;
       padding:12px;
-      margin-top:6px;
+      margin-bottom:14px;
       border-radius:10px;
       border:2px solid #d96e30;
       background:white;
+      box-sizing:border-box;
     }
     .btn {
       display:block;
@@ -42,79 +49,124 @@
       border-radius:10px;
       font-weight:bold;
       text-decoration:none;
-      margin-top:14px;
+      margin-top:12px;
       border:none;
       cursor:pointer;
+      box-sizing:border-box;
     }
     .secondary {
       background:#f4c542;
       color:#5a3e2b;
-      border:2px solid #d96e2b;
+      border:2px solid #d96e30;
+    }
+    #statusText {
+      font-size:0.85rem;
+      margin-top:8px;
+      min-height:1em;
+    }
+    #errorText {
+      font-size:0.8rem;
+      margin-top:4px;
+      color:#b83a2e;
+      white-space:pre-wrap;
+      word-break:break-word;
     }
   </style>
 </head>
-
 <body>
   <h1>Account Info</h1>
 
   <div class="card">
-    <label>Name</label>
-    <input id="name" type="text" />
+    <label class="label">Email</label>
+    <input id="emailInput" disabled />
 
-    <label>Email</label>
-    <input id="email" type="text" disabled />
+    <label class="label">Name</label>
+    <input id="nameInput" placeholder="Your name" />
 
-    <label>Phone</label>
-    <input id="phone" type="text" />
+    <label class="label">Phone</label>
+    <input id="phoneInput" placeholder="Your phone number" />
 
-    <button class="btn" onclick="saveAccountInfo()">Save Changes</button>
-    <a class="btn secondary" href="settings.html">Back to Settings</a>
+    <button class="btn" id="saveBtn">Save Account Info</button>
+    <button class="btn secondary" onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+    <div id="statusText"></div>
+    <div id="errorText"></div>
   </div>
 
   <script type="module">
     import { supabase } from "./supabase.js";
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) window.location.href = "login.html";
+    const emailInput = document.getElementById("emailInput");
+    const nameInput = document.getElementById("nameInput");
+    const phoneInput = document.getElementById("phoneInput");
+    const saveBtn = document.getElementById("saveBtn");
+    const statusText = document.getElementById("statusText");
+    const errorText = document.getElementById("errorText");
 
-    async function loadProfile() {
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .single();
+    statusText.innerText = "Loading account...";
 
-      if (error) {
-        console.error("Load profile error:", error);
-        return;
-      }
-
-      document.getElementById("name").value = profile.name || "";
-      document.getElementById("email").value = profile.email || "";
-      document.getElementById("phone").value = profile.phone || "";
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      console.error("Session error:", sessionError);
+      errorText.innerText = "Session error: " + sessionError.message;
     }
 
-    await loadProfile();
+    const session = sessionData?.session;
+    if (!session) {
+      window.location.href = "login.html";
+    }
+    const userId = session.user.id;
+    const userEmail = session.user.email;
 
-    window.saveAccountInfo = async function () {
-      const name = document.getElementById("name").value;
-      const phone = document.getElementById("phone").value;
+    // Ensure profile exists
+    const { error: ensureError } = await supabase
+      .from("profiles")
+      .upsert({ id: userId, email: userEmail });
+
+    if (ensureError) {
+      console.error("Ensure profile error:", ensureError);
+      errorText.innerText = "Error ensuring profile exists: " + ensureError.message;
+    }
+
+    // Load profile
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (profileError) {
+      console.error("Load profile error:", profileError);
+      statusText.innerText = "Error loading profile.";
+      errorText.innerText = "Load profile error: " + profileError.message;
+    } else if (profile) {
+      emailInput.value = profile.email || userEmail || "";
+      nameInput.value = profile.name || "";
+      phoneInput.value = profile.phone || "";
+      statusText.innerText = "Profile loaded.";
+    }
+
+    saveBtn.onclick = async () => {
+      statusText.innerText = "Saving...";
+      errorText.innerText = "";
+
+      const updates = {
+        id: userId,
+        email: userEmail,
+        name: nameInput.value || null,
+        phone: phoneInput.value || null,
+      };
 
       const { error } = await supabase
         .from("profiles")
-        .update({
-          name,
-          phone
-        })
-        .eq("id", session.user.id);
+        .upsert(updates);
 
       if (error) {
         console.error("Save account info error:", error);
-        alert("Error saving account info.");
-        return;
+        statusText.innerText = "Error saving account info.";
+        errorText.innerText = "Save account info error: " + error.message;
+      } else {
+        statusText.innerText = "Account info saved!";
       }
-
-      alert("Account info updated!");
     };
   </script>
 </body>

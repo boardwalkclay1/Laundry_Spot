@@ -14,26 +14,19 @@
             padding: 20px;
             color: #5A3E2B;
         }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
+        h1 { text-align: center; margin-bottom: 30px; }
         .card {
             background: #FFF4D9;
             padding: 20px;
             border-radius: 16px;
             box-shadow: 0 6px 16px rgba(0,0,0,0.2);
         }
-
         .toggle-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
-
         .btn {
             display: block;
             width: 100%;
@@ -46,7 +39,6 @@
             text-decoration: none;
             margin-top: 10px;
         }
-
         .secondary {
             background: #F4C542;
             color: #5A3E2B;
@@ -61,21 +53,51 @@
     <div class="card">
         <div class="toggle-row">
             <span>Order Updates</span>
-            <input type="checkbox" checked>
+            <input type="checkbox" id="orderUpdates">
         </div>
 
         <div class="toggle-row">
             <span>Promotions</span>
-            <input type="checkbox">
+            <input type="checkbox" id="promotions">
         </div>
 
         <div class="toggle-row">
             <span>Washer Arrival Alerts</span>
-            <input type="checkbox" checked>
+            <input type="checkbox" id="washerAlerts">
         </div>
 
-        <a class="btn" href="#">Save Settings</a>
+        <a class="btn" onclick="saveNotifications()">Save Settings</a>
         <a class="btn secondary" href="settings.html">Back to Settings</a>
     </div>
+
+    <script type="module">
+        import { supabase } from "./supabase.js";
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) window.location.href = "login.html";
+
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", session.user.id)
+            .single();
+
+        document.querySelector("#orderUpdates").checked = profile.notify_order_updates;
+        document.querySelector("#promotions").checked = profile.notify_promotions;
+        document.querySelector("#washerAlerts").checked = profile.notify_washer_alerts;
+
+        window.saveNotifications = async function () {
+            await supabase
+                .from("profiles")
+                .update({
+                    notify_order_updates: document.querySelector("#orderUpdates").checked,
+                    notify_promotions: document.querySelector("#promotions").checked,
+                    notify_washer_alerts: document.querySelector("#washerAlerts").checked
+                })
+                .eq("id", session.user.id);
+
+            alert("Notification settings saved!");
+        }
+    </script>
 </body>
 </html>

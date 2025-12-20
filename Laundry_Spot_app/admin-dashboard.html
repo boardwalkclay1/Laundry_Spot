@@ -113,6 +113,10 @@
     }
 
     const userId = session.user.id;
+    const userEmail = session.user.email;
+
+    // Ensure profile exists
+    await supabase.from("profiles").upsert({ id: userId, email: userEmail });
 
     // Ensure current user is admin
     const { data: me, error: meError } = await supabase

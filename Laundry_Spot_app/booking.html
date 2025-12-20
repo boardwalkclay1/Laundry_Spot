@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Client Dashboard – Laundry Bubbles</title>
+    <title>Booking – Laundry Bubbles</title>
 
     <style>
         body {
@@ -26,34 +26,35 @@
             padding: 20px;
         }
 
-        .btn {
-            display: block;
-            background: #F4C542;
-            padding: 16px;
+        .option {
+            background: white;
+            padding: 18px;
             border-radius: 10px;
             margin-bottom: 14px;
-            text-align: center;
+            border: 2px solid #F4C542;
             font-size: 1.2rem;
             font-weight: bold;
-            color: #5A3E2B;
-            text-decoration: none;
-            border: 2px solid #D96E30;
+            text-align: center;
         }
 
-        .btn:hover {
-            background: #E3B63A;
+        a {
+            text-decoration: none;
+            color: #5A3E2B;
+        }
+
+        .option:hover {
+            background: #FCE9A8;
         }
     </style>
 </head>
 
 <body>
-    <header>Welcome to Laundry Bubbles</header>
+    <header>Choose a Service</header>
 
     <div class="container">
-        <a href="booking.html" class="btn">Book a Service</a>
-        <a href="payments.html" class="btn">Payments</a>
-        <a href="settings.html" class="btn">Settings</a>
-        <a href="map.html" class="btn">Map</a>
+        <!-- THESE TWO LINKS MUST MATCH YOUR ACTUAL FILES -->
+        <a href="pickup_request.html"><div class="option">Pickup Service</div></a>
+        <a href="dropoff_request.html"><div class="option">Dropoff Service</div></a>
     </div>
 </body>
 </html>

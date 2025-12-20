@@ -1,3 +1,4 @@
+<!-- washer-dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,7 +34,7 @@
       display: block;
       margin-top: 10px;
     }
-    input, textarea, select {
+    input, textarea {
       width: 100%;
       padding: 12px;
       margin-top: 6px;
@@ -107,7 +108,6 @@
 <body>
   <h1>Washer Dashboard</h1>
 
-  <!-- Washer Profile -->
   <div class="card">
     <h2>Your Washer Profile</h2>
 
@@ -137,7 +137,6 @@
     <button class="btn" onclick="saveWasherProfile()">Save Washer Profile</button>
   </div>
 
-  <!-- Incoming Orders -->
   <div class="card">
     <h2>Incoming Orders</h2>
 
@@ -146,23 +145,26 @@
     </div>
   </div>
 
-  <a class="btn secondary" href="dashboard.html">Back to Dashboard</a>
+  <a class="btn secondary" href="dashboard.html">Client Dashboard</a>
+  <a class="btn" href="settings.html">Settings</a>
+  <a class="btn secondary" onclick="logout()">Logout</a>
 
   <script type="module">
     import { supabase } from "./supabase.js";
 
-    // Protect page
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) window.location.href = "login.html";
 
-    // Load washer profile
     const { data: profile } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", session.user.id)
       .single();
 
-    // Pre-fill fields
+    if (profile.role !== "washer") {
+      window.location.href = "dashboard.html";
+    }
+
     document.getElementById("name").value = profile.name || "";
     document.getElementById("email").value = profile.email || "";
     document.getElementById("phone").value = profile.phone || "";
@@ -171,7 +173,6 @@
     document.getElementById("price").value = profile.price || 15;
     document.getElementById("available").checked = profile.available || false;
 
-    // Save washer profile
     window.saveWasherProfile = async function () {
       await supabase
         .from("profiles")
@@ -188,7 +189,6 @@
       alert("Washer profile updated!");
     };
 
-    // Placeholder incoming orders (replace with real DB later)
     const ordersList = document.getElementById("ordersList");
 
     const sampleOrders = [
@@ -231,6 +231,11 @@
 
     window.declineOrder = function (id) {
       alert("Order " + id + " declined.");
+    };
+
+    window.logout = async function () {
+      await supabase.auth.signOut();
+      window.location.href = "login.html";
     };
   </script>
 </body>

@@ -1,81 +1,62 @@
-<!-- notifications.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Notifications – Laundry Bubbles</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #d96e30, #f4c542);
-      min-height: 100vh;
-      padding: 20px;
-      color: #5a3e2b;
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:linear-gradient(135deg,#d96e30,#f4c542);
+      min-height:100vh;
+      padding:20px;
+      color:#5a3e2b;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-    }
+    h1 { text-align:center; margin-bottom:20px; }
     .card {
-      background: #fff4d9;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-      max-width: 480px;
-      margin: 0 auto;
+      background:#fff4d9;
+      padding:20px;
+      border-radius:16px;
+      box-shadow:0 6px 16px rgba(0,0,0,0.25);
+      max-width:520px;
+      margin:0 auto;
     }
-    .toggle-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 18px;
-      font-size: 1rem;
+    .row {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin:12px 0;
     }
     .btn {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      background: #d96e30;
-      color: white;
-      text-align: center;
-      border-radius: 10px;
-      font-weight: bold;
-      text-decoration: none;
-      margin-top: 14px;
-      border: none;
-      cursor: pointer;
+      display:block;
+      width:100%;
+      padding:14px;
+      background:#d96e30;
+      color:white;
+      text-align:center;
+      border-radius:10px;
+      font-weight:bold;
+      text-decoration:none;
+      margin-top:14px;
+      border:none;
+      cursor:pointer;
     }
     .secondary {
-      background: #f4c542;
-      color: #5a3e2b;
-      border: 2px solid #d96e30;
+      background:#f4c542;
+      color:#5a3e2b;
+      border:2px solid #d96e30;
     }
   </style>
 </head>
+
 <body>
   <h1>Notifications</h1>
 
-  <div class="card">
-    <div class="toggle-row">
-      <span>Order Updates</span>
-      <input type="checkbox" id="orderUpdates" />
-    </div>
+  <div class="card" id="notifCard">Loading...</div>
 
-    <div class="toggle-row">
-      <span>Promotions</span>
-      <input type="checkbox" id="promotions" />
-    </div>
-
-    <div class="toggle-row">
-      <span>Washer Arrival Alerts</span>
-      <input type="checkbox" id="washerAlerts" />
-    </div>
-
-    <button class="btn" onclick="saveNotifications()">Save Settings</button>
-    <a class="btn secondary" href="settings.html">Back to Settings</a>
-  </div>
+  <a class="btn secondary" href="settings.html">Back to Settings</a>
 
   <script type="module">
     import { supabase } from "./supabase.js";
@@ -83,28 +64,63 @@
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) window.location.href = "login.html";
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", session.user.id)
-      .single();
+    async function loadNotifications() {
+      const card = document.getElementById("notifCard");
 
-    document.getElementById("orderUpdates").checked = profile.notify_order_updates;
-    document.getElementById("promotions").checked = profile.notify_promotions;
-    document.getElementById("washerAlerts").checked = profile.notify_washer_alerts;
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .single();
+
+      if (error) {
+        console.error("Load notifications error:", error);
+        card.innerText = "Error loading notifications.";
+        return;
+      }
+
+      card.innerHTML = `
+        <div class="row">
+          <span>Order Updates</span>
+          <input type="checkbox" id="orderUpdates" ${profile.notify_order_updates ? "checked" : ""}>
+        </div>
+
+        <div class="row">
+          <span>Promotions</span>
+          <input type="checkbox" id="promotions" ${profile.notify_promotions ? "checked" : ""}>
+        </div>
+
+        <div class="row">
+          <span>Washer Alerts</span>
+          <input type="checkbox" id="washerAlerts" ${profile.notify_washer_alerts ? "checked" : ""}>
+        </div>
+
+        <button class="btn" onclick="saveNotifications()">Save Notifications</button>
+      `;
+    }
 
     window.saveNotifications = async function () {
-      await supabase
+      const updates = {
+        notify_order_updates: document.getElementById("orderUpdates").checked,
+        notify_promotions: document.getElementById("promotions").checked,
+        notify_washer_alerts: document.getElementById("washerAlerts").checked
+      };
+
+      const { error } = await supabase
         .from("profiles")
-        .update({
-          notify_order_updates: document.getElementById("orderUpdates").checked,
-          notify_promotions: document.getElementById("promotions").checked,
-          notify_washer_alerts: document.getElementById("washerAlerts").checked
-        })
+        .update(updates)
         .eq("id", session.user.id);
 
-      alert("Notification settings saved!");
+      if (error) {
+        console.error("Save notifications error:", error);
+        alert("Error saving notifications.");
+        return;
+      }
+
+      alert("Notifications updated!");
     };
+
+    await loadNotifications();
   </script>
 </body>
 </html>

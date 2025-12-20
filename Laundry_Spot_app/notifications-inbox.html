@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Notifications – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:linear-gradient(135deg,#d96e30,#f4c542);
+      min-height:100vh;
+      padding:20px;
+      color:#5a3e2b;
+    }
+    h1 { text-align:center; margin-bottom:20px; }
+    .card {
+      background:#fff4d9;
+      padding:16px;
+      border-radius:16px;
+      box-shadow:0 6px 16px rgba(0,0,0,0.25);
+      max-width:520px;
+      margin:0 auto 12px;
+    }
+    .title { font-weight:bold; font-size:1.1rem; }
+    .time { font-size:0.8rem; opacity:0.7; margin-top:4px; }
+    .unread {
+      border-left:6px solid #d96e30;
+      padding-left:10px;
+    }
+    .btn {
+      display:block;
+      width:100%;
+      padding:14px;
+      background:#d96e30;
+      color:white;
+      text-align:center;
+      border-radius:10px;
+      font-weight:bold;
+      text-decoration:none;
+      margin-top:14px;
+      border:none;
+      cursor:pointer;
+      max-width:520px;
+      margin-left:auto;
+      margin-right:auto;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Your Notifications</h1>
+
+  <div id="notifContainer">Loading...</div>
+
+  <button class="btn" onclick="markAllRead()">Mark All Read</button>
+  <a class="btn" href="dashboard.html">Back to Dashboard</a>
+
+  <script type="module">
+    import { supabase } from "./supabase.js";
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) window.location.href = "login.html";
+
+    async function loadNotifications() {
+      const container = document.getElementById("notifContainer");
+
+      const { data: notifs, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        container.innerText = "Error loading notifications.";
+        return;
+      }
+
+      if (notifs.length === 0) {
+        container.innerHTML = "<div class='card'>No notifications yet.</div>";
+        return;
+      }
+
+      container.innerHTML = "";
+
+      notifs.forEach(n => {
+        const div = document.createElement("div");
+        div.className = "card " + (n.read ? "" : "unread");
+
+        const time = new Date(n.created_at).toLocaleString();
+
+        div.innerHTML = `
+          <div class="title">${n.title}</div>
+          <div>${n.message}</div>
+          <div class="time">${time}</div>
+        `;
+
+        div.onclick = () => markRead(n.id);
+        container.appendChild(div);
+      });
+    }
+
+    async function markRead(id) {
+      await supabase
+        .from("notifications")
+        .update({ read: true })
+        .eq("id", id);
+
+      loadNotifications();
+    }
+
+    window.markAllRead = async function () {
+      await supabase
+        .from("notifications")
+        .update({ read: true })
+        .eq("user_id", session.user.id);
+
+      loadNotifications();
+    };
+
+    await loadNotifications();
+  </script>
+</body>
+</html>

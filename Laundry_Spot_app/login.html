@@ -1,45 +1,143 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Login – Laundry Bubbles</title>
+  <meta charset="UTF-8" />
+  <title>Login – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #d96e30, #f4c542);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #5a3e2b;
+    }
+    .card {
+      background: #fff4d9;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+      width: 100%;
+      max-width: 380px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border-radius: 10px;
+      border: 2px solid #d96e30;
+      box-sizing: border-box;
+    }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      margin-top: 18px;
+      border-radius: 10px;
+      border: none;
+      background: #d96e30;
+      color: white;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+    .link {
+      display: block;
+      margin-top: 12px;
+      text-align: center;
+      color: #5a3e2b;
+      text-decoration: underline;
+      font-size: 0.9rem;
+    }
+    #errorMessage {
+      margin-top: 10px;
+      color: #b00020;
+      font-size: 0.9rem;
+      min-height: 1.2em;
+    }
+  </style>
 </head>
+
 <body>
-    <h1>Login</h1>
+  <div class="card">
+    <h1>Log In</h1>
 
-    <input id="email" type="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Password">
+    <label for="email">Email</label>
+    <input id="email" type="email" placeholder="you@example.com" />
 
-    <button id="loginButton">Login</button>
-    <p id="errorMessage" style="color:red;"></p>
+    <label for="password">Password</label>
+    <input id="password" type="password" placeholder="Your password" />
 
-    <a href="signup.html">Create an account</a>
+    <button id="loginButton" class="btn">Log In</button>
 
-    <script type="module">
-        import { supabase } from "./supabase.js";
+    <div id="errorMessage"></div>
 
-        const email = document.getElementById("email");
-        const password = document.getElementById("password");
-        const loginButton = document.getElementById("loginButton");
-        const errorMessage = document.getElementById("errorMessage");
+    <a class="link" href="signup.html">Need an account? Sign up</a>
+  </div>
 
-        loginButton.addEventListener("click", login);
+  <script type="module">
+    import { supabase } from "./supabase.js";
 
-        async function login() {
-            errorMessage.textContent = "";
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const loginButton = document.getElementById("loginButton");
+    const errorMessage = document.getElementById("errorMessage");
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email.value,
-                password: password.value
-            });
+    loginButton.addEventListener("click", login);
 
-            if (error) {
-                errorMessage.textContent = error.message;
-                return;
-            }
+    async function login() {
+      errorMessage.textContent = "";
+      loginButton.disabled = true;
+      loginButton.textContent = "Logging in...";
 
-            window.location.href = "dashboard.html";
-        }
-    </script>
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      if (!email || !password) {
+        errorMessage.textContent = "Please enter both email and password.";
+        loginButton.disabled = false;
+        loginButton.textContent = "Log In";
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        errorMessage.textContent = error.message || "Login failed. Please try again.";
+        loginButton.disabled = false;
+        loginButton.textContent = "Log In";
+        return;
+      }
+
+      window.location.href = "dashboard.html";
+    }
+
+    // If already logged in, go straight to dashboard
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        window.location.href = "dashboard.html";
+      }
+    })();
+  </script>
 </body>
 </html>

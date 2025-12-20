@@ -1,4 +1,4 @@
-<!-- washer-orders.html (washer order queue, simple version) -->
+<!-- washer-orders.html (washer order queue, real data) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,29 +45,6 @@
       font-size: 0.8rem;
       background: #f4c542;
       border: 1px solid #d96e30;
-    }
-    .order-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .accept {
-      background: #4caf50;
-      color: white;
-      padding: 10px;
-      border-radius: 8px;
-      flex: 1;
-      text-align: center;
-      cursor: pointer;
-    }
-    .decline {
-      background: #b00020;
-      color: white;
-      padding: 10px;
-      border-radius: 8px;
-      flex: 1;
-      text-align: center;
-      cursor: pointer;
     }
     .btn {
       display: block;
@@ -117,53 +94,33 @@
 
     const ordersList = document.getElementById("ordersList");
 
-    const sampleOrders = [
-      {
-        id: 301,
-        customer: "Alex J.",
-        status: "New",
-        loads: 2,
-        pickup: "2025-01-11 4:00 PM",
-        notes: "Use fragrance-free detergent."
-      },
-      {
-        id: 302,
-        customer: "Renee P.",
-        status: "Accepted",
-        loads: 3,
-        pickup: "2025-01-12 10:00 AM",
-        notes: "Text when on the way."
-      }
-    ];
+    const { data: orders, error } = await supabase
+      .from("orders")
+      .select("*")
+      .eq("washer_id", session.user.id)
+      .order("created_at", { ascending: false });
 
-    ordersList.innerHTML = "";
-
-    sampleOrders.forEach(order => {
-      const box = document.createElement("div");
-      box.className = "order-box";
-      box.innerHTML = `
-        <div class="order-header">
-          <span>Order #${order.id} – ${order.customer}</span>
-          <span class="status-pill">${order.status}</span>
-        </div>
-        <div>Loads: ${order.loads}</div>
-        <div>Pickup: ${order.pickup}</div>
-        <div>Notes: ${order.notes}</div>
-        <div class="order-actions">
-          <div class="accept" onclick="acceptOrder(${order.id})">Accept</div>
-          <div class="decline" onclick="declineOrder(${order.id})">Decline</div>
-        </div>
-      `;
-      ordersList.appendChild(box);
-    });
-
-    window.acceptOrder = function (id) {
-      alert("Order " + id + " accepted! (wire to orders table later)");
-    };
-
-    window.declineOrder = function (id) {
-      alert("Order " + id + " declined. (wire to orders table later)");
-    };
+    if (error) {
+      ordersList.innerHTML = "<p>Error loading orders.</p>";
+    } else if (!orders || orders.length === 0) {
+      ordersList.innerHTML = "<p>No orders assigned yet.</p>";
+    } else {
+      ordersList.innerHTML = "";
+      orders.forEach(order => {
+        const box = document.createElement("div");
+        box.className = "order-box";
+        box.innerHTML = `
+          <div class="order-header">
+            <span>Order #${order.id}</span>
+            <span class="status-pill">${order.status}</span>
+          </div>
+          <div>Loads: ${order.loads}</div>
+          <div>Pickup: ${order.pickup_time ? new Date(order.pickup_time).toLocaleString() : "Not set"}</div>
+          <a class="btn" href="washer-order-page.html?id=${order.id}">View & Update</a>
+        `;
+        ordersList.appendChild(box);
+      });
+    }
   </script>
 </body>
 </html>

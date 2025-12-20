@@ -1,0 +1,152 @@
+<!-- washer-verification.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Washer Verification – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #d96e30, #f4c542);
+      min-height: 100vh;
+      padding: 20px;
+      color: #5a3e2b;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: #fff4d9;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+      max-width: 520px;
+      margin: 0 auto 20px;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border-radius: 10px;
+      border: 2px solid #d96e30;
+      box-sizing: border-box;
+    }
+    textarea {
+      height: 90px;
+      resize: none;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: #d96e30;
+      color: white;
+      text-align: center;
+      border-radius: 10px;
+      font-weight: bold;
+      text-decoration: none;
+      margin-top: 14px;
+      border: none;
+      cursor: pointer;
+    }
+    .secondary {
+      background: #f4c542;
+      color: #5a3e2b;
+      border: 2px solid #d96e30;
+    }
+    .note {
+      font-size: 0.9rem;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Washer Verification</h1>
+
+  <div class="card">
+    <p>
+      Tell us about yourself so clients feel confident booking you.
+      This info helps us verify you as a washer.
+    </p>
+
+    <label for="fullName">Full Legal Name</label>
+    <input id="fullName" type="text" />
+
+    <label for="city">City</label>
+    <input id="city" type="text" placeholder="e.g., Decatur, GA" />
+
+    <label for="experience">Laundry Experience</label>
+    <textarea id="experience" placeholder="How long have you been doing laundry for others? Any specialties?"></textarea>
+
+    <label for="transport">Transportation</label>
+    <input id="transport" type="text" placeholder="e.g., Car, Bike, On foot" />
+
+    <label for="idNote">ID / Verification Note</label>
+    <textarea id="idNote" placeholder="Let us know what ID you can provide or any verification details."></textarea>
+
+    <p class="note">
+      (In a later version, you’ll upload ID, photos, and documents here.)
+    </p>
+
+    <button class="btn" onclick="submitVerification()">Submit For Review</button>
+    <a class="btn secondary" href="settings.html">Back to Settings</a>
+  </div>
+
+  <script type="module">
+    import { supabase } from "./supabase.js";
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) window.location.href = "login.html";
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", session.user.id)
+      .single();
+
+    if (profile.role !== "washer") {
+      window.location.href = "dashboard.html";
+    }
+
+    if (profile.verification_full_name) {
+      document.getElementById("fullName").value = profile.verification_full_name;
+    }
+    if (profile.verification_city) {
+      document.getElementById("city").value = profile.verification_city;
+    }
+    if (profile.verification_experience) {
+      document.getElementById("experience").value = profile.verification_experience;
+    }
+    if (profile.verification_transport) {
+      document.getElementById("transport").value = profile.verification_transport;
+    }
+    if (profile.verification_id_note) {
+      document.getElementById("idNote").value = profile.verification_id_note;
+    }
+
+    window.submitVerification = async function () {
+      await supabase
+        .from("profiles")
+        .update({
+          verification_full_name: document.getElementById("fullName").value,
+          verification_city: document.getElementById("city").value,
+          verification_experience: document.getElementById("experience").value,
+          verification_transport: document.getElementById("transport").value,
+          verification_id_note: document.getElementById("idNote").value,
+          verification_status: "pending"
+        })
+        .eq("id", session.user.id);
+
+      alert("Verification info submitted! Status set to pending.");
+    };
+  </script>
+</body>
+</html>

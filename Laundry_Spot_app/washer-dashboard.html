@@ -1,10 +1,10 @@
-<!-- washer-dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Washer Dashboard – Laundry Bubbles</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
     body {
       margin: 0;
@@ -14,19 +14,14 @@
       padding: 20px;
       color: #5a3e2b;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
+    h1 { text-align: center; margin-bottom: 20px; }
     .card {
       background: #fff4d9;
       padding: 20px;
       border-radius: 16px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-      margin-bottom: 20px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
       max-width: 520px;
-      margin-left: auto;
-      margin-right: auto;
+      margin: 0 auto 20px;
     }
     label {
       font-weight: bold;
@@ -39,8 +34,8 @@
       margin-top: 6px;
       border-radius: 10px;
       border: 2px solid #d96e30;
-      box-sizing: border-box;
       background: white;
+      box-sizing: border-box;
     }
     textarea {
       height: 100px;
@@ -73,6 +68,7 @@
     }
   </style>
 </head>
+
 <body>
   <h1>Washer Dashboard</h1>
 
@@ -120,43 +116,66 @@
   <script type="module">
     import { supabase } from "./supabase.js";
 
+    // Ensure user is logged in
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) window.location.href = "login.html";
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", session.user.id)
-      .single();
+    // Load washer profile
+    async function loadWasherProfile() {
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .single();
 
-    if (profile.role !== "washer") {
-      window.location.href = "dashboard.html";
+      if (error) {
+        console.error("Load washer profile error:", error);
+        return;
+      }
+
+      if (profile.role !== "washer") {
+        window.location.href = "dashboard.html";
+        return;
+      }
+
+      document.getElementById("name").value = profile.name || "";
+      document.getElementById("email").value = profile.email || "";
+      document.getElementById("phone").value = profile.phone || "";
+      document.getElementById("bio").value = profile.bio || "";
+      document.getElementById("radius").value = profile.radius || 5;
+      document.getElementById("price").value = profile.price || 15;
+      document.getElementById("available").checked = profile.available || false;
     }
 
-    document.getElementById("name").value = profile.name || "";
-    document.getElementById("email").value = profile.email || "";
-    document.getElementById("phone").value = profile.phone || "";
-    document.getElementById("bio").value = profile.bio || "";
-    document.getElementById("radius").value = profile.radius || 5;
-    document.getElementById("price").value = profile.price || 15;
-    document.getElementById("available").checked = profile.available || false;
+    await loadWasherProfile();
 
+    // Save washer profile
     window.saveWasherProfile = async function () {
-      await supabase
+      const updates = {
+        name: document.getElementById("name").value,
+        phone: document.getElementById("phone").value,
+        bio: document.getElementById("bio").value,
+        radius: Number(document.getElementById("radius").value),
+        price: Number(document.getElementById("price").value),
+        available: document.getElementById("available").checked
+      };
+
+      const { error } = await supabase
         .from("profiles")
-        .update({
-          name: document.getElementById("name").value,
-          phone: document.getElementById("phone").value,
-          bio: document.getElementById("bio").value,
-          radius: Number(document.getElementById("radius").value),
-          price: Number(document.getElementById("price").value),
-          available: document.getElementById("available").checked
-        })
+        .update(updates)
         .eq("id", session.user.id);
 
+      if (error) {
+        console.error("Save washer profile error:", error);
+        alert("Error saving washer profile.");
+        return;
+      }
+
       alert("Washer profile updated!");
+      await loadWasherProfile();
     };
 
+    // Logout
     window.logout = async function () {
       await supabase.auth.signOut();
       window.location.href = "login.html";

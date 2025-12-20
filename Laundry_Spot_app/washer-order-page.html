@@ -1,3 +1,4 @@
+<!-- washer-order-page.html (single order, washer updates status) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -47,7 +48,6 @@
     }
   </style>
 </head>
-
 <body>
   <h1>Washer Order</h1>
 
@@ -70,32 +70,58 @@
 
     const params = new URLSearchParams(window.location.search);
     const orderId = params.get("id");
+    const orderBox = document.getElementById("orderBox");
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) window.location.href="login.html";
+    if (!orderId) {
+      orderBox.innerHTML = "<p>Order ID missing.</p>";
+    } else {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) window.location.href = "login.html";
 
-    const sampleOrder = {
-      id: orderId,
-      customer: "Alex J.",
-      loads: 2,
-      pickup: "2025-01-11 4:00 PM",
-      notes: "Use fragrance-free detergent.",
-      status: "new"
-    };
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .single();
 
-    const box = document.getElementById("orderBox");
-    box.innerHTML = `
-      <div class="row"><span class="label">Order #:</span> ${sampleOrder.id}</div>
-      <div class="row"><span class="label">Customer:</span> ${sampleOrder.customer}</div>
-      <div class="row"><span class="label">Loads:</span> ${sampleOrder.loads}</div>
-      <div class="row"><span class="label">Pickup:</span> ${sampleOrder.pickup}</div>
-      <div class="row"><span class="label">Notes:</span> ${sampleOrder.notes}</div>
-      <div class="row"><span class="label">Status:</span> ${sampleOrder.status}</div>
-    `;
+      if (profile.role !== "washer") {
+        window.location.href = "dashboard.html";
+      }
 
-    window.updateStatus = function (newStatus) {
-      alert("Status updated to: " + newStatus + " (wire to Supabase later)");
-    };
+      const { data: order, error } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("id", orderId)
+        .single();
+
+      if (error || !order) {
+        orderBox.innerHTML = "<p>Order not found.</p>";
+      } else {
+        orderBox.innerHTML = `
+          <div class="row"><span class="label">Order #:</span> ${order.id}</div>
+          <div class="row"><span class="label">Client ID:</span> ${order.client_id}</div>
+          <div class="row"><span class="label">Loads:</span> ${order.loads}</div>
+          <div class="row"><span class="label">Pickup:</span> ${order.pickup_time ? new Date(order.pickup_time).toLocaleString() : "Not set"}</div>
+          <div class="row"><span class="label">Notes:</span> ${order.notes || "None"}</div>
+          <div class="row"><span class="label">Status:</span> ${order.status}</div>
+        `;
+      }
+
+      window.updateStatus = async function (newStatus) {
+        const { error: updateError } = await supabase
+          .from("orders")
+          .update({ status: newStatus })
+          .eq("id", orderId);
+
+        if (updateError) {
+          alert("Error updating status.");
+          return;
+        }
+
+        alert("Status updated to: " + newStatus);
+        location.reload();
+      };
+    }
   </script>
 </body>
 </html>

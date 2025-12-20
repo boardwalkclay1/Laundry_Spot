@@ -104,20 +104,34 @@
       window.location.href = "dashboard.html";
     }
 
-    const sampleTotalOrders = 17;
-    const sampleTotalEarnings = 425.50;
-    const sampleAvailable = 210.25;
-    const sampleNextPayout = 120.00;
-    const sampleNextPayoutDate = "2025-01-15";
+    const { data: completedOrders } = await supabase
+      .from("orders")
+      .select("*")
+      .eq("washer_id", session.user.id)
+      .eq("status", "completed");
 
-    document.getElementById("totalOrders").textContent = sampleTotalOrders;
-    document.getElementById("totalEarnings").textContent = sampleTotalEarnings.toFixed(2);
-    document.getElementById("availablePayout").textContent = sampleAvailable.toFixed(2);
-    document.getElementById("nextPayoutAmount").textContent = sampleNextPayout.toFixed(2);
-    document.getElementById("nextPayoutDate").textContent = sampleNextPayoutDate;
+    const totalOrders = completedOrders ? completedOrders.length : 0;
+    const pricePerLoad = profile.price || 15;
+    let totalEarnings = 0;
+
+    if (completedOrders) {
+      completedOrders.forEach(o => {
+        totalEarnings += (o.loads || 1) * pricePerLoad;
+      });
+    }
+
+    const availablePayout = totalEarnings * 0.5;
+    const nextPayoutAmount = availablePayout / 2;
+    const nextPayoutDate = "2025-01-15";
+
+    document.getElementById("totalOrders").textContent = totalOrders;
+    document.getElementById("totalEarnings").textContent = totalEarnings.toFixed(2);
+    document.getElementById("availablePayout").textContent = availablePayout.toFixed(2);
+    document.getElementById("nextPayoutAmount").textContent = nextPayoutAmount.toFixed(2);
+    document.getElementById("nextPayoutDate").textContent = nextPayoutDate;
 
     window.requestPayout = function () {
-      alert("Payout request submitted! (hook to Stripe or payouts table later)");
+      alert("Payout request submitted! (hook to payouts later)");
     };
   </script>
 </body>

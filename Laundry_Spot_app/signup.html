@@ -27,6 +27,10 @@
             max-width: 420px;
         }
 
+        h2 {
+            margin-bottom: 20px;
+        }
+
         input {
             width: 100%;
             padding: 14px;
@@ -47,6 +51,7 @@
             border-radius: 10px;
             font-size: 1.1rem;
             font-weight: bold;
+            cursor: pointer;
         }
 
         .secondary {
@@ -54,27 +59,70 @@
             color: #5A3E2B;
             border: 2px solid #D96E30;
         }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h2>Create Account</h2>
+        <h2>Create Your Account</h2>
 
         <input id="email" type="text" placeholder="Email">
         <input id="password" type="password" placeholder="Password">
+        <input id="confirmPassword" type="password" placeholder="Confirm Password">
+
+        <div id="errorMessage" class="error"></div>
 
         <button class="btn" onclick="handleSignup()">Sign Up</button>
         <a href="login.html" class="btn secondary">Back to Login</a>
     </div>
 
     <script type="module">
-        import { signup } from "./auth.js";
+        import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+        const supabase = createClient(
+            "https://iorpijdiswctyawndzna.supabase.co",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvcnBpamRpc3djdHlhd25kem5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyMDU0NTUsImV4cCI6MjA4MTc4MTQ1NX0.Wv0P82zsthA7vr5yw2thWwmHE8aG-lX5qku9iriA5rM"
+        );
 
         window.handleSignup = async function () {
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            await signup(email, password);
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const confirmPassword = document.getElementById("confirmPassword").value.trim();
+            const errorBox = document.getElementById("errorMessage");
+
+            errorBox.textContent = "";
+
+            // Check passwords match
+            if (password !== confirmPassword) {
+                errorBox.textContent = "Passwords do not match.";
+                return;
+            }
+
+            // Check fields are filled
+            if (!email || !password) {
+                errorBox.textContent = "Please fill out all fields.";
+                return;
+            }
+
+            // Supabase signup
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password
+            });
+
+            if (error) {
+                errorBox.textContent = error.message;
+                return;
+            }
+
+            alert("Account created! Please log in.");
+            window.location.href = "login.html";
         }
     </script>
 </body>

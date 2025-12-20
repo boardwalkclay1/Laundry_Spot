@@ -1,51 +1,146 @@
-<script type="module">
-  import { supabase } from "./supabase.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Settings – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) window.location.href = "login.html";
-
-  // Load profile
-  async function loadProfile() {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", session.user.id)
-      .single();
-
-    document.getElementById("role").value = profile.role || "client";
-
-    if (profile.role === "washer") {
-      document.getElementById("washerLink").style.display = "block";
-    } else {
-      document.getElementById("washerLink").style.display = "none";
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #d96e30, #f4c542);
+      min-height: 100vh;
+      padding: 20px;
+      color: #5a3e2b;
     }
-  }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .card {
+      background: #fff4d9;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .link-btn {
+      display: block;
+      padding: 14px;
+      background: #d96e30;
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      margin-top: 10px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .secondary {
+      background: #f4c542;
+      color: #5a3e2b;
+      border: 2px solid #d96e30;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 20px;
+    }
+    select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border-radius: 10px;
+      border: 2px solid #d96e30;
+      background: white;
+      box-sizing: border-box;
+    }
+    .btn-save {
+      margin-top: 20px;
+      background: #d96e30;
+      color: white;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      width: 100%;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
 
-  await loadProfile();
+<body>
+  <h1>Settings</h1>
 
-  // Save role and redirect properly
-  window.saveRole = async function () {
-    const newRole = document.getElementById("role").value;
+  <div class="card">
 
-    // Update Supabase
-    const { error } = await supabase
-      .from("profiles")
-      .update({ role: newRole })
-      .eq("id", session.user.id);
+    <a class="link-btn" href="account-info.html">Account Info</a>
+    <a class="link-btn" href="payment-methods.html">Payment Methods</a>
+    <a class="link-btn" href="notifications.html">Notifications</a>
+    <a class="link-btn" href="help-support.html">Help & Support</a>
 
-    if (error) {
-      alert("Error saving role.");
-      return;
+    <a class="link-btn" id="washerLink" href="washer-dashboard.html" style="display:none;">
+      Washer Dashboard
+    </a>
+
+    <label for="role">Your Role</label>
+    <select id="role">
+      <option value="client">Client</option>
+      <option value="washer">Washer</option>
+    </select>
+
+    <button class="btn-save" onclick="saveRole()">Save Role</button>
+
+    <a class="link-btn secondary" href="dashboard.html">Back to Dashboard</a>
+  </div>
+
+  <script type="module">
+    import { supabase } from "./supabase.js";
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) window.location.href = "login.html";
+
+    async function loadProfile() {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .single();
+
+      document.getElementById("role").value = profile.role || "client";
+
+      if (profile.role === "washer") {
+        document.getElementById("washerLink").style.display = "block";
+      } else {
+        document.getElementById("washerLink").style.display = "none";
+      }
     }
 
-    // Reload profile to update UI
     await loadProfile();
 
-    // Redirect based on new role
-    if (newRole === "washer") {
-      window.location.href = "washer-dashboard.html";
-    } else {
-      window.location.href = "dashboard.html";
-    }
-  };
-</script>
+    window.saveRole = async function () {
+      const newRole = document.getElementById("role").value;
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({ role: newRole })
+        .eq("id", session.user.id);
+
+      if (error) {
+        alert("Error saving role.");
+        return;
+      }
+
+      await loadProfile();
+
+      if (newRole === "washer") {
+        window.location.href = "washer-dashboard.html";
+      } else {
+        window.location.href = "dashboard.html";
+      }
+    };
+  </script>
+</body>
+</html>

@@ -21,90 +21,71 @@
       border-radius:16px;
       box-shadow:0 6px 16px rgba(0,0,0,0.25);
       max-width:520px;
-      margin:0 auto;
+      margin:0 auto 20px;
     }
-    .meta { margin-top:10px; line-height:1.5; }
     .label { font-weight:bold; }
-    .btn {
-      display:block;
-      width:100%;
-      padding:14px;
-      background:#d96e30;
-      color:white;
-      text-align:center;
-      border-radius:10px;
-      font-weight:bold;
-      text-decoration:none;
-      margin-top:14px;
-      border:none;
-      cursor:pointer;
-    }
-    .secondary {
-      background:#f4c542;
-      color:#5a3e2b;
-      border:2px solid #d96e30;
-    }
   </style>
 </head>
 
 <body>
   <h1>Order Details</h1>
 
-  <div class="card" id="orderCard">
-    Loading...
-  </div>
-
-  <a class="btn" id="trackLink">Track Order</a>
-  <a class="btn secondary" href="client-orders.html">Back to My Orders</a>
+  <div class="card" id="orderCard">Loading...</div>
 
   <script type="module">
     import { supabase } from "./supabase.js";
 
-    function getOrderIdFromQuery() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get("order_id");
+    function getOrderId() {
+      return new URLSearchParams(window.location.search).get("order_id");
     }
+
+    const orderId = getOrderId();
+    let order = null;
 
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) window.location.href = "login.html";
 
-    const orderId = getOrderIdFromQuery();
-    if (!orderId) {
-      document.getElementById("orderCard").innerText = "Missing order ID.";
-      document.getElementById("trackLink").style.display = "none";
-    } else {
-      document.getElementById("trackLink").href = `client-order-tracking.html?order_id=${orderId}`;
-    }
+    // REAL-TIME SUBSCRIPTION
+    supabase
+      .channel("client-order")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "orders" },
+        payload => {
+          if (payload.new.id === orderId) {
+            order = payload.new;
+            renderOrder();
+          }
+        }
+      )
+      .subscribe();
 
     async function loadOrder() {
-      const card = document.getElementById("orderCard");
-      if (!orderId) return;
-
-      const { data: order, error } = await supabase
+      const { data } = await supabase
         .from("orders")
         .select("*")
         .eq("id", orderId)
         .eq("client_id", session.user.id)
         .single();
 
-      if (error || !order) {
-        console.error("Load order error:", error);
-        card.innerText = "Error loading order, or order not found.";
-        return;
-      }
+      order = data;
+      renderOrder();
+    }
+
+    function renderOrder() {
+      const card = document.getElementById("orderCard");
 
       const pickup = order.pickup_time
         ? new Date(order.pickup_time).toLocaleString()
         : "Not set";
 
       card.innerHTML = `
-        <div class="meta">
-          <div><span class="label">Order ID:</span> #${order.id}</div>
-          <div><span class="label">Status:</span> ${order.status}</div>
-          <div><span class="label">Loads:</span> ${order.loads}</div>
-          <div><span class="label">Pickup Time:</span> ${pickup}</div>
-          <div><span class="label">Notes:</span> ${order.notes || "None"}</div>
-        </div>
+        <div><span class="label">Order ID:</span> #${order.id}</div>
+        <div><span class="label">Status:</span> ${order.status}</div>
+        <div><span class="label">Washer:</span> ${order.washer_id || "Searching..."}</div>
+        <div><span class="label">Loads:</span> ${order.loads}</div>
+        <div><span class="label">Pickup:</span> ${pickup}</div>
+        <div><span class="label">Notes:</span> ${order.notes || "None"}</div>
       `;
     }
 

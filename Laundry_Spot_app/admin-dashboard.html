@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:linear-gradient(135deg,#d96e30,#f4c542);
+      min-height:100vh;
+      padding:20px;
+      color:#5a3e2b;
+    }
+    h1 { text-align:center; margin-bottom:20px; }
+    .card {
+      background:#fff4d9;
+      padding:20px;
+      border-radius:16px;
+      box-shadow:0 6px 16px rgba(0,0,0,0.25);
+      max-width:520px;
+      margin:0 auto 20px;
+    }
+    .btn {
+      display:block;
+      width:100%;
+      padding:14px;
+      background:#d96e30;
+      color:white;
+      text-align:center;
+      border-radius:10px;
+      font-weight:bold;
+      text-decoration:none;
+      margin-top:14px;
+      border:none;
+      cursor:pointer;
+    }
+    .stat {
+      font-size:1.2rem;
+      font-weight:bold;
+      margin:6px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Admin Dashboard</h1>
+
+  <div class="card" id="statsCard">Loading stats...</div>
+
+  <div class="card">
+    <h2>Admin Tools</h2>
+    <a class="btn" href="admin-washers.html">Washer Verification</a>
+    <a class="btn" href="admin-orders.html">All Orders</a>
+    <a class="btn" href="admin-notifications.html">Send Notifications</a>
+  </div>
+
+  <a class="btn" href="dashboard.html">Back to User Dashboard</a>
+
+  <script type="module">
+    import { supabase } from "./supabase.js";
+
+    // AUTH CHECK
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) window.location.href = "login.html";
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", session.user.id)
+      .single();
+
+    if (profile.role !== "admin") {
+      window.location.href = "dashboard.html";
+    }
+
+    async function loadStats() {
+      const card = document.getElementById("statsCard");
+
+      const [{ data: pending }, { data: active }, { data: washers }] = await Promise.all([
+        supabase.from("profiles").select("*").eq("verification_status", "pending"),
+        supabase.from("orders").select("*").neq("status", "delivered"),
+        supabase.from("profiles").select("*").eq("role", "washer")
+      ]);
+
+      card.innerHTML = `
+        <div class="stat">Pending Verifications: ${pending.length}</div>
+        <div class="stat">Active Orders: ${active.length}</div>
+        <div class="stat">Total Washers: ${washers.length}</div>
+      `;
+    }
+
+    await loadStats();
+  </script>
+</body>
+</html>

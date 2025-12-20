@@ -1,50 +1,150 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Sign Up – Laundry Bubbles</title>
+  <meta charset="UTF-8" />
+  <title>Sign Up – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #d96e30, #f4c542);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #5a3e2b;
+    }
+    .card {
+      background: #fff4d9;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+      width: 100%;
+      max-width: 380px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border-radius: 10px;
+      border: 2px solid #d96e30;
+      box-sizing: border-box;
+    }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      margin-top: 18px;
+      border-radius: 10px;
+      border: none;
+      background: #d96e30;
+      color: white;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    #errorMessage {
+      margin-top: 10px;
+      color: #b00020;
+      font-size: 0.9rem;
+      min-height: 1.2em;
+    }
+    .link {
+      display: block;
+      margin-top: 12px;
+      text-align: center;
+      color: #5a3e2b;
+      text-decoration: underline;
+      font-size: 0.9rem;
+    }
+  </style>
 </head>
+
 <body>
-    <h1>Create Account</h1>
+  <div class="card">
+    <h1>Sign Up</h1>
 
-    <input id="email" type="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Password">
+    <label for="email">Email</label>
+    <input id="email" type="email" placeholder="you@example.com" />
 
-    <button id="signupButton">Sign Up</button>
-    <p id="errorMessage" style="color:red;"></p>
+    <label for="password">Password</label>
+    <input id="password" type="password" placeholder="Create a password" />
 
-    <script type="module">
-        import { supabase } from "./supabase.js";
+    <label for="role">Role</label>
+    <select id="role">
+      <option value="client" selected>Client</option>
+      <option value="washer">Washer</option>
+    </select>
 
-        const email = document.getElementById("email");
-        const password = document.getElementById("password");
-        const signupButton = document.getElementById("signupButton");
-        const errorMessage = document.getElementById("errorMessage");
+    <button id="signupButton" class="btn">Sign Up</button>
 
-        signupButton.addEventListener("click", signup);
+    <div id="errorMessage"></div>
 
-        async function signup() {
-            errorMessage.textContent = "";
+    <a class="link" href="login.html">Already have an account? Log in</a>
+  </div>
 
-            const { data, error } = await supabase.auth.signUp({
-                email: email.value,
-                password: password.value
-            });
+  <script type="module">
+    import { supabase } from "./supabase.js";
 
-            if (error) {
-                errorMessage.textContent = error.message;
-                return;
-            }
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const roleSelect = document.getElementById("role");
+    const signupButton = document.getElementById("signupButton");
+    const errorMessage = document.getElementById("errorMessage");
 
-            // Create profile row
-            await supabase.from("profiles").insert({
-                id: data.user.id,
-                email: email.value,
-                role: "client"
-            });
+    signupButton.addEventListener("click", signup);
 
-            alert("Check your email to confirm your account.");
-        }
-    </script>
+    async function signup() {
+      errorMessage.textContent = "";
+      signupButton.disabled = true;
+      signupButton.textContent = "Signing up...";
+
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      const role = roleSelect.value;
+
+      if (!email || !password) {
+        errorMessage.textContent = "Please enter email and password.";
+        signupButton.disabled = false;
+        signupButton.textContent = "Sign Up";
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password
+      });
+
+      if (error) {
+        errorMessage.textContent = error.message || "Sign up failed.";
+        signupButton.disabled = false;
+        signupButton.textContent = "Sign Up";
+        return;
+      }
+
+      // Create profile row
+      if (data && data.user) {
+        await supabase.from("profiles").insert({
+          id: data.user.id,
+          email,
+          role
+        });
+      }
+
+      alert("Check your email to confirm your account.");
+      signupButton.disabled = false;
+      signupButton.textContent = "Sign Up";
+    }
+  </script>
 </body>
 </html>

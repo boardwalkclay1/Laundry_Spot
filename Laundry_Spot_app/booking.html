@@ -24,7 +24,7 @@
       margin:0 auto;
     }
     label { font-weight:bold; display:block; margin-top:10px; }
-    input, textarea, select {
+    input, textarea {
       width:100%;
       padding:12px;
       margin-top:6px;
@@ -53,6 +53,12 @@
       color:#5a3e2b;
       border:2px solid #d96e30;
     }
+    .loading {
+      text-align:center;
+      margin-top:10px;
+      font-style:italic;
+      opacity:0.8;
+    }
   </style>
 </head>
 
@@ -71,18 +77,59 @@
 
     <button class="btn" onclick="createOrder()">Confirm Booking</button>
     <a class="btn secondary" href="dashboard.html">Back to Dashboard</a>
+
+    <div id="loading" class="loading" style="display:none;">Processing your order...</div>
   </div>
 
   <script type="module">
     import { supabase } from "./supabase.js";
 
+    // -----------------------------
+    // AUTH CHECK
+    // -----------------------------
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) window.location.href = "login.html";
 
+    // -----------------------------
+    // NOTIFICATION SENDER
+    // -----------------------------
+    async function sendNotification(userId, title, message) {
+      await supabase.from("notifications").insert({
+        user_id: userId,
+        title,
+        message
+      });
+    }
+
+    // -----------------------------
+    // AUTO-WASHER MATCHING LOGIC
+    // -----------------------------
+    async function findBestWasher() {
+      // Get all approved + available washers
+      const { data: washers } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("role", "washer")
+        .eq("verification_status", "approved")
+        .eq("available", true);
+
+      if (!washers || washers.length === 0) return null;
+
+      // Simple MVP matching:
+      // Pick the washer with the smallest radius (closest)
+      washers.sort((a, b) => (a.radius || 999) - (b.radius || 999));
+
+      return washers[0].id;
+    }
+
+    // -----------------------------
+    // CREATE ORDER
+    // -----------------------------
     window.createOrder = async function () {
       const loads = Number(document.getElementById("loads").value);
       const pickupInput = document.getElementById("pickupTime").value;
       const notes = document.getElementById("notes").value.trim();
+      const loading = document.getElementById("loading");
 
       if (!loads || loads < 1) {
         alert("Please enter a valid number of loads.");
@@ -93,28 +140,54 @@
         return;
       }
 
+      loading.style.display = "block";
+
       const pickup_time = new Date(pickupInput).toISOString();
 
-      const { data, error } = await supabase
+      // 1. Find best washer
+      const washerId = await findBestWasher();
+
+      // 2. Create order
+      const { data: order, error } = await supabase
         .from("orders")
         .insert({
           client_id: session.user.id,
-          status: "requested",
+          washer_id: washerId,
+          status: washerId ? "requested" : "requested",
           loads,
           pickup_time,
           notes
         })
-        .select("id")
+        .select("*")
         .single();
 
       if (error) {
         console.error("Create order error:", error);
         alert("Error creating order.");
+        loading.style.display = "none";
         return;
       }
 
-      alert("Your order has been created!");
-      window.location.href = `client-order-detail.html?order_id=${data.id}`;
+      // 3. Notify client
+      await sendNotification(
+        session.user.id,
+        "Order Created",
+        "Your laundry order has been created!"
+      );
+
+      // 4. Notify washer (if matched)
+      if (washerId) {
+        await sendNotification(
+          washerId,
+          "New Order Assigned",
+          "You have been assigned a new laundry order."
+        );
+      }
+
+      loading.style.display = "none";
+
+      // 5. Redirect to order detail
+      window.location.href = `client-order-detail.html?order_id=${order.id}`;
     };
   </script>
 </body>

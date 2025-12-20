@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Incoming Order – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:linear-gradient(135deg,#d96e30,#f4c542);
+      min-height:100vh;
+      padding:20px;
+      color:#5a3e2b;
+    }
+    h1 { text-align:center; margin-bottom:20px; }
+    .card {
+      background:#fff4d9;
+      padding:20px;
+      border-radius:16px;
+      box-shadow:0 6px 16px rgba(0,0,0,0.25);
+      max-width:520px;
+      margin:0 auto;
+    }
+    .label { font-weight:bold; }
+    .btn {
+      display:block;
+      width:100%;
+      padding:14px;
+      background:#d96e30;
+      color:white;
+      text-align:center;
+      border-radius:10px;
+      font-weight:bold;
+      text-decoration:none;
+      margin-top:14px;
+      border:none;
+      cursor:pointer;
+    }
+    .decline { background:#b83a2e; }
+    .accept { background:#3a9e3a; }
+  </style>
+</head>
+
+<body>
+  <h1>New Order Request</h1>
+
+  <div class="card" id="orderCard">Loading...</div>
+
+  <button class="btn accept" onclick="acceptOrder()">Accept Order</button>
+  <button class="btn decline" onclick="declineOrder()">Decline Order</button>
+
+  <script type="module">
+    import { supabase } from "./supabase.js";
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) window.location.href = "login.html";
+
+    let currentOrder = null;
+
+    // -----------------------------
+    // REAL-TIME SUBSCRIPTION
+    // -----------------------------
+    supabase
+      .channel("incoming-orders")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "orders" },
+        payload => {
+          if (payload.new.id === currentOrder?.id) {
+            if (payload.new.washer_id !== session.user.id) {
+              alert("This order was assigned to another washer.");
+              window.location.href = "washer-orders.html";
+            }
+            if (payload.new.status !== "pending_acceptance") {
+              window.location.href = "washer-orders.html";
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    // -----------------------------
+    // LOAD INCOMING ORDER
+    // -----------------------------
+    async function loadIncoming() {
+      const { data: orders } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("washer_id", session.user.id)
+        .eq("status", "pending_acceptance")
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (!orders || orders.length === 0) {
+        document.getElementById("orderCard").innerText =
+          "No incoming orders.";
+        return;
+      }
+
+      currentOrder = orders[0];
+
+      const pickup = currentOrder.pickup_time
+        ? new Date(currentOrder.pickup_time).toLocaleString()
+        : "Not set";
+
+      document.getElementById("orderCard").innerHTML = `
+        <div><span class="label">Order ID:</span> #${currentOrder.id}</div>
+        <div><span class="label">Loads:</span> ${currentOrder.loads}</div>
+        <div><span class="label">Pickup:</span> ${pickup}</div>
+        <div><span class="label">Notes:</span> ${currentOrder.notes || "None"}</div>
+      `;
+    }
+
+    await loadIncoming();
+
+    // -----------------------------
+    // ACCEPT ORDER
+    // -----------------------------
+    window.acceptOrder = async function () {
+      await supabase
+        .from("orders")
+        .update({ status: "accepted" })
+        .eq("id", currentOrder.id);
+
+      await supabase.from("order_events").insert({
+        order_id: currentOrder.id,
+        status: "accepted",
+        message: "Washer accepted the order."
+      });
+
+      window.location.href = `washer-order-page.html?order_id=${currentOrder.id}`;
+    };
+
+    // -----------------------------
+    // DECLINE ORDER
+    // -----------------------------
+    window.declineOrder = async function () {
+      // Mark decline
+      await supabase
+        .from("order_events")
+        .insert({
+          order_id: currentOrder.id,
+          status: "declined",
+          message: "Washer declined the order."
+        });
+
+      // Remove washer assignment
+      await supabase
+        .from("orders")
+        .update({ washer_id: null })
+        .eq("id", currentOrder.id);
+
+      alert("Order declined. Searching for next washer.");
+      window.location.href = "washer-orders.html";
+    };
+  </script>
+</body>
+</html>

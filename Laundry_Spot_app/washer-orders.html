@@ -1,78 +1,57 @@
-<!-- washer-orders.html (washer order queue, real data) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Washer Orders – Laundry Bubbles</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #d96e30, #f4c542);
-      min-height: 100vh;
-      padding: 20px;
-      color: #5a3e2b;
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:linear-gradient(135deg,#d96e30,#f4c542);
+      min-height:100vh;
+      padding:20px;
+      color:#5a3e2b;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
+    h1 { text-align:center; margin-bottom:20px; }
     .card {
-      background: #fff4d9;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-      max-width: 520px;
-      margin: 0 auto 20px;
+      background:#fff4d9;
+      padding:16px;
+      border-radius:16px;
+      box-shadow:0 6px 16px rgba(0,0,0,0.25);
+      max-width:520px;
+      margin:0 auto 12px;
+      cursor:pointer;
     }
-    .order-box {
-      background: #ffe9b8;
-      padding: 14px;
-      border-radius: 12px;
-      margin-bottom: 12px;
-      border: 2px solid #d96e30;
-    }
-    .order-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 6px;
-      font-weight: bold;
-    }
-    .status-pill {
-      padding: 4px 8px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      background: #f4c542;
-      border: 1px solid #d96e30;
-    }
+    .card h2 { margin:0 0 6px; font-size:1.1rem; }
+    .meta { font-size:0.9rem; opacity:0.8; }
     .btn {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      background: #d96e30;
-      color: white;
-      text-align: center;
-      border-radius: 10px;
-      font-weight: bold;
-      text-decoration: none;
-      margin-top: 14px;
-      border: none;
-      cursor: pointer;
+      display:block;
+      width:100%;
+      padding:14px;
+      background:#d96e30;
+      color:white;
+      text-align:center;
+      border-radius:10px;
+      font-weight:bold;
+      text-decoration:none;
+      margin:10px auto 0;
+      max-width:520px;
     }
     .secondary {
-      background: #f4c542;
-      color: #5a3e2b;
-      border: 2px solid #d96e30;
+      background:#f4c542;
+      color:#5a3e2b;
+      border:2px solid #d96e30;
     }
+    .empty { text-align:center; margin-top:20px; font-style:italic; }
   </style>
 </head>
+
 <body>
   <h1>Washer Orders</h1>
 
-  <div class="card" id="ordersList">
-    <p>Loading orders...</p>
-  </div>
+  <div id="ordersContainer"></div>
 
   <a class="btn secondary" href="washer-dashboard.html">Back to Washer Dashboard</a>
 
@@ -82,45 +61,54 @@
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) window.location.href = "login.html";
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", session.user.id)
-      .single();
+    async function loadOrders() {
+      const container = document.getElementById("ordersContainer");
+      container.innerHTML = "Loading...";
 
-    if (profile.role !== "washer") {
-      window.location.href = "dashboard.html";
-    }
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("washer_id", session.user.id)
+        .order("created_at", { ascending: false });
 
-    const ordersList = document.getElementById("ordersList");
+      if (error) {
+        console.error("Load washer orders error:", error);
+        container.innerHTML = "Error loading orders.";
+        return;
+      }
 
-    const { data: orders, error } = await supabase
-      .from("orders")
-      .select("*")
-      .eq("washer_id", session.user.id)
-      .order("created_at", { ascending: false });
+      if (!data || data.length === 0) {
+        container.innerHTML = '<div class="empty">No assigned orders yet.</div>';
+        return;
+      }
 
-    if (error) {
-      ordersList.innerHTML = "<p>Error loading orders.</p>";
-    } else if (!orders || orders.length === 0) {
-      ordersList.innerHTML = "<p>No orders assigned yet.</p>";
-    } else {
-      ordersList.innerHTML = "";
-      orders.forEach(order => {
-        const box = document.createElement("div");
-        box.className = "order-box";
-        box.innerHTML = `
-          <div class="order-header">
-            <span>Order #${order.id}</span>
-            <span class="status-pill">${order.status}</span>
+      container.innerHTML = "";
+      data.forEach(order => {
+        const div = document.createElement("div");
+        div.className = "card";
+
+        const pickup = order.pickup_time
+          ? new Date(order.pickup_time).toLocaleString()
+          : "Not set";
+
+        div.innerHTML = `
+          <h2>Order #${order.id}</h2>
+          <div class="meta">
+            Status: <strong>${order.status}</strong><br/>
+            Loads: ${order.loads}<br/>
+            Pickup: ${pickup}
           </div>
-          <div>Loads: ${order.loads}</div>
-          <div>Pickup: ${order.pickup_time ? new Date(order.pickup_time).toLocaleString() : "Not set"}</div>
-          <a class="btn" href="washer-order-page.html?id=${order.id}">View & Update</a>
         `;
-        ordersList.appendChild(box);
+
+        div.onclick = () => {
+          window.location.href = `washer-order-page.html?order_id=${order.id}`;
+        };
+
+        container.appendChild(div);
       });
     }
+
+    await loadOrders();
   </script>
 </body>
 </html>

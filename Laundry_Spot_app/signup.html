@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up – Laundry Bubbles</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #D96E30, #F4C542);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #5A3E2B;
+        }
+
+        .container {
+            background: #FFF4D9;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            text-align: center;
+            width: 90%;
+            max-width: 420px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: 2px solid #D96E30;
+            font-size: 1rem;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            margin-top: 20px;
+            background: #D96E30;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .secondary {
+            background: #F4C542;
+            color: #5A3E2B;
+            border: 2px solid #D96E30;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Create Account</h2>
+
+        <input id="email" type="text" placeholder="Email">
+        <input id="password" type="password" placeholder="Password">
+
+        <button class="btn" onclick="handleSignup()">Sign Up</button>
+        <a href="login.html" class="btn secondary">Back to Login</a>
+    </div>
+
+    <script type="module">
+        import { signup } from "./auth.js";
+
+        window.handleSignup = async function () {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            await signup(email, password);
+        }
+    </script>
+</body>
+</html>

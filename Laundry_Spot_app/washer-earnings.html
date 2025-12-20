@@ -1,0 +1,124 @@
+<!-- washer-earnings.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Washer Earnings – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #d96e30, #f4c542);
+      min-height: 100vh;
+      padding: 20px;
+      color: #5a3e2b;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: #fff4d9;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+      max-width: 520px;
+      margin: 0 auto 20px;
+    }
+    .summary {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+    .stat-label {
+      font-weight: bold;
+    }
+    .payout-box {
+      background: #ffe9b8;
+      padding: 14px;
+      border-radius: 12px;
+      border: 2px solid #d96e30;
+      margin-top: 10px;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: #d96e30;
+      color: white;
+      text-align: center;
+      border-radius: 10px;
+      font-weight: bold;
+      text-decoration: none;
+      margin-top: 14px;
+      border: none;
+      cursor: pointer;
+    }
+    .secondary {
+      background: #f4c542;
+      color: #5a3e2b;
+      border: 2px solid #d96e30;
+    }
+  </style>
+</head>
+<body>
+  <h1>Washer Earnings</h1>
+
+  <div class="card" id="earningsCard">
+    <p class="summary">
+      <span class="stat-label">Total Completed Orders:</span>
+      <span id="totalOrders">0</span>
+    </p>
+    <p class="summary">
+      <span class="stat-label">Total Earnings:</span>
+      $<span id="totalEarnings">0.00</span>
+    </p>
+    <p class="summary">
+      <span class="stat-label">Available for Payout:</span>
+      $<span id="availablePayout">0.00</span>
+    </p>
+
+    <div class="payout-box">
+      <p><strong>Next Payout</strong></p>
+      <p>Date: <span id="nextPayoutDate">2025-01-15</span></p>
+      <p>Amount: $<span id="nextPayoutAmount">0.00</span></p>
+    </div>
+
+    <button class="btn" onclick="requestPayout()">Request Payout (placeholder)</button>
+    <a class="btn secondary" href="washer-dashboard.html">Back to Washer Dashboard</a>
+  </div>
+
+  <script type="module">
+    import { supabase } from "./supabase.js";
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) window.location.href = "login.html";
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", session.user.id)
+      .single();
+
+    if (profile.role !== "washer") {
+      window.location.href = "dashboard.html";
+    }
+
+    const sampleTotalOrders = 17;
+    const sampleTotalEarnings = 425.50;
+    const sampleAvailable = 210.25;
+    const sampleNextPayout = 120.00;
+    const sampleNextPayoutDate = "2025-01-15";
+
+    document.getElementById("totalOrders").textContent = sampleTotalOrders;
+    document.getElementById("totalEarnings").textContent = sampleTotalEarnings.toFixed(2);
+    document.getElementById("availablePayout").textContent = sampleAvailable.toFixed(2);
+    document.getElementById("nextPayoutAmount").textContent = sampleNextPayout.toFixed(2);
+    document.getElementById("nextPayoutDate").textContent = sampleNextPayoutDate;
+
+    window.requestPayout = function () {
+      alert("Payout request submitted! (hook to Stripe or payouts table later)");
+    };
+  </script>
+</body>
+</html>

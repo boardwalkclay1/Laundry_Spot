@@ -1,102 +1,91 @@
-<!-- washer-verification.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Washer Verification – Laundry Bubbles</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #d96e30, #f4c542);
-      min-height: 100vh;
-      padding: 20px;
-      color: #5a3e2b;
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:linear-gradient(135deg,#d96e30,#f4c542);
+      min-height:100vh;
+      padding:20px;
+      color:#5a3e2b;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
+    h1 { text-align:center; margin-bottom:20px; }
     .card {
-      background: #fff4d9;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-      max-width: 520px;
-      margin: 0 auto 20px;
+      background:#fff4d9;
+      padding:20px;
+      border-radius:16px;
+      box-shadow:0 6px 16px rgba(0,0,0,0.25);
+      max-width:520px;
+      margin:0 auto;
     }
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 10px;
-    }
+    label { font-weight:bold; display:block; margin-top:10px; }
     input, textarea {
-      width: 100%;
-      padding: 12px;
-      margin-top: 6px;
-      border-radius: 10px;
-      border: 2px solid #d96e30;
-      box-sizing: border-box;
+      width:100%;
+      padding:12px;
+      margin-top:6px;
+      border-radius:10px;
+      border:2px solid #d96e30;
+      background:white;
+      box-sizing:border-box;
     }
-    textarea {
-      height: 90px;
-      resize: none;
-    }
+    textarea { height:80px; resize:none; }
     .btn {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      background: #d96e30;
-      color: white;
-      text-align: center;
-      border-radius: 10px;
-      font-weight: bold;
-      text-decoration: none;
-      margin-top: 14px;
-      border: none;
-      cursor: pointer;
+      display:block;
+      width:100%;
+      padding:14px;
+      background:#d96e30;
+      color:white;
+      text-align:center;
+      border-radius:10px;
+      font-weight:bold;
+      text-decoration:none;
+      margin-top:14px;
+      border:none;
+      cursor:pointer;
     }
     .secondary {
-      background: #f4c542;
-      color: #5a3e2b;
-      border: 2px solid #d96e30;
+      background:#f4c542;
+      color:#5a3e2b;
+      border:2px solid #d96e30;
     }
-    .note {
-      font-size: 0.9rem;
-      margin-top: 6px;
+    .status-box {
+      padding:10px;
+      background:#ffe9b8;
+      border-radius:10px;
+      margin-bottom:10px;
+      font-weight:bold;
+      text-align:center;
     }
   </style>
 </head>
+
 <body>
   <h1>Washer Verification</h1>
 
   <div class="card">
-    <p>
-      Tell us about yourself so clients feel confident booking you.
-      This info helps us verify you as a washer.
-    </p>
+    <div id="statusBox" class="status-box">Loading status...</div>
 
-    <label for="fullName">Full Legal Name</label>
-    <input id="fullName" type="text" />
+    <label>Full Legal Name</label>
+    <input id="fullName">
 
-    <label for="city">City</label>
-    <input id="city" type="text" placeholder="e.g., Decatur, GA" />
+    <label>City</label>
+    <input id="city">
 
-    <label for="experience">Laundry Experience</label>
-    <textarea id="experience" placeholder="How long have you been doing laundry for others? Any specialties?"></textarea>
+    <label>Experience</label>
+    <textarea id="experience"></textarea>
 
-    <label for="transport">Transportation</label>
-    <input id="transport" type="text" placeholder="e.g., Car, Bike, On foot" />
+    <label>Transportation</label>
+    <input id="transport">
 
-    <label for="idNote">ID / Verification Note</label>
-    <textarea id="idNote" placeholder="Let us know what ID you can provide or any verification details."></textarea>
+    <label>ID Note (last 4 digits or description)</label>
+    <input id="idNote">
 
-    <p class="note">
-      (In a later version, you’ll upload ID, photos, and documents here.)
-    </p>
-
-    <button class="btn" onclick="submitVerification()">Submit For Review</button>
+    <button class="btn" id="submitBtn" onclick="submitVerification()">Submit For Review</button>
     <a class="btn secondary" href="washer-dashboard.html">Back to Washer Dashboard</a>
   </div>
 
@@ -112,40 +101,60 @@
       .eq("id", session.user.id)
       .single();
 
-    if (profile.role !== "washer") {
-      window.location.href = "dashboard.html";
+    const statusBox = document.getElementById("statusBox");
+    const submitBtn = document.getElementById("submitBtn");
+
+    function lockForm(message) {
+      statusBox.innerText = message;
+      document.getElementById("fullName").disabled = true;
+      document.getElementById("city").disabled = true;
+      document.getElementById("experience").disabled = true;
+      document.getElementById("transport").disabled = true;
+      document.getElementById("idNote").disabled = true;
+      submitBtn.disabled = true;
     }
 
-    if (profile.verification_full_name) {
-      document.getElementById("fullName").value = profile.verification_full_name;
-    }
-    if (profile.verification_city) {
-      document.getElementById("city").value = profile.verification_city;
-    }
-    if (profile.verification_experience) {
-      document.getElementById("experience").value = profile.verification_experience;
-    }
-    if (profile.verification_transport) {
-      document.getElementById("transport").value = profile.verification_transport;
-    }
-    if (profile.verification_id_note) {
-      document.getElementById("idNote").value = profile.verification_id_note;
+    // Prefill
+    document.getElementById("fullName").value = profile.verification_full_name || "";
+    document.getElementById("city").value = profile.verification_city || "";
+    document.getElementById("experience").value = profile.verification_experience || "";
+    document.getElementById("transport").value = profile.verification_transport || "";
+    document.getElementById("idNote").value = profile.verification_id_note || "";
+
+    // Status logic
+    if (profile.verification_status === "pending") {
+      lockForm("Your verification is under review.");
+    } else if (profile.verification_status === "approved") {
+      lockForm("You are approved as a washer!");
+    } else if (profile.verification_status === "rejected") {
+      statusBox.innerText = "Your verification was rejected. Please update and resubmit.";
+    } else {
+      statusBox.innerText = "Not submitted yet.";
     }
 
     window.submitVerification = async function () {
-      await supabase
+      const updates = {
+        verification_full_name: document.getElementById("fullName").value,
+        verification_city: document.getElementById("city").value,
+        verification_experience: document.getElementById("experience").value,
+        verification_transport: document.getElementById("transport").value,
+        verification_id_note: document.getElementById("idNote").value,
+        verification_status: "pending"
+      };
+
+      const { error } = await supabase
         .from("profiles")
-        .update({
-          verification_full_name: document.getElementById("fullName").value,
-          verification_city: document.getElementById("city").value,
-          verification_experience: document.getElementById("experience").value,
-          verification_transport: document.getElementById("transport").value,
-          verification_id_note: document.getElementById("idNote").value,
-          verification_status: "pending"
-        })
+        .update(updates)
         .eq("id", session.user.id);
 
-      alert("Verification info submitted! Status set to pending.");
+      if (error) {
+        console.error("Verification error:", error);
+        alert("Error submitting verification.");
+        return;
+      }
+
+      alert("Verification submitted!");
+      location.reload();
     };
   </script>
 </body>

@@ -38,6 +38,7 @@
       margin-top:10px;
       text-decoration:none;
       box-sizing:border-box;
+      cursor:pointer;
     }
     .secondary {
       background:#f4c542;
@@ -58,7 +59,8 @@
   <div class="card">
     <h2>Welcome</h2>
     <p id="welcomeText">Loading your profile...</p>
-    <a class="btn" href="settings.html">Go to Settings</a>
+    <a class="btn" href="settings.html">Settings</a>
+    <a class="btn secondary" href="account-info.html">Account Info</a>
     <button class="btn danger" id="logoutBtn">Log Out</button>
   </div>
 
@@ -77,15 +79,18 @@
 
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
     if (sessionError) {
-      console.error(sessionError);
+      console.error("Session error:", sessionError);
     }
     const session = sessionData?.session;
-
     if (!session) {
       window.location.href = "login.html";
     }
 
     const userId = session.user.id;
+    const userEmail = session.user.email;
+
+    // Ensure profile exists
+    await supabase.from("profiles").upsert({ id: userId, email: userEmail });
 
     const { data: profile, error: profileError } = await supabase
       .from("profiles")

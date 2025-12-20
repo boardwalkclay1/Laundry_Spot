@@ -1,59 +1,73 @@
-<!-- payment-methods.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Payment Methods – Laundry Bubbles</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #d96e30, #f4c542);
-      min-height: 100vh;
-      padding: 20px;
-      color: #5a3e2b;
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:linear-gradient(135deg,#d96e30,#f4c542);
+      min-height:100vh;
+      padding:20px;
+      color:#5a3e2b;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-    }
+    h1 { text-align:center; margin-bottom:20px; }
     .card {
-      background: #fff4d9;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-      max-width: 480px;
-      margin: 0 auto;
+      background:#fff4d9;
+      padding:20px;
+      border-radius:16px;
+      box-shadow:0 6px 16px rgba(0,0,0,0.25);
+      max-width:520px;
+      margin:0 auto;
+    }
+    label { font-weight:bold; display:block; margin-top:10px; }
+    select {
+      width:100%;
+      padding:12px;
+      margin-top:6px;
+      border-radius:10px;
+      border:2px solid #d96e30;
+      background:white;
     }
     .btn {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      background: #d96e30;
-      color: white;
-      text-align: center;
-      border-radius: 10px;
-      font-weight: bold;
-      text-decoration: none;
-      margin-top: 14px;
-      border: none;
-      cursor: pointer;
+      display:block;
+      width:100%;
+      padding:14px;
+      background:#d96e30;
+      color:white;
+      text-align:center;
+      border-radius:10px;
+      font-weight:bold;
+      text-decoration:none;
+      margin-top:14px;
+      border:none;
+      cursor:pointer;
     }
     .secondary {
-      background: #f4c542;
-      color: #5a3e2b;
-      border: 2px solid #d96e30;
+      background:#f4c542;
+      color:#5a3e2b;
+      border:2px solid #d96e30;
     }
   </style>
 </head>
+
 <body>
   <h1>Payment Methods</h1>
 
   <div class="card">
-    <p id="currentMethod">Loading...</p>
+    <label>Preferred Payment Method</label>
+    <select id="paymentMethod">
+      <option value="cash">Cash</option>
+      <option value="cashapp">Cash App</option>
+      <option value="venmo">Venmo</option>
+      <option value="paypal">PayPal</option>
+      <option value="zelle">Zelle</option>
+    </select>
 
-    <button class="btn" onclick="savePayment()">Add / Update Payment Method</button>
+    <button class="btn" onclick="savePayment()">Save Payment Method</button>
     <a class="btn secondary" href="settings.html">Back to Settings</a>
   </div>
 
@@ -63,29 +77,41 @@
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) window.location.href = "login.html";
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", session.user.id)
-      .single();
+    async function loadPayment() {
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("payment_method")
+        .eq("id", session.user.id)
+        .single();
 
-    document.getElementById("currentMethod").textContent =
-      profile.payment_method
-        ? `Current method: ${profile.payment_method}`
-        : "No payment method saved.";
+      if (error) {
+        console.error("Load payment error:", error);
+        return;
+      }
+
+      if (profile.payment_method) {
+        document.getElementById("paymentMethod").value = profile.payment_method;
+      }
+    }
 
     window.savePayment = async function () {
-      const method = prompt("Enter payment method (e.g., Visa ending 1234)");
-      if (!method) return;
+      const method = document.getElementById("paymentMethod").value;
 
-      await supabase
+      const { error } = await supabase
         .from("profiles")
         .update({ payment_method: method })
         .eq("id", session.user.id);
 
-      alert("Payment method saved!");
-      location.reload();
+      if (error) {
+        console.error("Save payment error:", error);
+        alert("Error saving payment method.");
+        return;
+      }
+
+      alert("Payment method updated!");
     };
+
+    await loadPayment();
   </script>
 </body>
 </html>

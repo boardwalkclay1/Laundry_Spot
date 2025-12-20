@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Settings – Laundry Bubbles</title>
+  <title>Settings – Laundry Spot</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -61,21 +61,16 @@
       cursor:pointer;
       box-sizing:border-box;
     }
-    .secondary {
-      background:#f4c542;
-      color:#5a3e2b;
-      border:2px solid #d96e30;
-    }
     .danger {
       background:#b83a2e;
     }
     #statusText {
       font-size:0.85rem;
       margin-top:8px;
-      opacity:0.9;
+      min-height:1em;
     }
     #errorText {
-      font-size:0.85rem;
+      font-size:0.8rem;
       margin-top:4px;
       color:#b83a2e;
       white-space:pre-wrap;
@@ -135,42 +130,29 @@
 
     statusText.innerText = "Loading profile...";
 
-    // 1) Get session
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
     if (sessionError) {
       console.error("Session error:", sessionError);
       errorText.innerText = "Session error: " + sessionError.message;
     }
-
     const session = sessionData?.session;
     if (!session) {
-      statusText.innerText = "No active session, redirecting to login...";
       window.location.href = "login.html";
     }
-
     const userId = session.user.id;
     const userEmail = session.user.email;
 
-    // 2) Ensure profile exists (UPSERT minimal row)
-    async function ensureProfile() {
-      const baseProfile = {
-        id: userId,
-        email: userEmail,
-      };
+    // Upsert minimal profile to guarantee row exists
+    const { error: ensureError } = await supabase
+      .from("profiles")
+      .upsert({ id: userId, email: userEmail });
 
-      const { error } = await supabase
-        .from("profiles")
-        .upsert(baseProfile);
-
-      if (error) {
-        console.error("Upsert base profile error:", error);
-        errorText.innerText = "Error ensuring profile exists:\n" + error.message;
-      }
+    if (ensureError) {
+      console.error("Ensure profile error:", ensureError);
+      errorText.innerText = "Error ensuring profile exists: " + ensureError.message;
     }
 
-    await ensureProfile();
-
-    // 3) Load full profile
+    // Load profile
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("*")
@@ -180,22 +162,19 @@
     if (profileError) {
       console.error("Profile load error:", profileError);
       statusText.innerText = "Error loading profile.";
-      errorText.innerText = "Profile load error:\n" + profileError.message;
-    }
-
-    if (profile) {
+      errorText.innerText = "Profile load error: " + profileError.message;
+    } else if (profile) {
       nameInput.value = profile.name || "";
       phoneInput.value = profile.phone || "";
       roleInput.value = profile.role || "client";
       verificationStatus.innerText = (profile.verification_status || "none").toUpperCase();
-
       if (profile.role === "admin") {
         adminSection.style.display = "block";
       }
       statusText.innerText = "Profile loaded.";
     }
 
-    // 4) Save profile (UPSERT)
+    // Save
     saveBtn.onclick = async () => {
       statusText.innerText = "Saving...";
       errorText.innerText = "";
@@ -215,8 +194,7 @@
       if (error) {
         console.error("Save error:", error);
         statusText.innerText = "Error saving settings.";
-        errorText.innerText = "Save error:\n" + error.message;
-        alert("Error saving settings. Check the error text on this page and the browser console.");
+        errorText.innerText = "Save error: " + error.message;
       } else {
         statusText.innerText = "Settings saved!";
         if (roleInput.value === "admin") {
@@ -225,7 +203,6 @@
       }
     };
 
-    // 5) Logout
     logoutBtn.onclick = async () => {
       await supabase.auth.signOut();
       window.location.href = "login.html";

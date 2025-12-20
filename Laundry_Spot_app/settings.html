@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>Settings – Laundry Spot</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <style>
     body {
       margin:0;
@@ -81,7 +80,7 @@
 
 <body>
   <h1>Settings</h1>
-  <div class="subtitle">Manage your profile, role, and access</div>
+  <div class="subtitle">Manage your profile and role</div>
 
   <div class="card">
     <h2>Your Profile</h2>
@@ -142,7 +141,7 @@
     const userId = session.user.id;
     const userEmail = session.user.email;
 
-    // Upsert minimal profile to guarantee row exists
+    // Ensure profile row exists
     const { error: ensureError } = await supabase
       .from("profiles")
       .upsert({ id: userId, email: userEmail });

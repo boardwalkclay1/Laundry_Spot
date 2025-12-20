@@ -1,77 +1,69 @@
-<!-- client-orders.html (real orders list) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>My Orders – Laundry Bubbles</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #d96e30, #f4c542);
-      min-height: 100vh;
-      padding: 20px;
-      color: #5a3e2b;
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:linear-gradient(135deg,#d96e30,#f4c542);
+      min-height:100vh;
+      padding:20px;
+      color:#5a3e2b;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
+    h1 { text-align:center; margin-bottom:20px; }
     .card {
-      background: #fff4d9;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-      margin-bottom: 20px;
-      max-width: 520px;
-      margin-left: auto;
-      margin-right: auto;
+      background:#fff4d9;
+      padding:16px;
+      border-radius:16px;
+      box-shadow:0 6px 16px rgba(0,0,0,0.25);
+      max-width:520px;
+      margin:0 auto 12px;
+      cursor:pointer;
     }
-    .order-box {
-      background: #ffe9b8;
-      padding: 14px;
-      border-radius: 12px;
-      margin-bottom: 12px;
-      border: 2px solid #d96e30;
+    .card h2 {
+      margin:0 0 6px;
+      font-size:1.1rem;
     }
-    .status {
-      font-weight: bold;
-      padding: 4px 8px;
-      border-radius: 8px;
-      background: #f4c542;
-      border: 1px solid #d96e30;
-      display: inline-block;
-      margin-bottom: 6px;
+    .meta {
+      font-size:0.9rem;
+      opacity:0.8;
     }
     .btn {
-      display: block;
-      width: 100%;
-      padding: 10px;
-      background: #d96e30;
-      color: white;
-      text-align: center;
-      border-radius: 10px;
-      font-weight: bold;
-      text-decoration: none;
-      margin-top: 8px;
-      border: none;
-      cursor: pointer;
+      display:block;
+      width:100%;
+      padding:14px;
+      background:#d96e30;
+      color:white;
+      text-align:center;
+      border-radius:10px;
+      font-weight:bold;
+      text-decoration:none;
+      margin:10px auto 0;
+      max-width:520px;
     }
     .secondary {
-      background: #f4c542;
-      color: #5a3e2b;
-      border: 2px solid #d96e30;
+      background:#f4c542;
+      color:#5a3e2b;
+      border:2px solid #d96e30;
+    }
+    .empty {
+      text-align:center;
+      margin-top:20px;
+      font-style:italic;
     }
   </style>
 </head>
+
 <body>
   <h1>My Orders</h1>
 
-  <div class="card" id="ordersList">
-    <p>Loading your orders...</p>
-  </div>
+  <div id="ordersContainer"></div>
 
+  <a class="btn" href="booking.html">Book a New Pickup</a>
   <a class="btn secondary" href="dashboard.html">Back to Dashboard</a>
 
   <script type="module">
@@ -80,33 +72,51 @@
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) window.location.href = "login.html";
 
-    const ordersList = document.getElementById("ordersList");
+    async function loadOrders() {
+      const container = document.getElementById("ordersContainer");
+      container.innerHTML = "Loading...";
 
-    const { data: orders, error } = await supabase
-      .from("orders")
-      .select("*")
-      .eq("client_id", session.user.id)
-      .order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("client_id", session.user.id)
+        .order("created_at", { ascending: false });
 
-    if (error) {
-      ordersList.innerHTML = "<p>Error loading orders.</p>";
-    } else if (!orders || orders.length === 0) {
-      ordersList.innerHTML = "<p>You have no orders yet.</p>";
-    } else {
-      ordersList.innerHTML = "";
-      orders.forEach(order => {
-        const box = document.createElement("div");
-        box.className = "order-box";
-        box.innerHTML = `
-          <div class="status">${order.status}</div>
-          <div><strong>Order #${order.id}</strong></div>
-          <div>Loads: ${order.loads}</div>
-          <div>Pickup: ${order.pickup_time ? new Date(order.pickup_time).toLocaleString() : "Not set"}</div>
-          <a class="btn" href="client-order-detail.html?id=${order.id}">View Details</a>
+      if (error) {
+        console.error("Load orders error:", error);
+        container.innerHTML = "Error loading orders.";
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        container.innerHTML = '<div class="empty">You have no orders yet.</div>';
+        return;
+      }
+
+      container.innerHTML = "";
+      data.forEach(order => {
+        const div = document.createElement("div");
+        div.className = "card";
+        const pickup = order.pickup_time
+          ? new Date(order.pickup_time).toLocaleString()
+          : "Not set";
+
+        div.innerHTML = `
+          <h2>Order #${order.id}</h2>
+          <div class="meta">
+            Status: <strong>${order.status}</strong><br/>
+            Loads: ${order.loads}<br/>
+            Pickup: ${pickup}
+          </div>
         `;
-        ordersList.appendChild(box);
+        div.onclick = () => {
+          window.location.href = `client-order-detail.html?order_id=${order.id}`;
+        };
+        container.appendChild(div);
       });
     }
+
+    await loadOrders();
   </script>
 </body>
 </html>

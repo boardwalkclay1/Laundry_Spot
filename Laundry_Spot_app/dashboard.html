@@ -2,9 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Laundry Bubbles – Dashboard</title>
+  <title>Dashboard – Laundry Spot</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <style>
     body {
       margin:0;
@@ -15,14 +14,8 @@
       color:#5a3e2b;
     }
     h1 {
+      margin-top:0;
       text-align:center;
-      margin-bottom:4px;
-    }
-    .subtitle {
-      text-align:center;
-      font-size:0.9rem;
-      opacity:0.85;
-      margin-bottom:20px;
     }
     .card {
       background:#fff4d9;
@@ -32,20 +25,18 @@
       max-width:520px;
       margin:0 auto 20px;
     }
-    .label { font-weight:bold; }
     .btn {
       display:block;
       width:100%;
-      padding:14px;
+      padding:12px;
+      border-radius:10px;
+      border:none;
       background:#d96e30;
       color:white;
-      text-align:center;
-      border-radius:10px;
       font-weight:bold;
+      text-align:center;
+      margin-top:10px;
       text-decoration:none;
-      margin-top:12px;
-      border:none;
-      cursor:pointer;
       box-sizing:border-box;
     }
     .secondary {
@@ -56,129 +47,62 @@
     .danger {
       background:#b83a2e;
     }
-    .admin-badge {
-      display:inline-block;
-      padding:4px 10px;
-      border-radius:999px;
-      background:#3a9e3a;
-      color:white;
-      font-size:0.8rem;
-      margin-left:6px;
-    }
-    .role-tag {
-      font-size:0.85rem;
-      opacity:0.85;
-      margin-top:4px;
+    #adminCard {
+      display:none;
     }
   </style>
 </head>
-
 <body>
-  <h1>Laundry Bubbles</h1>
-  <div class="subtitle" id="welcomeText">Loading your dashboard...</div>
+  <h1>Laundry Spot Dashboard</h1>
 
-  <!-- PROFILE CARD -->
-  <div class="card" id="profileCard">
-    Loading profile...
+  <div class="card">
+    <h2>Welcome</h2>
+    <p id="welcomeText">Loading your profile...</p>
+    <a class="btn" href="settings.html">Go to Settings</a>
+    <button class="btn danger" id="logoutBtn">Log Out</button>
   </div>
 
-  <!-- CLIENT ACTIONS -->
-  <div class="card" id="clientActions" style="display:none;">
-    <h2>For Clients</h2>
-    <p>Book a pickup, track your orders, and stay up to date.</p>
-    <a class="btn" href="booking.html">Book Laundry Pickup</a>
-    <a class="btn secondary" href="client-orders.html">View My Orders</a>
-    <a class="btn secondary" href="notifications-inbox.html">Notifications</a>
-  </div>
-
-  <!-- WASHER ACTIONS -->
-  <div class="card" id="washerActions" style="display:none;">
-    <h2>For Washers</h2>
-    <p>See incoming orders, manage your work, and share your location.</p>
-    <a class="btn" href="washer-incoming.html">Incoming Orders</a>
-    <a class="btn secondary" href="washer-orders.html">My Orders</a>
-    <a class="btn secondary" href="washer-availability.html">My Availability</a>
-    <a class="btn secondary" href="washer-earnings.html">My Earnings</a>
-  </div>
-
-  <!-- ADMIN ACTIONS (ADMIN-ONLY BUTTON) -->
-  <div class="card" id="adminActions" style="display:none;">
-    <h2>Admin Controls</h2>
-    <p>Only visible to admins. From here you can manage washers, orders, and notifications.</p>
+  <div class="card" id="adminCard">
+    <h2>Admin Tools</h2>
+    <p>You are an admin. Manage the system below.</p>
     <a class="btn" href="admin-dashboard.html">Go to Admin Dashboard</a>
-    <a class="btn secondary" href="admin-washers.html">Manage Washers</a>
-    <a class="btn secondary" href="admin-orders.html">Manage Orders</a>
-    <a class="btn secondary" href="admin-notifications.html">Send Notifications</a>
   </div>
-
-  <!-- LOGOUT -->
-  <button class="btn danger" id="logoutBtn">Log Out</button>
 
   <script type="module">
     import { supabase } from "./supabase.js";
 
     const welcomeText = document.getElementById("welcomeText");
-    const profileCard = document.getElementById("profileCard");
-    const clientActions = document.getElementById("clientActions");
-    const washerActions = document.getElementById("washerActions");
-    const adminActions = document.getElementById("adminActions");
     const logoutBtn = document.getElementById("logoutBtn");
+    const adminCard = document.getElementById("adminCard");
 
-    // AUTH CHECK
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      console.error(sessionError);
+    }
+    const session = sessionData?.session;
+
     if (!session) {
       window.location.href = "login.html";
     }
 
-    // LOAD PROFILE
-    const { data: profile, error } = await supabase
+    const userId = session.user.id;
+
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("*")
-      .eq("id", session.user.id)
+      .eq("id", userId)
       .single();
 
-    if (error || !profile) {
-      profileCard.innerHTML = "Could not load your profile.";
-    } else {
-      renderProfile(profile);
-      renderRoleSections(profile);
-    }
-
-    function renderProfile(p) {
-      const roleLabel = p.role === "admin"
-        ? 'Admin <span class="admin-badge">ADMIN</span>'
-        : p.role === "washer"
-        ? "Washer"
-        : "Client";
-
-      welcomeText.innerHTML = `Welcome back, ${p.name || p.email || "friend"}!`;
-
-      profileCard.innerHTML = `
-        <div><span class="label">Name:</span> ${p.name || "Not set"}</div>
-        <div><span class="label">Email:</span> ${p.email || session.user.email}</div>
-        <div class="role-tag"><span class="label">Role:</span> ${roleLabel}</div>
-      `;
-    }
-
-    function renderRoleSections(p) {
-      // Base sections
-      if (p.role === "client") {
-        clientActions.style.display = "block";
-      }
-
-      if (p.role === "washer") {
-        washerActions.style.display = "block";
-      }
-
-      // Admin sees EVERYTHING + admin block
-      if (p.role === "admin") {
-        clientActions.style.display = "block";
-        washerActions.style.display = "block";
-        adminActions.style.display = "block";
+    if (profileError) {
+      console.error("Profile load error:", profileError);
+      welcomeText.innerText = "Error loading profile.";
+    } else if (profile) {
+      welcomeText.innerText = `Hello, ${profile.name || profile.email || "Laundry Friend"}! Role: ${profile.role}`;
+      if (profile.role === "admin") {
+        adminCard.style.display = "block";
       }
     }
 
-    // LOGOUT
     logoutBtn.onclick = async () => {
       await supabase.auth.signOut();
       window.location.href = "login.html";

@@ -26,13 +26,46 @@
             padding: 20px;
         }
 
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
         .payment-box {
             background: white;
             padding: 18px;
             border-radius: 10px;
             border: 2px solid #F4C542;
             margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .btn {
+            display: block;
+            background: #F4C542;
+            padding: 16px;
+            border-radius: 10px;
+            text-align: center;
             font-size: 1.2rem;
+            font-weight: bold;
+            color: #5A3E2B;
+            text-decoration: none;
+            border: 2px solid #D96E30;
+            margin-bottom: 14px;
+        }
+
+        .btn:hover {
+            background: #E3B63A;
+        }
+
+        .back-btn {
+            background: #D96E30;
+            color: white;
+        }
+
+        .back-btn:hover {
+            background: #B85D28;
         }
     </style>
 </head>
@@ -41,8 +74,20 @@
     <header>Payments</header>
 
     <div class="container">
-        <div class="payment-box">Saved Card: **** **** **** 1234</div>
-        <div class="payment-box">Add New Payment Method</div>
+
+        <div class="section-title">Saved Payment Methods</div>
+
+        <div class="payment-box">
+            Card on File: **** **** **** 1234  
+            <br><br>
+            Exp: 04/28  
+        </div>
+
+        <a href="#" class="btn">Add New Card</a>
+        <a href="#" class="btn">Manage Saved Cards</a>
+        <a href="#" class="btn">View Payment History</a>
+
+        <a href="client.html" class="btn back-btn">Back to Dashboard</a>
     </div>
 </body>
 </html>

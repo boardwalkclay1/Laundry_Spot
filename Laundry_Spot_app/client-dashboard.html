@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Client Dashboard – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --primary: #4da6ff;
+      --accent: #7a5cff;
+      --bg: #050816;
+      --card: #141827;
+      --text: #f9fbff;
+      --muted: #8f9ac4;
+      --danger: #ff4d6a;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; }
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #243b6b 0, #050816 55%, #02030a 100%);
+      color: var(--text);
+      padding: 18px 16px 18px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo-circle {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 20% 20%, #7a5cff, #4da6ff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+    .brand-text span:first-child {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .brand-text span:last-child {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #243b6b, #050816);
+      border: 1px solid rgba(255,255,255,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(8,16,40,0.9);
+      border: 1px solid rgba(134,179,255,0.4);
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    h1 {
+      font-size: 20px;
+      margin-bottom: 6px;
+    }
+    .sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .card {
+      background: linear-gradient(145deg, #181c30, #0d1121);
+      border-radius: var(--radius);
+      padding: 12px 12px 10px;
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s, border 0.1s;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 34px rgba(0,0,0,0.6);
+      border-color: rgba(77,166,255,0.5);
+    }
+    .card-title {
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+    .card-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(77,166,255,0.1);
+      color: #b9d7ff;
+    }
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #4de3ff;
+      margin-right: 4px;
+    }
+    .section-title {
+      font-size: 14px;
+      margin-bottom: 6px;
+      margin-top: 6px;
+    }
+    .list {
+      background: rgba(5,7,18,0.8);
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 6px;
+    }
+    .order-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 6px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .order-row:hover {
+      background: rgba(255,255,255,0.02);
+    }
+    .order-main { display: flex; flex-direction: column; gap: 1px; }
+    .order-title { font-size: 13px; }
+    .order-meta { font-size: 11px; color: var(--muted); }
+    .order-status {
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(77,166,255,0.15);
+      color: #bfe0ff;
+    }
+    footer {
+      margin-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .nav-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .pill-btn {
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 5px 10px;
+      background: rgba(5,7,18,0.85);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .pill-btn-primary {
+      border-color: rgba(77,166,255,0.7);
+      color: #dbe9ff;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo-circle">LB</div>
+      <div class="brand-text">
+        <span id="greeting">Hey there</span>
+        <span>Laundry Bubbles · Client</span>
+      </div>
+    </div>
+    <div class="avatar" id="avatarInitials">U</div>
+  </header>
+
+  <span class="pill">
+    <span class="badge-dot"></span>
+    Dashboard demo – local data only
+  </span>
+
+  <h1>What do you want to do today?</h1>
+  <p class="sub">Find a washer, request a pickup, or check your current orders.</p>
+
+  <div class="grid">
+    <div class="card" id="cardFindWasher">
+      <div class="card-title">Find a washer</div>
+      <div class="card-sub">See trusted washers on the map near you.</div>
+      <span class="badge"><span class="badge-dot"></span>Live map</span>
+    </div>
+
+    <div class="card" id="cardRequestPickup">
+      <div class="card-title">Request pickup</div>
+      <div class="card-sub">Doorstep pickup, wash, dry & fold.</div>
+      <span class="badge">Next available · ~35 mins</span>
+    </div>
+
+    <div class="card" id="cardTrackOrder">
+      <div class="card-title">Track order</div>
+      <div class="card-sub">Follow your current laundry in real-time.</div>
+      <span class="badge">2 active today</span>
+    </div>
+
+    <div class="card" id="cardProfile">
+      <div class="card-title">Profile & settings</div>
+      <div class="card-sub">Manage your info, addresses and preferences.</div>
+      <span class="badge">You</span>
+    </div>
+  </div>
+
+  <h2 class="section-title">Recent orders</h2>
+  <div class="list" id="ordersList">
+    <!-- Filled by JS -->
+  </div>
+
+  <footer>
+    <span id="footerEmail">Signed in as –</span>
+    <div class="nav-actions">
+      <button class="pill-btn" id="settingsBtn">Settings</button>
+      <button class="pill-btn pill-btn-primary" id="logoutBtn">Logout</button>
+    </div>
+  </footer>
+
+  <script>
+    function navigateTo(page) {
+      window.location.href = page;
+    }
+
+    function getUser() {
+      try {
+        const raw = localStorage.getItem("lb_user");
+        return raw ? JSON.parse(raw) : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function renderUser() {
+      const user = getUser();
+      const greeting = document.getElementById("greeting");
+      const avatarInitials = document.getElementById("avatarInitials");
+      const footerEmail = document.getElementById("footerEmail");
+
+      if (!user) {
+        greeting.textContent = "Hey there";
+        footerEmail.textContent = "Signed in as – guest (demo)";
+        return;
+      }
+
+      const name = user.name || user.email || "there";
+      greeting.textContent = `Hey, ${name.split(" ")[0]} 👋`;
+      footerEmail.textContent = `Signed in as – ${user.email}`;
+
+      const initials = name.split(" ").map(n => n[0]).join("").slice(0,2).toUpperCase();
+      avatarInitials.textContent = initials || "U";
+    }
+
+    function renderOrders() {
+      const ordersList = document.getElementById("ordersList");
+      const mockOrders = [
+        { id: "#LB-1024", status: "In progress", window: "Today · 4:00–6:00 PM" },
+        { id: "#LB-1019", status: "Completed", window: "Yesterday · 2:00–4:00 PM" },
+        { id: "#LB-1007", status: "Completed", window: "Last week" },
+      ];
+
+      ordersList.innerHTML = "";
+      mockOrders.forEach(order => {
+        const row = document.createElement("div");
+        row.className = "order-row";
+        row.innerHTML = `
+          <div class="order-main">
+            <span class="order-title">${order.id}</span>
+            <span class="order-meta">${order.window}</span>
+          </div>
+          <span class="order-status">${order.status}</span>
+        `;
+        row.addEventListener("click", () => {
+          alert("In the real app, this would open order-status.html filtered to this order.");
+          navigateTo("order-status.html"); // will exist later
+        });
+        ordersList.appendChild(row);
+      });
+    }
+
+    // Wire up cards
+    document.getElementById("cardFindWasher").addEventListener("click", () => navigateTo("map.html"));
+    document.getElementById("cardRequestPickup").addEventListener("click", () => navigateTo("request-pickup.html"));
+    document.getElementById("cardTrackOrder").addEventListener("click", () => navigateTo("order-status.html")); // later
+    document.getElementById("cardProfile").addEventListener("click", () => navigateTo("profile.html")); // later
+
+    document.getElementById("settingsBtn").addEventListener("click", () => navigateTo("settings.html")); // later
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("lb_user");
+      navigateTo("login.html");
+    });
+
+    renderUser();
+    renderOrders();
+  </script>
+</body>
+</html>

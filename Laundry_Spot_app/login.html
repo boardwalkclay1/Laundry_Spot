@@ -1,1 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body style="font-family:Arial; padding:20px;">
 
+  <h1>Login</h1>
+
+  <label>Email</label>
+  <input id="email" type="email" style="width:100%; padding:10px;" />
+
+  <label>Password</label>
+  <input id="password" type="password" style="width:100%; padding:10px;" />
+
+  <button id="loginBtn" style="padding:10px; width:100%; margin-top:10px;">Log In</button>
+
+  <div id="status" style="margin-top:10px; color:red;"></div>
+
+  <script type="module">
+    import { supabase } from "./supabase.js";
+
+    const SUPER_ADMIN = "boardwalkclay1@gmail.com";
+
+    document.getElementById("loginBtn").onclick = async () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      document.getElementById("status").innerText = "Logging in...";
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        document.getElementById("status").innerText = error.message;
+        return;
+      }
+
+      // FORCE ADMIN ROUTE
+      if (email === SUPER_ADMIN) {
+        window.location.href = "admin-dashboard.html";
+      } else {
+        window.location.href = "dashboard.html";
+      }
+    };
+  </script>
+
+</body>
+</html>

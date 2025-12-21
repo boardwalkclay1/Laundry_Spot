@@ -2,55 +2,206 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Washer Dashboard – Roll & Connect</title>
+  <title>Washer Dashboard – Laundry Bubbles</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root{--primary:#4da6ff;--accent:#7a5cff;--bg:#050816;--text:#f9fbff;--muted:#8f9ac4;}
-    *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif;}
-    body{background:radial-gradient(circle at top,#243b6b,#050816);color:var(--text);padding:14px;}
-    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
-    .logo{font-size:20px;font-weight:700;}
-    .avatar{width:34px;height:34px;border-radius:50%;background:#0d1121;border:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;}
-    .card{background:linear-gradient(145deg,#181c30,#0d1121);border-radius:20px;padding:14px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.08);}
-    .job{padding:10px;border-bottom:1px solid rgba(255,255,255,0.06);cursor:pointer;}
-    .job:last-child{border-bottom:none;}
-    .job:hover{background:rgba(255,255,255,0.04);}
-    .btn{width:100%;padding:10px;border-radius:999px;border:none;cursor:pointer;font-weight:600;font-size:14px;margin-top:10px;}
-    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;}
+    :root {
+      --primary: #4da6ff;
+      --accent: #7a5cff;
+      --text: #f9fbff;
+      --muted: #9aa3c7;
+      --card: rgba(255,255,255,0.04);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(77,166,255,0.18), transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(122,92,255,0.18), transparent 60%),
+        #030715;
+      color: var(--text);
+      padding: 16px;
+      position: relative;
+      overflow-x: hidden;
+    }
+    .grid-overlay {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      position: relative;
+      z-index: 2;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--primary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      color: #fff;
+      box-shadow: 0 0 14px rgba(77,166,255,0.45);
+    }
+    .brand-text { font-size: 16px; font-weight: 600; }
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    h1 { font-size: 22px; margin-bottom: 6px; text-shadow: 0 0 12px rgba(77,166,255,0.4); }
+    .sub { font-size: 14px; color: var(--muted); margin-bottom: 14px; }
+    .mini-map {
+      width: 100%;
+      height: 170px;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(77,166,255,0.2), transparent 60%),
+        radial-gradient(circle at 70% 70%, rgba(122,92,255,0.2), transparent 60%),
+        #050a18;
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+      margin-bottom: 18px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .mini-map-label {
+      position: absolute;
+      left: 12px;
+      bottom: 10px;
+      font-size: 13px;
+      background: rgba(3,7,21,0.9);
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    .mini-map-hint {
+      position: absolute;
+      right: 12px;
+      bottom: 10px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 14px;
+      position: relative;
+      z-index: 2;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      padding: 14px;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+      transition: 0.15s ease;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: var(--primary);
+      box-shadow: 0 14px 30px rgba(77,166,255,0.4);
+    }
+    .card-title { font-size: 15px; margin-bottom: 4px; }
+    .card-sub { font-size: 12px; color: var(--muted); }
+    footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
   </style>
 </head>
 <body>
+  <div class="grid-overlay"></div>
+
   <header>
-    <div class="logo">Roll & Connect</div>
-    <div class="avatar" id="avatar">W</div>
+    <div class="brand">
+      <div class="logo-circle">LB</div>
+      <div class="brand-text">Washer mode</div>
+    </div>
+    <div class="avatar" id="washerAvatar">W</div>
   </header>
 
-  <h2 style="margin-bottom:6px;">Available Jobs</h2>
+  <main>
+    <h1 id="washerGreeting">Good to see you</h1>
+    <p class="sub">View nearby requests and manage your loads.</p>
 
-  <div class="card" id="jobsList"></div>
+    <div class="mini-map" id="washerMiniMap">
+      <div class="mini-map-label">Nearby requests</div>
+      <div class="mini-map-hint">Tap to open map</div>
+    </div>
 
-  <button class="btn btn-primary" id="mapBtn">Open Map</button>
+    <section class="grid">
+      <div class="card" id="requestsCard">
+        <div class="card-title">Open requests</div>
+        <div class="card-sub">Accept new client pickups.</div>
+      </div>
+      <div class="card" id="activeLoadsCard">
+        <div class="card-title">Active loads</div>
+        <div class="card-sub">Track what’s in progress.</div>
+      </div>
+      <div class="card" id="earningsCard">
+        <div class="card-title">Earnings</div>
+        <div class="card-sub">See this week’s totals.</div>
+      </div>
+      <div class="card" id="settingsCard">
+        <div class="card-title">Settings</div>
+        <div class="card-sub">Availability, radius, preferences.</div>
+      </div>
+    </section>
+  </main>
+
+  <footer>Washer mode · Atlanta area</footer>
 
   <script>
-    const jobs = [
-      { id:"J-201", address:"123 Peachtree St", bags:2, time:"ASAP" },
-      { id:"J-198", address:"88 North Ave", bags:1, time:"Today · 6–8 PM" },
-      { id:"J-190", address:"45 Midtown Cir", bags:3, time:"Tomorrow · 9–12 AM" },
-    ];
+    function nav(page) { window.location.href = page; }
 
-    const list = document.getElementById("jobsList");
-    jobs.forEach(j => {
-      const row = document.createElement("div");
-      row.className = "job";
-      row.innerHTML = `<strong>${j.id}</strong> – ${j.address}<br><span style="font-size:12px;color:var(--muted);">${j.bags} bag(s) · ${j.time}</span>`;
-      row.onclick = () => {
-        localStorage.setItem("lb_job", JSON.stringify(j));
-        window.location.href = "washer-job-details.html";
-      };
-      list.appendChild(row);
-    });
+    try {
+      const raw = localStorage.getItem("lb_user");
+      if (raw) {
+        const user = JSON.parse(raw);
+        if (user.email) {
+          const name = user.email.split("@")[0];
+          document.getElementById("washerGreeting").textContent =
+            "Welcome back, " + name;
+          document.getElementById("washerAvatar").textContent =
+            name.charAt(0).toUpperCase();
+        }
+      }
+    } catch (e) {}
 
-    document.getElementById("mapBtn").onclick = () => window.location.href = "washer-map.html";
+    document.getElementById("washerMiniMap").onclick = () => nav("washer-map.html");
+    document.getElementById("requestsCard").onclick = () => nav("washer-map.html");
+    document.getElementById("activeLoadsCard").onclick = () => alert("Active loads coming soon.");
+    document.getElementById("earningsCard").onclick = () => alert("Earnings screen coming soon.");
+    document.getElementById("settingsCard").onclick = () => nav("settings.html");
   </script>
 </body>
 </html>

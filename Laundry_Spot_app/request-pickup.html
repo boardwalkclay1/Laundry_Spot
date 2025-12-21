@@ -8,28 +8,44 @@
     :root {
       --primary: #4da6ff;
       --accent: #7a5cff;
-      --bg: #050816;
-      --card: #141827;
       --text: #f9fbff;
-      --muted: #8f9ac4;
-      --radius: 16px;
+      --muted: #9aa3c7;
+      --card: rgba(255,255,255,0.04);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
     body {
       min-height: 100vh;
-      background: radial-gradient(circle at top, #243b6b 0, #050816 55%, #02030a 100%);
+      background:
+        radial-gradient(circle at 20% 20%, rgba(77,166,255,0.18), transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(122,92,255,0.18), transparent 60%),
+        #030715;
       color: var(--text);
-      padding: 14px 12px 18px;
+      padding: 16px;
+      position: relative;
+      overflow-x: hidden;
+    }
+    .grid-overlay {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
     }
     header {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 2;
     }
     .back {
-      width: 32px;
-      height: 32px;
+      width: 34px;
+      height: 34px;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.16);
       background: rgba(5,7,18,0.9);
@@ -39,245 +55,181 @@
       cursor: pointer;
       font-size: 16px;
     }
-    .title-wrap { display: flex; flex-direction: column; }
-    .title-wrap h1 { font-size: 18px; }
-    .title-wrap span { font-size: 12px; color: var(--muted); }
+    h1 { font-size: 20px; margin-bottom: 4px; }
+    .sub { font-size: 13px; color: var(--muted); }
+    .mini-map {
+      width: 100%;
+      height: 170px;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(77,166,255,0.2), transparent 60%),
+        radial-gradient(circle at 70% 70%, rgba(122,92,255,0.2), transparent 60%),
+        #050a18;
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+      margin: 14px 0;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .mini-map-label {
+      position: absolute;
+      left: 12px;
+      bottom: 10px;
+      font-size: 13px;
+      background: rgba(3,7,21,0.9);
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    .mini-map-hint {
+      position: absolute;
+      right: 12px;
+      bottom: 10px;
+      font-size: 11px;
+      color: var(--muted);
+    }
     .card {
-      background: linear-gradient(145deg, #181c30, #0d1121);
-      border-radius: 20px;
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
       padding: 14px;
-      border: 1px solid rgba(255,255,255,0.08);
-      box-shadow: 0 18px 38px rgba(0,0,0,0.6);
       margin-bottom: 12px;
     }
-    .washer-header {
+    .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
-    .washer-name {
-      font-size: 15px;
-      font-weight: 600;
-    }
-    .washer-meta {
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .tag-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 6px;
+    .card-title { font-size: 15px; }
+    .badge {
       font-size: 11px;
-    }
-    .tag {
       padding: 3px 8px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.16);
-      background: rgba(7,9,18,0.95);
-    }
-    label {
-      display: block;
-      font-size: 13px;
-      margin-bottom: 3px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.14);
       color: var(--muted);
     }
-    input, select, textarea {
-      width: 100%;
-      padding: 9px 10px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(7,9,18,0.9);
-      color: var(--text);
+    label {
       font-size: 13px;
-      outline: none;
-      margin-bottom: 10px;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 3px;
     }
-    textarea {
-      resize: vertical;
-      min-height: 60px;
-    }
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 1px rgba(77,166,255,0.3);
-    }
-    .row { display: flex; gap: 10px; }
-    .btn {
+    input, select {
       width: 100%;
       padding: 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .btn {
+      width: 100%;
+      padding: 12px;
       border-radius: 999px;
       border: none;
       cursor: pointer;
       font-weight: 600;
-      margin-top: 4px;
-      font-size: 14px;
+      font-size: 16px;
+      margin-top: 10px;
     }
     .btn-primary {
       background: linear-gradient(135deg, var(--primary), var(--accent));
       color: #fff;
-      box-shadow: 0 12px 28px rgba(77,166,255,0.5);
-    }
-    .btn-secondary {
-      background: rgba(7,9,18,0.95);
-      color: var(--muted);
-      border: 1px solid rgba(255,255,255,0.16);
-    }
-    .info {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 6px;
-    }
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 3px 7px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.18);
-      font-size: 11px;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-    .pill span {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: #4de3ff;
-      margin-right: 4px;
+      box-shadow: 0 12px 28px rgba(77,166,255,0.45);
     }
   </style>
 </head>
 <body>
+  <div class="grid-overlay"></div>
+
   <header>
     <div class="back" id="backBtn">←</div>
-    <div class="title-wrap">
+    <div>
       <h1>Request pickup</h1>
-      <span>Confirm details before sending your request</span>
+      <p class="sub">Confirm your washer & pickup details.</p>
     </div>
   </header>
 
-  <div class="pill"><span></span>Demo only – no real orders yet</div>
-
-  <div class="card" id="washerCard" style="display:none;">
-    <div class="washer-header">
-      <div>
-        <div class="washer-name" id="washerName">Selected washer</div>
-        <div class="washer-meta" id="washerMeta">Distance · Rating · Jobs</div>
-      </div>
-      <div class="washer-meta" id="washerPrice">From $</div>
+  <section class="card">
+    <div class="card-header">
+      <div class="card-title" id="washerName">No washer selected yet</div>
+      <div class="badge" id="washerMeta">Select from map</div>
     </div>
-    <div class="tag-row" id="washerTags"></div>
+    <p class="sub" id="washerTags">Pick a washer from the map to see details here.</p>
+  </section>
+
+  <div class="mini-map" id="pickupMiniMap">
+    <div class="mini-map-label">Pickup location</div>
+    <div class="mini-map-hint">Tap to choose on map</div>
   </div>
 
-  <div class="card">
-    <div class="row">
-      <div style="flex: 1;">
-        <label for="bags">Number of bags</label>
-        <select id="bags">
-          <option value="1">1 bag</option>
-          <option value="2">2 bags</option>
-          <option value="3">3 bags</option>
-          <option value="4">4+ bags</option>
-        </select>
-      </div>
-      <div style="flex: 1;">
-        <label for="service">Service type</label>
-        <select id="service">
-          <option value="wash-fold">Wash & fold</option>
-          <option value="wash-dry-fold">Wash, dry & fold</option>
-          <option value="fold-only">Fold only</option>
-        </select>
-      </div>
-    </div>
+  <section class="card">
+    <label>Pickup address</label>
+    <input id="pickupAddress" placeholder="Enter address or use map" />
 
-    <label for="timeWindow">Pickup window</label>
-    <select id="timeWindow">
-      <option value="asap">ASAP (within 2 hours)</option>
-      <option value="today-evening">Today · 6–9 PM</option>
-      <option value="tomorrow-morning">Tomorrow · 9–12 AM</option>
+    <label>Pickup window</label>
+    <select id="pickupWindow">
+      <option value="morning">Morning (8am – 11am)</option>
+      <option value="afternoon">Afternoon (12pm – 4pm)</option>
+      <option value="evening">Evening (5pm – 9pm)</option>
     </select>
 
-    <label for="address">Pickup address</label>
-    <input id="address" placeholder="123 Peachtree St NE, Atlanta, GA" />
+    <label>Notes</label>
+    <input id="notes" placeholder="Gate code, special instructions, etc." />
 
-    <label for="notes">Notes for your washer (optional)</label>
-    <textarea id="notes" placeholder="Gate code, special instructions, fabric sensitivities..."></textarea>
-
-    <div class="row">
-      <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
-      <button class="btn btn-primary" id="confirmBtn">Confirm pickup request</button>
-    </div>
-    <div class="info" id="summaryText"></div>
-  </div>
+    <button class="btn btn-primary" id="confirmBtn">Confirm pickup</button>
+  </section>
 
   <script>
-    function navigateTo(page) { window.location.href = page; }
+    function nav(page) { window.location.href = page; }
 
-    document.getElementById("backBtn").addEventListener("click", () => {
-      navigateTo("map.html");
-    });
+    document.getElementById("backBtn").onclick = () => nav("client-dashboard.html");
+    document.getElementById("pickupMiniMap").onclick = () => nav("pickup-map.html");
 
-    document.getElementById("cancelBtn").addEventListener("click", () => {
-      if (confirm("Cancel this pickup request?")) {
-        navigateTo("client-dashboard.html");
+    // Load washer from localStorage if available
+    try {
+      const raw = localStorage.getItem("lb_selected_washer");
+      if (raw) {
+        const w = JSON.parse(raw);
+        document.getElementById("washerName").textContent = w.name || "Selected washer";
+        document.getElementById("washerMeta").textContent =
+          `${w.distance || ""} ${w.rating ? "· " + w.rating + "★" : ""}`.trim();
+        document.getElementById("washerTags").textContent =
+          Array.isArray(w.tags) ? w.tags.join(" · ") : "Selected from map.";
       }
-    });
+    } catch (e) {}
 
-    document.getElementById("confirmBtn").addEventListener("click", () => {
-      const bags = document.getElementById("bags").value;
-      const service = document.getElementById("service").value;
-      const timeWindow = document.getElementById("timeWindow").value;
-      const address = document.getElementById("address").value.trim();
-
-      if (!address) {
-        alert("Please enter a pickup address.");
-        return;
+    // Load pickup location if previously chosen
+    try {
+      const locRaw = localStorage.getItem("lb_pickup_location");
+      if (locRaw) {
+        const loc = JSON.parse(locRaw);
+        if (loc.address) {
+          document.getElementById("pickupAddress").value = loc.address;
+        }
       }
+    } catch (e) {}
 
-      const washer = getSelectedWasher();
-      const washerName = washer ? washer.name : "a nearby washer";
-
-      const summary = `Demo: We would send a pickup request for ${bags} bag(s), service: ${service}, for ${washerName}, at "${address}" during window "${timeWindow}".`;
-      document.getElementById("summaryText").textContent = summary;
-
-      alert("In the real app, this would create an order and redirect you to order-status.html.");
-      navigateTo("order-status.html"); // later
-    });
-
-    function getSelectedWasher() {
+    document.getElementById("confirmBtn").onclick = () => {
+      const payload = {
+        washer: null,
+        pickupAddress: document.getElementById("pickupAddress").value.trim(),
+        pickupWindow: document.getElementById("pickupWindow").value,
+        notes: document.getElementById("notes").value.trim(),
+      };
       try {
-        const raw = localStorage.getItem("lb_selected_washer");
-        return raw ? JSON.parse(raw) : null;
-      } catch {
-        return null;
-      }
-    }
-
-    function renderWasher() {
-      const washer = getSelectedWasher();
-      const card = document.getElementById("washerCard");
-
-      if (!washer) {
-        card.style.display = "none";
-        return;
-      }
-
-      card.style.display = "block";
-      document.getElementById("washerName").textContent = washer.name;
-      document.getElementById("washerMeta").textContent =
-        `${washer.distance} · ${washer.rating.toFixed(1)}★ · ${washer.jobs} jobs`;
-      document.getElementById("washerPrice").textContent = `From ${washer.price}`;
-      const tagsEl = document.getElementById("washerTags");
-      tagsEl.innerHTML = "";
-      (washer.tags || []).forEach(t => {
-        const tag = document.createElement("span");
-        tag.className = "tag";
-        tag.textContent = t;
-        tagsEl.appendChild(tag);
-      });
-    }
-
-    renderWasher();
+        const wRaw = localStorage.getItem("lb_selected_washer");
+        if (wRaw) payload.washer = JSON.parse(wRaw);
+        localStorage.setItem("lb_pickup_request", JSON.stringify(payload));
+      } catch (e) {}
+      alert("Pickup request saved (front-end demo).");
+      nav("client-dashboard.html");
+    };
   </script>
 </body>
 </html>

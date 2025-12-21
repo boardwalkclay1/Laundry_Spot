@@ -1,151 +1,191 @@
-<!-- signup.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Sign Up – Laundry Bubbles</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
+    :root {
+      --primary: #4da6ff;
+      --accent: #7a5cff;
+      --bg: #050816;
+      --card: #161b2b;
+      --text: #f9fbff;
+      --muted: #9aa3c7;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; }
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #d96e30, #f4c542);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #5a3e2b;
+      background: radial-gradient(circle at top, #243b6b 0, #050816 55%, #02030a 100%);
+      color: var(--text);
     }
     .card {
-      background: #fff4d9;
-      padding: 24px;
-      border-radius: 16px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
       width: 100%;
-      max-width: 380px;
+      max-width: 440px;
+      background: linear-gradient(145deg, #171c2f, #101426);
+      border-radius: 24px;
+      padding: 26px 26px 22px;
+      box-shadow: 0 22px 45px rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.04);
+      position: relative;
+      overflow: hidden;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -120px;
+      background: radial-gradient(circle at top, rgba(122,92,255,0.18), transparent 60%);
+      opacity: 0.9;
+      pointer-events: none;
+      z-index: -1;
     }
+    h1 { font-size: 22px; margin-bottom: 4px; }
+    .subtitle { font-size: 14px; color: var(--muted); margin-bottom: 18px; }
     label {
-      font-weight: bold;
       display: block;
-      margin-top: 10px;
+      font-size: 13px;
+      margin-bottom: 4px;
+      color: var(--muted);
     }
     input, select {
       width: 100%;
-      padding: 12px;
-      margin-top: 6px;
+      padding: 10px 11px;
       border-radius: 10px;
-      border: 2px solid #d96e30;
-      box-sizing: border-box;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(7,9,18,0.9);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: border 0.18s, box-shadow 0.18s, background 0.18s;
     }
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(122,92,255,0.3);
+      background: rgba(7,9,18,1);
+    }
+    .field { margin-bottom: 14px; }
+    .row { display: flex; gap: 10px; }
     .btn {
       width: 100%;
-      padding: 14px;
-      margin-top: 18px;
-      border-radius: 10px;
+      padding: 11px;
+      border-radius: 999px;
       border: none;
-      background: #d96e30;
-      color: white;
-      font-weight: bold;
-      font-size: 1rem;
       cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      margin-top: 6px;
+      transition: transform 0.1s ease, box-shadow 0.12s ease, background 0.12s ease;
     }
-    #errorMessage {
-      margin-top: 10px;
-      color: #b00020;
-      font-size: 0.9rem;
-      min-height: 1.2em;
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--primary));
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(122,92,255,0.45);
     }
-    .link {
-      display: block;
-      margin-top: 12px;
-      text-align: center;
-      color: #5a3e2b;
-      text-decoration: underline;
-      font-size: 0.9rem;
+    .btn-primary:active { transform: translateY(1px); box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+    .hint { text-align: center; font-size: 13px; color: var(--muted); margin-top: 12px; }
+    .link { color: var(--primary); cursor: pointer; text-decoration: none; }
+    .link:hover { text-decoration: underline; }
+    .error { color: #ff4d6a; font-size: 13px; min-height: 16px; margin-bottom: 8px; }
+    .pill-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    .pill {
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      font-size: 11px;
+      color: var(--muted);
     }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>Sign Up</h1>
+    <h1>Create an account</h1>
+    <p class="subtitle">Join Laundry Bubbles and Roll & Connect</p>
 
-    <label for="email">Email</label>
-    <input id="email" type="email" placeholder="you@example.com" />
+    <div class="pill-row">
+      <span class="pill">Step 1: Basic info</span>
+      <span class="pill">Email confirmation will be backend later</span>
+    </div>
 
-    <label for="password">Password</label>
-    <input id="password" type="password" placeholder="Create a password" />
+    <div class="error" id="error"></div>
 
-    <label for="role">Role</label>
-    <select id="role">
-      <option value="client" selected>Client</option>
-      <option value="washer">Washer</option>
-    </select>
+    <div class="field">
+      <label for="name">Full name</label>
+      <input id="name" type="text" placeholder="Alex Turner" />
+    </div>
 
-    <button id="signupButton" class="btn">Sign Up</button>
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" type="email" placeholder="you@example.com" autocomplete="email" />
+    </div>
 
-    <div id="errorMessage"></div>
+    <div class="field row">
+      <div style="flex: 2;">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="••••••••" autocomplete="new-password" />
+      </div>
+      <div style="flex: 1;">
+        <label for="role">I am a</label>
+        <select id="role">
+          <option value="client">Client</option>
+          <option value="washer">Washer</option>
+        </select>
+      </div>
+    </div>
 
-    <a class="link" href="login.html">Already have an account? Log in</a>
+    <div class="field">
+      <label for="phone">Phone (optional)</label>
+      <input id="phone" type="tel" placeholder="(555) 123-4567" />
+    </div>
+
+    <button class="btn btn-primary" id="signupBtn">Create account</button>
+
+    <p class="hint">
+      Already have an account?
+      <a class="link" id="loginLink">Log in</a>
+    </p>
   </div>
 
-  <script type="module">
-    import { supabase } from "./supabase.js";
+  <script>
+    const signupBtn = document.getElementById("signupBtn");
+    const loginLink = document.getElementById("loginLink");
+    const errorEl = document.getElementById("error");
 
-    const emailInput = document.getElementById("email");
-    const passwordInput = document.getElementById("password");
-    const roleSelect = document.getElementById("role");
-    const signupButton = document.getElementById("signupButton");
-    const errorMessage = document.getElementById("errorMessage");
-
-    signupButton.addEventListener("click", signup);
-
-    async function signup() {
-      errorMessage.textContent = "";
-      signupButton.disabled = true;
-      signupButton.textContent = "Signing up...";
-
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
-      const role = roleSelect.value;
-
-      if (!email || !password) {
-        errorMessage.textContent = "Please enter email and password.";
-        signupButton.disabled = false;
-        signupButton.textContent = "Sign Up";
-        return;
-      }
-
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password
-      });
-
-      if (error) {
-        errorMessage.textContent = error.message || "Sign up failed.";
-        signupButton.disabled = false;
-        signupButton.textContent = "Sign Up";
-        return;
-      }
-
-      if (data && data.user) {
-        await supabase.from("profiles").insert({
-          id: data.user.id,
-          email,
-          role,
-          notify_order_updates: true,
-          notify_promotions: false,
-          notify_washer_alerts: true
-        });
-      }
-
-      alert("Check your email to confirm your account.");
-      signupButton.disabled = false;
-      signupButton.textContent = "Sign Up";
+    function navigateTo(page) {
+      window.location.href = page;
     }
+
+    signupBtn.addEventListener("click", () => {
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const role = document.getElementById("role").value;
+
+      if (!name || !email || !password) {
+        errorEl.textContent = "Name, email, and password are required.";
+        return;
+      }
+
+      errorEl.textContent = "";
+
+      // Fake "signup": save to localStorage
+      const user = { name, email, role, phone };
+      localStorage.setItem("lb_user", JSON.stringify(user));
+
+      alert("Signup demo complete! In the real app, we'd send a verification email now.");
+
+      if (role === "client") {
+        navigateTo("client-dashboard.html");
+      } else {
+        navigateTo("washer-dashboard.html"); // will exist later
+      }
+    });
+
+    loginLink.addEventListener("click", () => navigateTo("login.html"));
   </script>
 </body>
 </html>

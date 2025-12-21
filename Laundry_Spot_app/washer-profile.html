@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Washer Profile – Roll & Connect</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{--primary:#4da6ff;--accent:#7a5cff;--bg:#050816;--text:#f9fbff;--muted:#8f9ac4;}
+    *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif;}
+    body{background:#050816;color:var(--text);padding:14px;}
+    header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+    .back{width:32px;height:32px;border-radius:999px;border:1px solid rgba(255,255,255,0.16);background:#0d1121;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+    h1{font-size:20px;}
+    .card{background:#0d1121;border-radius:20px;padding:14px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.08);}
+    label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px;}
+    input{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:#141a33;color:var(--text);margin-bottom:12px;}
+    .btn{width:100%;padding:10px;border-radius:999px;border:none;cursor:pointer;font-weight:600;font-size:14px;}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="back" onclick="go('washer-dashboard.html')">←</div>
+    <h1>Your Profile</h1>
+  </header>
+
+  <div class="card">
+    <label>Name</label>
+    <input id="name" />
+
+    <label>Email</label>
+    <input id="email" disabled />
+
+    <label>Service Area</label>
+    <input id="area" placeholder="Midtown, Decatur, etc." />
+
+    <label>Bio</label>
+    <input id="bio" placeholder="Short description..." />
+
+    <button class="btn btn-primary" id="saveBtn">Save Changes</button>
+  </div>
+
+  <script>
+    function go(p){ window.location.href = p; }
+
+    const washer = JSON.parse(localStorage.getItem("lb_user") || "{}");
+
+    document.getElementById("name").value = washer.name || "";
+    document.getElementById("email").value = washer.email || "";
+    document.getElementById("area").value = washer.area || "";
+    document.getElementById("bio").value = washer.bio || "";
+
+    document.getElementById("saveBtn").onclick = ()=>{
+      washer.name = document.getElementById("name").value;
+      washer.area = document.getElementById("area").value;
+      washer.bio = document.getElementById("bio").value;
+      localStorage.setItem("lb_user", JSON.stringify(washer));
+      alert("Profile updated!");
+    };
+  </script>
+</body>
+</html>

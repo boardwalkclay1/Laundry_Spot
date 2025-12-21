@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Find a Washer – Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --primary: #4da6ff;
+      --accent: #7a5cff;
+      --text: #f9fbff;
+      --muted: #9aa3c7;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(77,166,255,0.18), transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(122,92,255,0.18), transparent 60%),
+        #030715;
+      color: var(--text);
+      padding: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+    .grid-overlay {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      z-index: 2;
+      position: relative;
+    }
+    .back {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(5,7,18,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .title-wrap h1 { font-size: 18px; }
+    .title-wrap span { font-size: 12px; color: var(--muted); }
+    #map {
+      width: 100%;
+      height: calc(100vh - 160px);
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.16);
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
+    }
+    .bottom-sheet {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: -260px;
+      background: rgba(6,8,20,0.98);
+      border-radius: 18px 18px 0 0;
+      border-top: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 -12px 30px rgba(0,0,0,0.7);
+      padding: 14px;
+      transition: 0.25s ease-out;
+      max-width: 600px;
+      margin: 0 auto;
+      z-index: 10;
+    }
+    .bottom-sheet.visible { bottom: 0; }
+    .sheet-handle {
+      width: 32px;
+      height: 3px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.18);
+      margin: 4px auto 10px;
+    }
+    .sheet-name { font-size: 16px; font-weight: 600; }
+    .sheet-meta { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .sheet-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .tag {
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.2);
+      font-size: 11px;
+      background: rgba(7,9,18,0.95);
+    }
+    .sheet-actions { display: flex; gap: 10px; }
+    .btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-overlay"></div>
+
+  <header>
+    <div class="back" id="backBtn">←</div>
+    <div class="title-wrap">
+      <h1>Find a washer</h1>
+      <span>Live map · Atlanta</span>
+    </div>
+  </header>
+
+  <div id="map"></div>
+
+  <div class="bottom-sheet" id="bottomSheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-name" id="sheetName"></div>
+    <div class="sheet-meta" id="sheetMeta"></div>
+    <div class="sheet-tags" id="sheetTags"></div>
+    <div class="sheet-actions">
+      <button class="btn btn-secondary" id="viewProfileBtn">View profile</button>
+      <button class="btn btn-primary" id="requestPickupBtn">Request pickup</button>
+    </div>
+  </div>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB02c_eleXuhHWdSMJzqk9mESbXn_PT2zc"></script>
+  <script>
+    const washers = [
+      {
+        id: "w1",
+        name: "BeltLine Bubbles",
+        lat: 33.7550,
+        lng: -84.39,
+        distance: "1.2 mi",
+        rating: 4.9,
+        jobs: 128,
+        tags: ["Eco detergents", "Express", "Pickup & dropoff"]
+      },
+      {
+        id: "w2",
+        name: "Decatur Fresh Fold",
+        lat: 33.774,
+        lng: -84.295,
+        distance: "3.4 mi",
+        rating: 4.7,
+        jobs: 92,
+        tags: ["Fold only", "Family-friendly"]
+      },
+      {
+        id: "w3",
+        name: "Midtown Spin & Smile",
+        lat: 33.78,
+        lng: -84.38,
+        distance: "5.1 mi",
+        rating: 4.8,
+        jobs: 203,
+        tags: ["Premium", "Delicate care", "Same-day"]
+      }
+    ];
+
+    let map;
+    let activeWasher = null;
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 33.7490, lng: -84.3880 },
+        zoom: 12,
+        styles: [
+          { elementType: "geometry", stylers: [{ color: "#1d1d2b" }] },
+          { elementType: "labels.text.fill", stylers: [{ color: "#f9fbff" }] },
+          { elementType: "labels.text.stroke", stylers: [{ color: "#1d1d2b" }] },
+          { featureType: "water", stylers: [{ color: "#0b0f1a" }] },
+          { featureType: "road", stylers: [{ color: "#2a2f45" }] }
+        ]
+      });
+
+      washers.forEach(w => {
+        const marker = new google.maps.Marker({
+          position: { lat: w.lat, lng: w.lng },
+          map,
+          title: w.name,
+          icon: { url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+        });
+        marker.addListener("click", () => openWasherSheet(w));
+      });
+    }
+
+    function openWasherSheet(w) {
+      activeWasher = w;
+      document.getElementById("sheetName").textContent = w.name;
+      document.getElementById("sheetMeta").textContent =
+        `${w.distance} · ${w.rating}★ · ${w.jobs} jobs`;
+
+      const tagsEl = document.getElementById("sheetTags");
+      tagsEl.innerHTML = "";
+      w.tags.forEach(t => {
+        const tag = document.createElement("span");
+        tag.className = "tag";
+        tag.textContent = t;
+        tagsEl.appendChild(tag);
+      });
+
+      document.getElementById("bottomSheet").classList.add("visible");
+    }
+
+    document.getElementById("backBtn").onclick = () => {
+      window.location.href = "client-dashboard.html";
+    };
+
+    document.getElementById("requestPickupBtn").onclick = () => {
+      if (activeWasher) {
+        localStorage.setItem("lb_selected_washer", JSON.stringify(activeWasher));
+      }
+      window.location.href = "request-pickup.html";
+    };
+
+    window.onload = initMap;
+  </script>
+</body>
+</html>

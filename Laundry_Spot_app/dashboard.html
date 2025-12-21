@@ -1,123 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard – Laundry Spot</title>
+  <title>Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    body {
-      margin:0;
-      font-family:Arial,sans-serif;
-      background:linear-gradient(135deg,#d96e30,#f4c542);
-      min-height:100vh;
-      padding:20px;
-      color:#5a3e2b;
-    }
-    h1 {
-      margin-top:0;
-      text-align:center;
-    }
-    .card {
-      background:#fff4d9;
-      padding:20px;
-      border-radius:16px;
-      box-shadow:0 6px 16px rgba(0,0,0,0.25);
-      max-width:520px;
-      margin:0 auto 20px;
-    }
-    .btn {
-      display:block;
-      width:100%;
-      padding:12px;
-      border-radius:10px;
-      border:none;
-      background:#d96e30;
-      color:white;
-      font-weight:bold;
-      text-align:center;
-      margin-top:10px;
-      text-decoration:none;
-      box-sizing:border-box;
-      cursor:pointer;
-    }
-    .secondary {
-      background:#f4c542;
-      color:#5a3e2b;
-      border:2px solid #d96e30;
-    }
-    .danger {
-      background:#b83a2e;
-    }
-    #adminCard {
-      display:none;
-    }
-  </style>
 </head>
-<body>
-  <h1>Laundry Spot Dashboard</h1>
+<body style="font-family:Arial; padding:20px;">
 
-  <div class="card">
-    <h2>Welcome</h2>
-    <p id="welcomeText">Loading your profile...</p>
-    <a class="btn" href="settings.html">Settings</a>
-    <button class="btn danger" id="logoutBtn">Log Out</button>
-  </div>
+  <h1>Dashboard</h1>
+  <p id="welcome">Loading...</p>
 
-  <div class="card" id="adminCard">
+  <button id="logoutBtn" style="padding:10px; margin-top:10px;">Log Out</button>
+
+  <div id="adminTools" style="display:none; margin-top:20px;">
     <h2>Admin Tools</h2>
-    <p>You are an admin. Manage the system below.</p>
-    <a class="btn" href="admin-dashboard.html">Go to Admin Dashboard</a>
+    <button onclick="window.location.href='admin-dashboard.html'" style="padding:10px;">Go to Admin Dashboard</button>
   </div>
 
   <script type="module">
     import { supabase } from "./supabase.js";
 
-    const SUPER_ADMIN_EMAIL = "boardwalk1@gmail.com";
+    const SUPER_ADMIN = "boardwalkclay1@gmail.com";
 
-    const welcomeText = document.getElementById("welcomeText");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const adminCard = document.getElementById("adminCard");
+    const { data } = await supabase.auth.getSession();
+    const session = data.session;
 
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-    if (sessionError) {
-      console.error("Session error:", sessionError);
-    }
-    const session = sessionData?.session;
     if (!session) {
       window.location.href = "login.html";
     }
 
-    const userId = session.user.id;
-    const userEmail = session.user.email;
+    const email = session.user.email;
+    document.getElementById("welcome").innerText = "Welcome, " + email;
 
-    // Ensure profile exists
-    await supabase.from("profiles").upsert({
-      id: userId,
-      email: userEmail,
-    });
-
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
-
-    if (profileError) {
-      console.error("Profile load error:", profileError);
-      welcomeText.innerText = "Error loading profile.";
-    } else if (profile) {
-      welcomeText.innerText = `Hello, ${profile.name || profile.email || "Laundry Friend"}!`;
+    if (email === SUPER_ADMIN) {
+      document.getElementById("adminTools").style.display = "block";
     }
 
-    // Show admin tools if super admin email
-    if (userEmail === SUPER_ADMIN_EMAIL) {
-      adminCard.style.display = "block";
-    }
-
-    logoutBtn.onclick = async () => {
+    document.getElementById("logoutBtn").onclick = async () => {
       await supabase.auth.signOut();
       window.location.href = "login.html";
     };
   </script>
+
 </body>
 </html>

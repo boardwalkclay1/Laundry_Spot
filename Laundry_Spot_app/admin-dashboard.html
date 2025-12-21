@@ -102,6 +102,8 @@
   <script type="module">
     import { supabase } from "./supabase.js";
 
+    const SUPER_ADMIN_EMAIL = "boardwalk1@gmail.com";
+
     const statusText = document.getElementById("statusText");
     const usersTableBody = document.getElementById("usersTableBody");
     const logoutBtn = document.getElementById("logoutBtn");
@@ -115,20 +117,18 @@
     const userId = session.user.id;
     const userEmail = session.user.email;
 
-    // Ensure profile exists
-    await supabase.from("profiles").upsert({ id: userId, email: userEmail });
-
-    // Ensure current user is admin
-    const { data: me, error: meError } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
-
-    if (meError || !me || me.role !== "admin") {
+    // Only allow super admin in here
+    if (userEmail !== SUPER_ADMIN_EMAIL) {
       alert("You are not an admin.");
       window.location.href = "dashboard.html";
     }
+
+    // Ensure your profile exists
+    await supabase.from("profiles").upsert({
+      id: userId,
+      email: userEmail,
+      role: "admin",
+    });
 
     statusText.innerText = "Loading users...";
 

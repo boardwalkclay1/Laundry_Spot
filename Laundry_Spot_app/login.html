@@ -93,6 +93,32 @@
     const signupBtn = document.getElementById("signupBtn");
     const status = document.getElementById("status");
 
+    const SUPER_ADMIN_EMAIL = "boardwalk1@gmail.com";
+
+    async function routeAfterAuth() {
+      const { data, error } = await supabase.auth.getSession();
+      if (error || !data.session) {
+        status.innerText = "No session after login.";
+        console.error(error);
+        return;
+      }
+      const user = data.session.user;
+      const email = user.email;
+
+      // Make sure profile exists and mark admin in DB for your email
+      await supabase.from("profiles").upsert({
+        id: user.id,
+        email: email,
+        role: email === SUPER_ADMIN_EMAIL ? "admin" : "client",
+      });
+
+      if (email === SUPER_ADMIN_EMAIL) {
+        window.location.href = "admin-dashboard.html";
+      } else {
+        window.location.href = "dashboard.html";
+      }
+    }
+
     loginBtn.onclick = async () => {
       status.innerText = "Logging in...";
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -104,7 +130,7 @@
         console.error(error);
       } else {
         status.innerText = "Logged in!";
-        window.location.href = "dashboard.html";
+        await routeAfterAuth();
       }
     };
 
@@ -118,7 +144,7 @@
         status.innerText = "Sign up error: " + error.message;
         console.error(error);
       } else {
-        status.innerText = "Account created! Check your email if confirmation is required.";
+        status.innerText = "Account created! Now log in.";
       }
     };
   </script>

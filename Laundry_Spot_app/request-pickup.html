@@ -80,6 +80,10 @@
     .btn-row{
       display:flex;gap:10px;margin-bottom:10px;
     }
+    .price-row{
+      display:flex;justify-content:space-between;font-size:13px;color:var(--muted);
+    }
+    .price-row span:last-child{color:var(--text);font-weight:600;}
   </style>
 </head>
 <body>
@@ -87,7 +91,7 @@
     <div class="back" onclick="window.location.href='client-map.html'">←</div>
     <div>
       <h1>Request pickup</h1>
-      <p class="sub">Confirm your washer & pickup details.</p>
+      <p class="sub">Confirm your washer, location, and price.</p>
     </div>
   </header>
 
@@ -96,7 +100,22 @@
     <div style="font-size:15px;font-weight:600;" id="washerName">Washer</div>
     <div class="sub" id="washerMeta"></div>
     <div class="sub" id="washerTags"></div>
-    <div class="sub" id="washerPrice"></div>
+
+    <div style="margin-top:6px;">
+      <div class="price-row">
+        <span>Washer price (per load)</span>
+        <span id="washerPrice">$0.00</span>
+      </div>
+      <div class="price-row">
+        <span>Platform fee (10%)</span>
+        <span id="platformFee">$0.00</span>
+      </div>
+      <div class="price-row">
+        <span>Total you pay (per load)</span>
+        <span id="clientTotal">$0.00</span>
+      </div>
+    </div>
+
     <div class="btn-row">
       <button class="btn btn-secondary" id="messageBtn">Message</button>
       <button class="btn btn-secondary" id="directionsBtn">Directions</button>
@@ -137,6 +156,9 @@
   <script>
     let washer = null;
     let miniMap, miniMarker;
+    let basePrice = 0;
+    let platformFee = 0;
+    let clientTotal = 0;
 
     function openDirections(lat,lng){
       const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
@@ -157,8 +179,14 @@
           `${distance} · ${washer.rating}★ · ${washer.jobs} jobs`;
         document.getElementById("washerTags").textContent =
           Array.isArray(washer.tags) ? washer.tags.join(" · ") : "";
-        document.getElementById("washerPrice").textContent =
-          washer.price_per_load ? `$${washer.price_per_load} per load` : "";
+
+        basePrice = washer.price_per_load || 0;
+        platformFee = +(basePrice * 0.10).toFixed(2);
+        clientTotal = +(basePrice + platformFee).toFixed(2);
+
+        document.getElementById("washerPrice").textContent = `$${basePrice.toFixed(2)}`;
+        document.getElementById("platformFee").textContent = `$${platformFee.toFixed(2)}`;
+        document.getElementById("clientTotal").textContent = `$${clientTotal.toFixed(2)}`;
       }catch(e){}
     }
 
@@ -184,7 +212,6 @@
       try{
         const raw = localStorage.getItem("lb_pickup_location");
         if(!raw){
-          // fallback to Atlanta center
           loadMiniMap(33.7490,-84.3880);
           return;
         }
@@ -247,19 +274,31 @@
         return;
       }
       const loc = JSON.parse(localStorage.getItem("lb_pickup_location") || "{}");
+      const rawUser = localStorage.getItem("lb_user") || "{}";
+      const user = JSON.parse(rawUser);
+
       const payload = {
         washer,
+        clientId: user.id,             // for washer side later
         pickupAddress:address,
         pickupLat:loc.lat,
         pickupLng:loc.lng,
         pickupWindow:document.getElementById("pickupWindow").value,
         notes:document.getElementById("notes").value.trim(),
         status:"pending",
-        created_at:new Date().toISOString()
+        created_at:new Date().toISOString(),
+
+        // money fields per load
+        basePricePerLoad: basePrice,
+        platformFeePerLoad: platformFee,
+        clientTotalPerLoad: clientTotal,
+        washerEarningsPerLoad: basePrice
       };
+
       const history = JSON.parse(localStorage.getItem("lb_pickup_history") || "[]");
       history.unshift(payload);
       localStorage.setItem("lb_pickup_history",JSON.stringify(history));
+
       alert("Pickup request saved.");
       window.location.href = "client-dashboard.html";
     };

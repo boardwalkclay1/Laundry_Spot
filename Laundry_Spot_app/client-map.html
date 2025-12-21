@@ -6,222 +6,130 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root {
-      --primary: #4da6ff;
-      --accent: #7a5cff;
-      --text: #f9fbff;
-      --muted: #9aa3c7;
-      --card: rgba(5,7,18,0.96);
+      --primary:#4da6ff; --accent:#7a5cff; --text:#f9fbff; --muted:#9aa3c7; --card:rgba(5,7,18,0.96);
     }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
-
+    * { margin:0; padding:0; box-sizing:border-box; font-family:system-ui,sans-serif; }
     body {
-      min-height: 100vh;
+      min-height:100vh;
       background:
-        radial-gradient(circle at 20% 20%, rgba(77,166,255,0.18), transparent 60%),
-        radial-gradient(circle at 80% 80%, rgba(122,92,255,0.18), transparent 60%),
+        radial-gradient(circle at 20% 20%,rgba(77,166,255,0.18),transparent 60%),
+        radial-gradient(circle at 80% 80%,rgba(122,92,255,0.18),transparent 60%),
         #030715;
-      color: var(--text);
-      padding: 10px;
-      overflow: hidden;
-      position: relative;
+      color:var(--text);
+      padding:10px;
+      overflow:hidden;
+      position:relative;
     }
-
-    .grid-overlay {
-      position: fixed;
-      inset: 0;
+    .grid-overlay{
+      position:fixed;inset:0;
       background-image:
-        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
-      background-size: 48px 48px;
-      opacity: 0.35;
-      pointer-events: none;
-      z-index: 0;
+        linear-gradient(rgba(255,255,255,0.06) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,0.05) 1px,transparent 1px);
+      background-size:48px 48px;
+      opacity:0.35;pointer-events:none;z-index:0;
     }
-
     header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 8px;
-      z-index: 2;
-      position: relative;
+      display:flex;align-items:center;gap:10px;margin-bottom:8px;z-index:2;position:relative;
     }
-
     .back {
-      width: 34px;
-      height: 34px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.16);
-      background: rgba(5,7,18,0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 16px;
+      width:34px;height:34px;border-radius:999px;
+      border:1px solid rgba(255,255,255,0.16);
+      background:rgba(5,7,18,0.9);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;font-size:16px;
     }
-
-    .title-wrap h1 { font-size: 18px; }
-    .title-wrap span { font-size: 12px; color: var(--muted); }
-
+    .title-wrap h1 { font-size:18px; }
+    .title-wrap span { font-size:12px;color:var(--muted); }
     #map {
-      width: 100%;
-      height: calc(100vh - 210px);
-      border-radius: 22px;
-      border: 1px solid rgba(255,255,255,0.16);
-      overflow: hidden;
-      position: relative;
-      z-index: 1;
+      width:100%;
+      height:calc(100vh - 210px);
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,0.16);
+      overflow:hidden;
+      position:relative;
+      z-index:1;
     }
-
     .bottom-sheet {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      max-width: 700px;
-      margin: 0 auto;
-      padding: 8px 10px 14px;
-      z-index: 10;
+      position:fixed;left:0;right:0;bottom:0;
+      max-width:700px;margin:0 auto;
+      padding:8px 10px 14px;
+      z-index:10;
     }
-
     .sheet-inner {
-      background: var(--card);
-      border-radius: 18px 18px 0 0;
-      border-top: 1px solid rgba(255,255,255,0.14);
-      box-shadow: 0 -14px 34px rgba(0,0,0,0.75);
-      padding: 8px 12px 10px;
-      max-height: 260px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      background:var(--card);
+      border-radius:18px 18px 0 0;
+      border-top:1px solid rgba(255,255,255,0.14);
+      box-shadow:0 -14px 34px rgba(0,0,0,0.75);
+      padding:8px 12px 10px;
+      max-height:260px;
+      display:flex;flex-direction:column;gap:8px;
     }
-
     .sheet-handle {
-      width: 36px;
-      height: 3px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.26);
-      margin: 4px auto 6px;
+      width:36px;height:3px;border-radius:999px;
+      background:rgba(255,255,255,0.26);
+      margin:4px auto 6px;
     }
-
     .sheet-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4px;
+      display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;
     }
-
-    .sheet-header-title {
-      font-size: 14px;
-      color: var(--muted);
-    }
-
-    .sheet-header-count {
-      font-size: 13px;
-      color: var(--muted);
-    }
-
+    .sheet-header-title { font-size:14px;color:var(--muted); }
+    .sheet-header-count { font-size:13px;color:var(--muted); }
     .washer-list {
-      overflow-x: auto;
-      display: flex;
-      gap: 10px;
-      padding-bottom: 4px;
+      overflow-x:auto;
+      display:flex;gap:10px;
+      padding-bottom:4px;
     }
-
     .washer-card {
-      min-width: 220px;
-      max-width: 260px;
-      background: rgba(10,12,30,0.98);
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.16);
-      padding: 10px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-      cursor: pointer;
-      transition: 0.15s ease;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+      min-width:240px;max-width:260px;
+      background:rgba(10,12,30,0.98);
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.16);
+      padding:10px;
+      box-shadow:0 8px 20px rgba(0,0,0,0.6);
+      cursor:pointer;
+      transition:0.15s ease;
+      display:flex;flex-direction:column;gap:6px;
     }
-
     .washer-card.active {
-      border-color: var(--primary);
-      box-shadow: 0 12px 28px rgba(77,166,255,0.6);
-      transform: translateY(-2px);
+      border-color:var(--primary);
+      box-shadow:0 12px 28px rgba(77,166,255,0.6);
+      transform:translateY(-2px);
     }
-
-    .washer-top {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
+    .washer-top { display:flex;gap:8px;align-items:center; }
     .washer-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--primary));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      font-weight: 600;
+      width:32px;height:32px;border-radius:50%;
+      background:linear-gradient(135deg,var(--accent),var(--primary));
+      display:flex;align-items:center;justify-content:center;
+      font-size:14px;font-weight:600;
     }
-
-    .washer-name {
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .washer-meta {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .washer-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-    }
-
+    .washer-name { font-size:14px;font-weight:600; }
+    .washer-meta { font-size:12px;color:var(--muted); }
+    .washer-tags { display:flex;flex-wrap:wrap;gap:4px; }
     .tag {
-      font-size: 11px;
-      padding: 3px 7px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.16);
-      color: var(--muted);
+      font-size:11px;padding:3px 7px;border-radius:999px;
+      border:1px solid rgba(255,255,255,0.16);
+      color:var(--muted);
     }
-
-    .washer-price {
-      font-size: 13px;
-      margin-top: 2px;
-    }
-
-    .washer-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 4px;
-    }
-
+    .washer-price { font-size:13px;margin-top:2px; }
+    .washer-actions { display:flex;flex-wrap:wrap;gap:6px;margin-top:4px; }
     .btn {
-      flex: 1;
-      padding: 7px;
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 600;
+      flex:1;
+      padding:6px;
+      border-radius:999px;
+      border:none;
+      cursor:pointer;
+      font-size:11px;
+      font-weight:600;
+      white-space:nowrap;
     }
-
     .btn-secondary {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      color: var(--muted);
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.12);
+      color:var(--muted);
     }
-
     .btn-primary {
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      color: #fff;
+      background:linear-gradient(135deg,var(--primary),var(--accent));
+      color:#fff;
     }
   </style>
 </head>
@@ -250,107 +158,133 @@
   </div>
 
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB02c_eleXuhHWdSMJzqk9mESbXn_PT2zc"></script>
+
   <script>
-    function nav(page) { window.location.href = page; }
+    function nav(page){ window.location.href = page; }
 
     document.getElementById("backBtn").onclick = () => nav("client-dashboard.html");
 
-    const clientLocation = { lat: 33.7490, lng: -84.3880 };
+    function openDirections(lat,lng){
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+      window.open(url,"_blank");
+    }
+
+    const clientLocation = { lat:33.7490, lng:-84.3880 };
 
     const washers = [
       {
-        id: "w1",
-        name: "BeltLine Bubbles",
-        lat: 33.7550,
-        lng: -84.39,
-        rating: 4.9,
-        jobs: 128,
-        price_per_load: 18,
-        tags: ["Eco detergents", "Express", "Pickup & dropoff"]
+        id:"w1",
+        name:"BeltLine Bubbles",
+        lat:33.7550,
+        lng:-84.39,
+        rating:4.9,
+        jobs:128,
+        price_per_load:18,
+        tags:["Eco detergents","Express","Pickup & dropoff"]
       },
       {
-        id: "w2",
-        name: "Decatur Fresh Fold",
-        lat: 33.774,
-        lng: -84.295,
-        rating: 4.7,
-        jobs: 92,
-        price_per_load: 16,
-        tags: ["Fold only", "Family-friendly"]
+        id:"w2",
+        name:"Decatur Fresh Fold",
+        lat:33.774,
+        lng:-84.295,
+        rating:4.7,
+        jobs:92,
+        price_per_load:16,
+        tags:["Fold only","Family-friendly"]
       },
       {
-        id: "w3",
-        name: "Midtown Spin & Smile",
-        lat: 33.78,
-        lng: -84.38,
-        rating: 4.8,
-        jobs: 203,
-        price_per_load: 20,
-        tags: ["Premium", "Delicate care", "Same-day"]
+        id:"w3",
+        name:"Midtown Spin & Smile",
+        lat:33.78,
+        lng:-84.38,
+        rating:4.8,
+        jobs:203,
+        price_per_load:20,
+        tags:["Premium","Delicate care","Same-day"]
       }
     ];
 
-    function haversineDistance(lat1, lng1, lat2, lng2) {
-      const toRad = d => d * Math.PI / 180;
-      const R = 6371; // km
-      const dLat = toRad(lat2 - lat1);
-      const dLng = toRad(lng2 - lng1);
+    function haversineDistance(lat1,lng1,lat2,lng2){
+      const toRad = d => d * Math.PI/180;
+      const R = 6371;
+      const dLat = toRad(lat2-lat1);
+      const dLng = toRad(lng2-lng1);
       const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-        Math.sin(dLng / 2) * Math.sin(dLng / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return R * c * 0.621371; // to miles
+        Math.sin(dLat/2)**2 +
+        Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+      const c = 2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+      return R*c*0.621371;
     }
 
     let map;
     const markersById = {};
     let activeWasherId = null;
 
-    function initMap() {
-      map = new google.maps.Map(document.getElementById("map"), {
-        center: clientLocation,
-        zoom: 12,
-        styles: [
-          { elementType: "geometry", stylers: [{ color: "#1d1d2b" }] },
-          { elementType: "labels.text.fill", stylers: [{ color: "#f9fbff" }] },
-          { elementType: "labels.text.stroke", stylers: [{ color: "#1d1d2b" }] },
-          { featureType: "water", stylers: [{ color: "#0b0f1a" }] },
-          { featureType: "road", stylers: [{ color: "#2a2f45" }] }
+    function initMap(){
+      map = new google.maps.Map(document.getElementById("map"),{
+        center:clientLocation,
+        zoom:12,
+        styles:[
+          {elementType:"geometry",stylers:[{color:"#1d1d2b"}]},
+          {elementType:"labels.text.fill",stylers:[{color:"#f9fbff"}]},
+          {elementType:"labels.text.stroke",stylers:[{color:"#1d1d2b"}]},
+          {featureType:"water",stylers:[{color:"#0b0f1a"}]},
+          {featureType:"road",stylers:[{color:"#2a2f45"}]}
         ]
       });
 
-      // Compute distances
-      washers.forEach(w => {
-        w.distance_mi = haversineDistance(clientLocation.lat, clientLocation.lng, w.lat, w.lng);
+      washers.forEach(w=>{
+        w.distance_mi = haversineDistance(clientLocation.lat,clientLocation.lng,w.lat,w.lng);
       });
+      washers.sort((a,b)=>a.distance_mi - b.distance_mi);
 
-      washers.sort((a, b) => a.distance_mi - b.distance_mi);
-
-      // Markers
-      washers.forEach(w => {
+      washers.forEach(w=>{
         const marker = new google.maps.Marker({
-          position: { lat: w.lat, lng: w.lng },
+          position:{lat:w.lat,lng:w.lng},
           map,
-          title: w.name,
-          icon: { url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+          title:w.name,
+          icon:{url:"https://maps.google.com/mapfiles/ms/icons/blue-dot.png"}
         });
         markersById[w.id] = marker;
-        marker.addListener("click", () => {
-          focusWasher(w.id, true);
-        });
+        marker.addListener("click",()=>focusWasher(w.id,true));
       });
 
       buildWasherList();
     }
 
-    function buildWasherList() {
+    function saveSelectedWasher(id){
+      const w = washers.find(x=>x.id===id);
+      if(!w) return;
+      localStorage.setItem("lb_selected_washer",JSON.stringify(w));
+    }
+
+    function ensureConversationWithWasher(w){
+      const rawUser = localStorage.getItem("lb_user");
+      if(!rawUser) return null;
+      const user = JSON.parse(rawUser);
+      const clientId = user.id;
+      const washerId = w.id;
+      const convId = `conversation_${clientId}_${washerId}`;
+
+      const rawConvs = localStorage.getItem("lb_conversations");
+      const list = rawConvs ? JSON.parse(rawConvs) : [];
+      let conv = list.find(c=>c.id===convId);
+      if(!conv){
+        conv = { id:convId, clientId, washerId, otherName:w.name, messages:[] };
+        list.push(conv);
+        localStorage.setItem("lb_conversations",JSON.stringify(list));
+      }
+      localStorage.setItem("lb_active_conversation",convId);
+      return convId;
+    }
+
+    function buildWasherList(){
       const listEl = document.getElementById("washerList");
       const countEl = document.getElementById("washerCount");
       listEl.innerHTML = "";
       countEl.textContent = `${washers.length} washers`;
 
-      washers.forEach(w => {
+      washers.forEach(w=>{
         const card = document.createElement("div");
         card.className = "washer-card";
         card.dataset.id = w.id;
@@ -367,63 +301,60 @@
             </div>
           </div>
           <div class="washer-tags">
-            ${w.tags.map(t => `<span class="tag">${t}</span>`).join("")}
+            ${w.tags.map(t=>`<span class="tag">${t}</span>`).join("")}
           </div>
           <div class="washer-price">${priceLabel}</div>
           <div class="washer-actions">
             <button class="btn btn-secondary" data-role="profile" data-id="${w.id}">Profile</button>
             <button class="btn btn-primary" data-role="pickup" data-id="${w.id}">Request</button>
+            <button class="btn btn-secondary" data-role="message" data-id="${w.id}">Message</button>
+            <button class="btn btn-secondary" data-role="directions" data-id="${w.id}">Directions</button>
           </div>
         `;
 
-        card.addEventListener("click", (e) => {
+        card.addEventListener("click",(e)=>{
           const role = e.target.getAttribute("data-role");
           const wid = e.target.getAttribute("data-id");
-          if (role === "profile") {
-            selectWasherForFlow(wid);
-            nav("washer-profile.html");
-            e.stopPropagation();
-            return;
-          }
-          if (role === "pickup") {
-            selectWasherForFlow(wid);
-            nav("request-pickup.html");
-            e.stopPropagation();
-            return;
-          }
+          if(role){
+            const wObj = washers.find(x=>x.id===wid);
+            if(!wObj) return;
+            saveSelectedWasher(wid);
 
-          // Otherwise just focus this washer on map
-          focusWasher(w.id, true);
+            if(role==="profile"){
+              nav("washer-profile.html");
+            } else if(role==="pickup"){
+              nav("request-pickup.html");
+            } else if(role==="message"){
+              ensureConversationWithWasher(wObj);
+              nav("inbox.html");
+            } else if(role==="directions"){
+              openDirections(wObj.lat,wObj.lng);
+            }
+            e.stopPropagation();
+            return;
+          }
+          focusWasher(w.id,true);
         });
 
         listEl.appendChild(card);
       });
     }
 
-    function focusWasher(id, centerMap) {
+    function focusWasher(id,centerMap){
       activeWasherId = id;
       const listEl = document.getElementById("washerList");
       const cards = listEl.querySelectorAll(".washer-card");
-      cards.forEach(card => {
-        card.classList.toggle("active", card.dataset.id === id);
-        if (card.dataset.id === id && centerMap) {
-          card.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      cards.forEach(card=>{
+        card.classList.toggle("active",card.dataset.id===id);
+        if(card.dataset.id===id && centerMap){
+          card.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"});
         }
       });
-
-      const w = washers.find(x => x.id === id);
-      if (w && centerMap && markersById[id]) {
-        map.panTo({ lat: w.lat, lng: w.lng });
+      const w = washers.find(x=>x.id===id);
+      if(w && centerMap && markersById[id]){
+        map.panTo({lat:w.lat,lng:w.lng});
         map.setZoom(13);
       }
-    }
-
-    function selectWasherForFlow(id) {
-      const w = washers.find(x => x.id === id);
-      if (!w) return;
-      try {
-        localStorage.setItem("lb_selected_washer", JSON.stringify(w));
-      } catch (e) {}
     }
 
     window.onload = initMap;

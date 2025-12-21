@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Leave a tip – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --primary:#4da6ff;--accent:#7a5cff;--text:#f9fbff;--muted:#9aa3c7;--card:rgba(255,255,255,0.05); }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif;}
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at 20% 20%,rgba(77,166,255,0.18),transparent 60%),
+        radial-gradient(circle at 80% 80%,rgba(122,92,255,0.18),transparent 60%),
+        #030715;
+      color:var(--text);
+      padding:16px;
+    }
+    header{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+    .back{
+      width:34px;height:34px;border-radius:999px;
+      border:1px solid rgba(255,255,255,0.16);
+      background:rgba(5,7,18,0.9);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;font-size:16px;
+    }
+    h1{font-size:20px;margin-bottom:4px;}
+    .sub{font-size:13px;color:var(--muted);margin-bottom:10px;}
+    .card{
+      background:var(--card);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:16px;
+      padding:14px;
+      margin-bottom:12px;
+    }
+    .tip-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .tip-btn{
+      padding:10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(255,255,255,0.06);
+      color:var(--text);
+      text-align:center;
+      font-size:14px;
+      cursor:pointer;
+    }
+    .tip-btn.active{
+      border-color:var(--primary);
+      background:linear-gradient(135deg,var(--primary),var(--accent));
+    }
+    input{
+      width:100%;padding:10px;border-radius:12px;
+      border:1px solid rgba(255,255,255,0.12);
+      background:rgba(255,255,255,0.06);
+      color:var(--text);
+      margin-bottom:10px;
+      font-size:14px;
+    }
+    .btn{
+      width:100%;padding:12px;border-radius:999px;
+      border:none;cursor:pointer;font-weight:600;font-size:16px;margin-top:6px;
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,var(--primary),var(--accent));
+      color:#fff;
+      box-shadow:0 12px 28px rgba(77,166,255,0.45);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="back" onclick="window.location.href='client-dashboard.html'">←</div>
+    <div>
+      <h1>Leave a tip</h1>
+      <p class="sub">Thank your washer for taking care of your load.</p>
+    </div>
+  </header>
+
+  <section class="card">
+    <p class="sub" id="loadSummary">Recent load</p>
+
+    <div class="tip-grid">
+      <div class="tip-btn" data-percent="0.10">10%</div>
+      <div class="tip-btn" data-percent="0.15">15%</div>
+      <div class="tip-btn" data-percent="0.20">20%</div>
+    </div>
+
+    <label>Custom tip amount ($)</label>
+    <input id="customTip" placeholder="Enter amount or leave blank" />
+
+    <button class="btn btn-primary" id="saveTipBtn">Add tip</button>
+  </section>
+
+  <script>
+    let selectedPercent = null;
+    const tipButtons = document.querySelectorAll(".tip-btn");
+
+    tipButtons.forEach(btn=>{
+      btn.onclick = () => {
+        tipButtons.forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        selectedPercent = parseFloat(btn.getAttribute("data-percent"));
+      };
+    });
+
+    function loadLastCompleted(){
+      const history = JSON.parse(localStorage.getItem("lb_pickup_history") || "[]");
+      const lastIdx = parseInt(localStorage.getItem("lb_last_completed_load_index") || "-1",10);
+      if(lastIdx < 0 || !history[lastIdx]){
+        document.getElementById("loadSummary").textContent = "Most recent completed load";
+        return;
+      }
+      const load = history[lastIdx];
+      document.getElementById("loadSummary").textContent =
+        `${load.washer?.name || "Your washer"} · ${load.pickupAddress || ""}`;
+    }
+
+    document.getElementById("saveTipBtn").onclick = () => {
+      const history = JSON.parse(localStorage.getItem("lb_pickup_history") || "[]");
+      const lastIdx = parseInt(localStorage.getItem("lb_last_completed_load_index") || "-1",10);
+      if(lastIdx < 0 || !history[lastIdx]){
+        alert("No completed load found.");
+        return;
+      }
+      const load = history[lastIdx];
+
+      let tip = 0;
+      const custom = parseFloat(document.getElementById("customTip").value);
+      if(!isNaN(custom) && custom > 0){
+        tip = custom;
+      } else if(selectedPercent !== null){
+        const base = load.basePricePerLoad || load.washer?.price_per_load || 0;
+        tip = +(base * selectedPercent).toFixed(2);
+      }
+
+      load.tipAmount = (load.tipAmount || 0) + tip;
+      load.clientTotalPerLoad = (load.clientTotalPerLoad || 0) + tip;
+      load.washerEarningsPerLoad = (load.washerEarningsPerLoad || load.basePricePerLoad || 0) + tip;
+
+      history[lastIdx] = load;
+      localStorage.setItem("lb_pickup_history", JSON.stringify(history));
+
+      alert("Tip added. Thank you!");
+      window.location.href = "client-dashboard.html";
+    };
+
+    loadLastCompleted();
+  </script>
+</body>
+</html>

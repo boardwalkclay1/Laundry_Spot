@@ -1,216 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <title>Admin Dashboard – Laundry Spot</title>
+  <title>Admin Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    body {
-      margin:0;
-      font-family:Arial,sans-serif;
-      background:linear-gradient(135deg,#d96e30,#f4c542);
-      min-height:100vh;
-      padding:20px;
-      color:#5a3e2b;
-    }
-    h1 {
-      text-align:center;
-      margin-top:0;
-      margin-bottom:10px;
-    }
-    .subtitle {
-      text-align:center;
-      font-size:0.9rem;
-      opacity:0.85;
-      margin-bottom:20px;
-    }
-    .card {
-      background:#fff4d9;
-      padding:16px;
-      border-radius:16px;
-      box-shadow:0 6px 16px rgba(0,0,0,0.25);
-      max-width:900px;
-      margin:0 auto 20px;
-    }
-    table {
-      width:100%;
-      border-collapse:collapse;
-      font-size:0.9rem;
-    }
-    th, td {
-      border-bottom:1px solid #e2c9a5;
-      padding:8px;
-      text-align:left;
-    }
-    th {
-      background:#fce8b9;
-    }
-    select {
-      padding:4px 6px;
-      border-radius:6px;
-      border:1px solid #d96e30;
-    }
-    .btn {
-      display:inline-block;
-      padding:8px 12px;
-      margin-top:10px;
-      border-radius:10px;
-      border:none;
-      background:#d96e30;
-      color:white;
-      font-weight:bold;
-      cursor:pointer;
-      text-decoration:none;
-    }
-    .danger {
-      background:#b83a2e;
-    }
-    #statusText {
-      font-size:0.85rem;
-      margin-top:6px;
-    }
-  </style>
 </head>
-<body>
+<body style="font-family:Arial; padding:20px;">
+
   <h1>Admin Dashboard</h1>
-  <div class="subtitle">Manage users and roles</div>
+  <p id="status">Checking access...</p>
 
-  <div class="card">
-    <button class="btn" onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
-    <button class="btn danger" id="logoutBtn">Log Out</button>
-    <div id="statusText"></div>
-  </div>
-
-  <div class="card">
-    <h2>All Users</h2>
-    <div style="overflow-x:auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>Email</th>
-            <th>Name</th>
-            <th>Role</th>
-            <th>Verification</th>
-            <th>Save</th>
-          </tr>
-        </thead>
-        <tbody id="usersTableBody"></tbody>
-      </table>
-    </div>
-  </div>
+  <button id="logoutBtn" style="padding:10px; margin-top:10px;">Log Out</button>
 
   <script type="module">
     import { supabase } from "./supabase.js";
 
-    const SUPER_ADMIN_EMAIL = "boardwalk1@gmail.com";
+    const SUPER_ADMIN = "boardwalkclay1@gmail.com";
 
-    const statusText = document.getElementById("statusText");
-    const usersTableBody = document.getElementById("usersTableBody");
-    const logoutBtn = document.getElementById("logoutBtn");
+    const { data } = await supabase.auth.getSession();
+    const session = data.session;
 
-    const { data: sessionData } = await supabase.auth.getSession();
-    const session = sessionData?.session;
     if (!session) {
       window.location.href = "login.html";
     }
 
-    const userId = session.user.id;
-    const userEmail = session.user.email;
+    const email = session.user.email;
 
-    // Only allow super admin in here
-    if (userEmail !== SUPER_ADMIN_EMAIL) {
-      alert("You are not an admin.");
-      window.location.href = "dashboard.html";
-    }
-
-    // Ensure your profile exists
-    await supabase.from("profiles").upsert({
-      id: userId,
-      email: userEmail,
-      role: "admin",
-    });
-
-    statusText.innerText = "Loading users...";
-
-    const { data: users, error: usersError } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("created_at", { ascending: true });
-
-    if (usersError) {
-      console.error("Users load error:", usersError);
-      statusText.innerText = "Error loading users: " + usersError.message;
+    if (email !== SUPER_ADMIN) {
+      document.getElementById("status").innerText = "Access denied.";
+      setTimeout(() => window.location.href = "dashboard.html", 1500);
     } else {
-      statusText.innerText = `Loaded ${users.length} users.`;
-      usersTableBody.innerHTML = "";
-
-      users.forEach((u) => {
-        const tr = document.createElement("tr");
-
-        const emailTd = document.createElement("td");
-        emailTd.textContent = u.email || "";
-        tr.appendChild(emailTd);
-
-        const nameTd = document.createElement("td");
-        nameTd.textContent = u.name || "";
-        tr.appendChild(nameTd);
-
-        const roleTd = document.createElement("td");
-        const roleSelect = document.createElement("select");
-        ["client","washer","admin"].forEach(r => {
-          const opt = document.createElement("option");
-          opt.value = r;
-          opt.textContent = r;
-          if (u.role === r) opt.selected = true;
-          roleSelect.appendChild(opt);
-        });
-        roleTd.appendChild(roleSelect);
-        tr.appendChild(roleTd);
-
-        const verTd = document.createElement("td");
-        const verSelect = document.createElement("select");
-        ["none","pending","approved","rejected"].forEach(v => {
-          const opt = document.createElement("option");
-          opt.value = v;
-          opt.textContent = v;
-          if (u.verification_status === v) opt.selected = true;
-          verSelect.appendChild(opt);
-        });
-        verTd.appendChild(verSelect);
-        tr.appendChild(verTd);
-
-        const saveTd = document.createElement("td");
-        const saveBtn = document.createElement("button");
-        saveBtn.className = "btn";
-        saveBtn.textContent = "Save";
-        saveBtn.onclick = async () => {
-          statusText.innerText = "Saving changes...";
-          const { error } = await supabase
-            .from("profiles")
-            .update({
-              role: roleSelect.value,
-              verification_status: verSelect.value,
-            })
-            .eq("id", u.id);
-
-          if (error) {
-            console.error("Update user error:", error);
-            statusText.innerText = "Error saving: " + error.message;
-          } else {
-            statusText.innerText = "Saved changes.";
-          }
-        };
-        saveTd.appendChild(saveBtn);
-        tr.appendChild(saveTd);
-
-        usersTableBody.appendChild(tr);
-      });
+      document.getElementById("status").innerText = "Welcome, Admin.";
     }
 
-    logoutBtn.onclick = async () => {
+    document.getElementById("logoutBtn").onclick = async () => {
       await supabase.auth.signOut();
       window.location.href = "login.html";
     };
   </script>
+
 </body>
 </html>

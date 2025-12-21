@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Washer Settings – Roll & Connect</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{--primary:#4da6ff;--accent:#7a5cff;--bg:#050816;--text:#f9fbff;--muted:#8f9ac4;}
+    *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif;}
+    body{background:#050816;color:var(--text);padding:14px;}
+    header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+    .back{width:32px;height:32px;border-radius:999px;border:1px solid rgba(255,255,255,0.16);background:#0d1121;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+    h1{font-size:20px;}
+    .card{background:#0d1121;border-radius:20px;padding:14px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.08);}
+    .item{padding:10px;border-bottom:1px solid rgba(255,255,255,0.06);cursor:pointer;}
+    .item:last-child{border-bottom:none;}
+    .item:hover{background:#141a33;}
+    .btn{width:100%;padding:10px;border-radius:999px;border:none;cursor:pointer;font-weight:600;font-size:14px;margin-top:10px;}
+    .btn-danger{background:#ff4d6a;color:#fff;}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="back" onclick="go('washer-dashboard.html')">←</div>
+    <h1>Settings</h1>
+  </header>
+
+  <div class="card">
+    <div class="item" onclick="alert('Would open password reset')">Change Password</div>
+    <div class="item" onclick="alert('Would open terms')">Terms of Service</div>
+    <div class="item" onclick="alert('Would open privacy')">Privacy Policy</div>
+  </div>
+
+  <button class="btn btn-danger" onclick="logout()">Log Out</button>
+
+  <script>
+    function go(p){ window.location.href = p; }
+    function logout(){
+      localStorage.removeItem("lb_user");
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>

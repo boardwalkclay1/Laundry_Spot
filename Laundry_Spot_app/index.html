@@ -9,7 +9,6 @@
     :root {
       --primary: #4da6ff;
       --accent: #7a5cff;
-      --bg: #050816;
       --text: #f9fbff;
       --muted: #9aa3c7;
     }
@@ -18,7 +17,7 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      font-family: system-ui, sans-serif;
     }
 
     body {
@@ -36,7 +35,7 @@
       position: relative;
     }
 
-    /* Grid overlay like the map page */
+    /* Grid overlay */
     .grid-overlay {
       position: fixed;
       inset: 0;
@@ -81,7 +80,6 @@
     .logo-text {
       font-size: 20px;
       font-weight: 600;
-      letter-spacing: 0.5px;
     }
 
     .hero {
@@ -140,18 +138,6 @@
       background: rgba(255,255,255,0.12);
       color: #fff;
     }
-
-    .features {
-      margin-top: 50px;
-      text-align: center;
-      z-index: 2;
-    }
-
-    .feature {
-      margin-bottom: 12px;
-      font-size: 14px;
-      color: var(--muted);
-    }
   </style>
 </head>
 
@@ -172,13 +158,6 @@
 
     <button class="btn btn-primary" id="loginBtn">Log In</button>
     <button class="btn btn-secondary" id="signupBtn">Create Account</button>
-  </div>
-
-  <div class="features">
-    <div class="feature">• Fast pickup & delivery</div>
-    <div class="feature">• Trusted local washers</div>
-    <div class="feature">• Real-time tracking</div>
-    <div class="feature">• Secure payments</div>
   </div>
 
   <script>

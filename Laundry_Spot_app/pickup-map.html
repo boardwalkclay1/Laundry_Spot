@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Choose Pickup Location – Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --primary: #4da6ff;
+      --accent: #7a5cff;
+      --text: #f9fbff;
+      --muted: #9aa3c7;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(77,166,255,0.18), transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(122,92,255,0.18), transparent 60%),
+        #030715;
+      color: var(--text);
+      padding: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+    .grid-overlay {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      z-index: 2;
+      position: relative;
+    }
+    .back {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(5,7,18,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .title-wrap h1 { font-size: 18px; }
+    .title-wrap span { font-size: 12px; color: var(--muted); }
+    #map {
+      width: 100%;
+      height: calc(100vh - 160px);
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.16);
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
+    }
+    .bottom-bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 12px;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 0 12px;
+      z-index: 10;
+    }
+    .inner-bar {
+      background: rgba(6,8,20,0.98);
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.16);
+      padding: 10px 12px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .loc-text {
+      flex: 1;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .btn {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-overlay"></div>
+
+  <header>
+    <div class="back" id="backBtn">←</div>
+    <div class="title-wrap">
+      <h1>Choose pickup location</h1>
+      <span>Drag pin to your spot</span>
+    </div>
+  </header>
+
+  <div id="map"></div>
+
+  <div class="bottom-bar">
+    <div class="inner-bar">
+      <div class="loc-text" id="locText">Move the pin to your pickup spot.</div>
+      <button class="btn btn-primary" id="saveBtn">Use this spot</button>
+    </div>
+  </div>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB02c_eleXuhHWdSMJzqk9mESbXn_PT2zc"></script>
+  <script>
+    let map, marker;
+
+    function initMap() {
+      const start = { lat: 33.7490, lng: -84.3880 };
+
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: start,
+        zoom: 13,
+        styles: [
+          { elementType: "geometry", stylers: [{ color: "#1d1d2b" }] },
+          { elementType: "labels.text.fill", stylers: [{ color: "#f9fbff" }] },
+          { elementType: "labels.text.stroke", stylers: [{ color: "#1d1d2b" }] },
+          { featureType: "water", stylers: [{ color: "#0b0f1a" }] },
+          { featureType: "road", stylers: [{ color: "#2a2f45" }] }
+        ]
+      });
+
+      marker = new google.maps.Marker({
+        position: start,
+        map,
+        draggable: true,
+        icon: { url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png" }
+      });
+
+      google.maps.event.addListener(marker, "dragend", updateText);
+      updateText();
+    }
+
+    function updateText() {
+      const pos = marker.getPosition();
+      const lat = pos.lat().toFixed(5);
+      const lng = pos.lng().toFixed(5);
+      document.getElementById("locText").textContent =
+        `Lat: ${lat}, Lng: ${lng} · This will be used as your pickup location.`;
+    }
+
+    function nav(page) { window.location.href = page; }
+
+    document.getElementById("backBtn").onclick = () => nav("request-pickup.html");
+
+    document.getElementById("saveBtn").onclick = () => {
+      const pos = marker.getPosition();
+      const payload = {
+        lat: pos.lat(),
+        lng: pos.lng(),
+        address: "" // could be filled by reverse geocoding later
+      };
+      try {
+        localStorage.setItem("lb_pickup_location", JSON.stringify(payload));
+      } catch (e) {}
+      nav("request-pickup.html");
+    };
+
+    window.onload = initMap;
+  </script>
+</body>
+</html>

@@ -231,7 +231,7 @@
       window.location.href = page;
     }
 
-    // Load user info
+    // Load user info from localStorage
     try {
       const raw = localStorage.getItem("lb_user");
       if (raw) {
@@ -244,6 +244,7 @@
       }
     } catch (e) {}
 
+    // Navigation
     document.getElementById("miniMap").onclick = () => nav("client-map.html");
     document.getElementById("findWasherCard").onclick = () => nav("client-map.html");
     document.getElementById("requestPickupCard").onclick = () => nav("request-pickup.html");

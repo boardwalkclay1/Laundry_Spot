@@ -60,7 +60,6 @@
     <h2>Welcome</h2>
     <p id="welcomeText">Loading your profile...</p>
     <a class="btn" href="settings.html">Settings</a>
-    <a class="btn secondary" href="account-info.html">Account Info</a>
     <button class="btn danger" id="logoutBtn">Log Out</button>
   </div>
 
@@ -72,6 +71,8 @@
 
   <script type="module">
     import { supabase } from "./supabase.js";
+
+    const SUPER_ADMIN_EMAIL = "boardwalk1@gmail.com";
 
     const welcomeText = document.getElementById("welcomeText");
     const logoutBtn = document.getElementById("logoutBtn");
@@ -90,7 +91,10 @@
     const userEmail = session.user.email;
 
     // Ensure profile exists
-    await supabase.from("profiles").upsert({ id: userId, email: userEmail });
+    await supabase.from("profiles").upsert({
+      id: userId,
+      email: userEmail,
+    });
 
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
@@ -102,10 +106,12 @@
       console.error("Profile load error:", profileError);
       welcomeText.innerText = "Error loading profile.";
     } else if (profile) {
-      welcomeText.innerText = `Hello, ${profile.name || profile.email || "Laundry Friend"}! Role: ${profile.role}`;
-      if (profile.role === "admin") {
-        adminCard.style.display = "block";
-      }
+      welcomeText.innerText = `Hello, ${profile.name || profile.email || "Laundry Friend"}!`;
+    }
+
+    // Show admin tools if super admin email
+    if (userEmail === SUPER_ADMIN_EMAIL) {
+      adminCard.style.display = "block";
     }
 
     logoutBtn.onclick = async () => {

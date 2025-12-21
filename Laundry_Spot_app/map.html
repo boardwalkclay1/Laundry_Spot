@@ -2,196 +2,413 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Live Map – Laundry Bubbles</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- Leaflet CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-sA+e2tu1H1kN1DaS3G1QWgVg0LlwM651c01rbN0i8m8="
-    crossorigin=""
-  />
-
+  <title>Find a Washer – Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
+    :root {
+      --primary: #4da6ff;
+      --accent: #7a5cff;
+      --bg: #050816;
+      --text: #f9fbff;
+      --muted: #9aa3c7;
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; }
     body {
-      margin:0;
-      font-family:Arial,sans-serif;
-      background:linear-gradient(135deg,#d96e30,#f4c542);
-      height:100vh;
-      display:flex;
-      flex-direction:column;
-      color:#5a3e2b;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #243b6b 0, #050816 55%, #02030a 100%);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      overflow: hidden;
     }
-    h1 {
-      text-align:center;
-      padding:10px 10px 0;
-      margin:0;
+    header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
     }
-    #statusText {
-      text-align:center;
-      font-size:0.9rem;
-      padding:4px 10px 8px;
-      opacity:0.9;
+    .back {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(5,7,18,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
     }
-    #map {
-      flex:1;
-      width:100%;
-      border-top:4px solid #d96e30;
-      border-bottom:4px solid #d96e30;
+    .title-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+    .title-wrap h1 {
+      font-size: 18px;
+    }
+    .title-wrap span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .search-bar {
+      position: relative;
+      margin-bottom: 10px;
+    }
+    .search-bar input {
+      width: 100%;
+      padding: 9px 12px 9px 32px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(6,8,20,0.95);
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+    .search-bar span {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .toolbar-buttons {
+      display: flex;
+      gap: 6px;
+    }
+    .chip {
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 4px 9px;
+      background: rgba(6,8,20,0.95);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .chip.primary {
+      border-color: rgba(77,166,255,0.8);
+      color: #d5e5ff;
+    }
+    .chip-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #4de3ff;
+      display: inline-block;
+      margin-right: 4px;
+    }
+    #mapContainer {
+      flex: 1;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(77,166,255,0.15), transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(122,92,255,0.18), transparent 60%),
+        #030715;
+      position: relative;
+      overflow: hidden;
+    }
+    .map-grid {
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.45;
+      pointer-events: none;
+    }
+    .marker {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #4da6ff, #7a5cff);
+      border: 2px solid #050816;
+      box-shadow: 0 0 0 4px rgba(77,166,255,0.35);
+      cursor: pointer;
+      transform: translate(-50%, -50%);
+    }
+    .marker.me {
+      background: #4de3ff;
+      box-shadow: 0 0 0 5px rgba(77,227,255,0.45);
+    }
+    .marker:hover {
+      transform: translate(-50%, -50%) scale(1.04);
+    }
+    .bottom-sheet {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: -240px;
+      background: rgba(6,8,20,0.98);
+      border-radius: 18px 18px 0 0;
+      border-top: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 -12px 30px rgba(0,0,0,0.7);
+      padding: 10px 14px 14px;
+      transition: transform 0.2s ease-out, bottom 0.2s ease-out;
+      transform: translateY(0);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .bottom-sheet.visible {
+      bottom: 0;
+    }
+    .sheet-handle {
+      width: 32px;
+      height: 3px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.18);
+      margin: 4px auto 8px;
+    }
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .sheet-name {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .sheet-meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .sheet-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 6px 0;
+      font-size: 11px;
+    }
+    .tag {
+      border-radius: 999px;
+      padding: 3px 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(7,9,18,0.95);
+    }
+    .sheet-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
     }
     .btn {
-      display:block;
-      width:100%;
-      padding:14px;
-      background:#d96e30;
-      color:white;
-      text-align:center;
-      font-weight:bold;
-      text-decoration:none;
-      border:none;
-      cursor:pointer;
+      flex: 1;
+      padding: 8px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+    }
+    .btn-secondary {
+      background: rgba(6,8,20,0.95);
+      border: 1px solid rgba(255,255,255,0.16);
+      color: var(--muted);
     }
   </style>
 </head>
-
 <body>
-  <h1>Live Order Tracking</h1>
-  <div id="statusText">Loading order and washer location...</div>
-  <div id="map"></div>
-  <a class="btn" id="backBtn">Back to Order</a>
+  <header>
+    <div class="back" id="backBtn">←</div>
+    <div class="title-wrap">
+      <h1>Find a washer</h1>
+      <span>Map demo · Atlanta area</span>
+    </div>
+  </header>
 
-  <!-- Leaflet JS -->
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-o9N1j7kGStsAkT6PW1s3U3nU5wP0iYv7vCqp5A+4b24="
-    crossorigin=""
-  ></script>
+  <div class="search-bar">
+    <span>🔍</span>
+    <input id="searchInput" placeholder="Search by neighborhood or washer name (demo only)" />
+  </div>
 
-  <script type="module">
-    import { supabase } from "./supabase.js";
+  <div class="toolbar">
+    <span><span class="chip-dot"></span><span id="resultCount">Showing 0 washers</span></span>
+    <div class="toolbar-buttons">
+      <button class="chip primary" id="filterAvailable">Available now</button>
+      <button class="chip" id="filterReset">Reset</button>
+      <button class="chip" id="locateMe">My location</button>
+    </div>
+  </div>
 
-    function getOrderId() {
-      return new URLSearchParams(window.location.search).get("order_id");
+  <div id="mapContainer">
+    <div class="map-grid"></div>
+    <!-- Markers injected by JS -->
+  </div>
+
+  <div class="bottom-sheet" id="bottomSheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div>
+        <div class="sheet-name" id="sheetName">Washer name</div>
+        <div class="sheet-meta" id="sheetMeta">Distance · Rating · Jobs</div>
+      </div>
+      <div class="sheet-meta" id="sheetPrice">From $</div>
+    </div>
+    <div class="sheet-tags" id="sheetTags"></div>
+    <div class="sheet-meta" id="sheetDescription">
+      Fast turnaround, gentle detergents, and secure handling. This is a demo description.
+    </div>
+    <div class="sheet-actions">
+      <button class="btn btn-secondary" id="viewProfileBtn">View profile</button>
+      <button class="btn btn-primary" id="requestPickupBtn">Request pickup</button>
+    </div>
+  </div>
+
+  <script>
+    const mockWashers = [
+      {
+        id: "w1",
+        name: "BeltLine Bubbles",
+        x: 30, y: 40,
+        distance: "1.2 mi",
+        rating: 4.9,
+        jobs: 128,
+        price: "$18/bag",
+        tags: ["Eco detergents", "Express", "Pickup & dropoff"],
+        available: true,
+      },
+      {
+        id: "w2",
+        name: "Decatur Fresh Fold",
+        x: 65, y: 35,
+        distance: "3.4 mi",
+        rating: 4.7,
+        jobs: 92,
+        price: "$16/bag",
+        tags: ["Fold only", "Family-friendly"],
+        available: false,
+      },
+      {
+        id: "w3",
+        name: "Midtown Spin & Smile",
+        x: 50, y: 65,
+        distance: "5.1 mi",
+        rating: 4.8,
+        jobs: 203,
+        price: "$20/bag",
+        tags: ["Premium", "Delicate care", "Same-day"],
+        available: true,
+      },
+    ];
+
+    let activeWasher = null;
+    let filterAvailable = false;
+
+    const mapContainer = document.getElementById("mapContainer");
+    const resultCount = document.getElementById("resultCount");
+    const bottomSheet = document.getElementById("bottomSheet");
+
+    function navigateTo(page) {
+      window.location.href = page;
     }
 
-    const orderId = getOrderId();
-    const statusText = document.getElementById("statusText");
-    const backBtn = document.getElementById("backBtn");
-    backBtn.href = `client-order-detail.html?order_id=${orderId}`;
+    document.getElementById("backBtn").addEventListener("click", () => {
+      navigateTo("client-dashboard.html");
+    });
 
-    let washerId = null;
+    function renderMarkers() {
+      // Clear existing non-grid children
+      const toRemove = Array.from(mapContainer.children).filter(el => !el.classList.contains("map-grid"));
+      toRemove.forEach(el => el.remove());
 
-    // Auth: optional here (map can work read-only), but we'll still check
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      // You can choose to force login here if you want:
-      // window.location.href = "login.html";
+      const searchTerm = document.getElementById("searchInput").value.trim().toLowerCase();
+
+      const washers = mockWashers.filter(w => {
+        if (filterAvailable && !w.available) return false;
+        if (searchTerm && !w.name.toLowerCase().includes(searchTerm)) return false;
+        return true;
+      });
+
+      resultCount.textContent = `Showing ${washers.length} washer${washers.length !== 1 ? "s" : ""}`;
+
+      washers.forEach(w => {
+        const marker = document.createElement("div");
+        marker.className = "marker";
+        marker.style.left = w.x + "%";
+        marker.style.top = w.y + "%";
+        marker.title = w.name;
+        marker.addEventListener("click", () => openWasherSheet(w));
+        mapContainer.appendChild(marker);
+      });
+
+      // "Me" marker
+      const me = document.createElement("div");
+      me.className = "marker me";
+      me.style.left = "20%";
+      me.style.top = "75%";
+      me.title = "You";
+      mapContainer.appendChild(me);
     }
 
-    // -----------------------------
-    // 1. Load order to get washer_id
-    // -----------------------------
-    const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .select("*")
-      .eq("id", orderId)
-      .single();
+    function openWasherSheet(washer) {
+      activeWasher = washer;
+      document.getElementById("sheetName").textContent = washer.name;
+      document.getElementById("sheetMeta").textContent = `${washer.distance} · ${washer.rating.toFixed(1)}★ · ${washer.jobs} jobs`;
+      document.getElementById("sheetPrice").textContent = `From ${washer.price}`;
+      document.getElementById("sheetDescription").textContent =
+        "This is a demo washer profile. In the real app, we’ll show live availability, reviews, and time windows.";
 
-    if (orderError || !order) {
-      statusText.innerText = "Could not load this order.";
-      throw orderError;
+      const tagsEl = document.getElementById("sheetTags");
+      tagsEl.innerHTML = "";
+      washer.tags.forEach(t => {
+        const tag = document.createElement("span");
+        tag.className = "tag";
+        tag.textContent = t;
+        tagsEl.appendChild(tag);
+      });
+
+      bottomSheet.classList.add("visible");
     }
 
-    washerId = order.washer_id;
-    if (!washerId) {
-      statusText.innerText = "A washer has not been assigned yet. We'll update this map when one is assigned.";
-    } else {
-      statusText.innerText = "Tracking your washer in real time.";
-    }
+    document.getElementById("filterAvailable").addEventListener("click", () => {
+      filterAvailable = !filterAvailable;
+      document.getElementById("filterAvailable").classList.toggle("primary", filterAvailable);
+      renderMarkers();
+    });
 
-    // -----------------------------
-    // 2. Initialize map
-    // -----------------------------
-    const defaultCenter = [33.7490, -84.3880]; // Atlanta fallback
-    const map = L.map("map").setView(defaultCenter, 12);
+    document.getElementById("filterReset").addEventListener("click", () => {
+      filterAvailable = false;
+      document.getElementById("filterAvailable").classList.remove("primary");
+      document.getElementById("searchInput").value = "";
+      renderMarkers();
+    });
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom:19,
-      attribution:"&copy; OpenStreetMap contributors"
-    }).addTo(map);
+    document.getElementById("locateMe").addEventListener("click", () => {
+      alert("In the real app this would center the map on your GPS location.");
+    });
 
-    let washerMarker = null;
+    document.getElementById("searchInput").addEventListener("input", () => {
+      renderMarkers();
+    });
 
-    function updateWasherMarker(lat, lng) {
-      if (!washerMarker) {
-        washerMarker = L.marker([lat, lng]).addTo(map);
-      } else {
-        washerMarker.setLatLng([lat, lng]);
-      }
-    }
+    document.getElementById("requestPickupBtn").addEventListener("click", () => {
+      if (!activeWasher) return;
+      // Save selection in localStorage so request-pickup can read it
+      localStorage.setItem("lb_selected_washer", JSON.stringify(activeWasher));
+      navigateTo("request-pickup.html");
+    });
 
-    // -----------------------------
-    // 3. Load initial washer location
-    // -----------------------------
-    async function loadInitialLocation() {
-      if (!washerId) return;
+    document.getElementById("viewProfileBtn").addEventListener("click", () => {
+      alert("In the real app, this would open a washer-profile page.");
+    });
 
-      const { data: loc, error: locError } = await supabase
-        .from("locations")
-        .select("*")
-        .eq("user_id", washerId)
-        .single();
-
-      if (locError || !loc) {
-        statusText.innerText = "Washer is assigned, waiting for them to share location...";
-        return;
-      }
-
-      updateWasherMarker(loc.lat, loc.lng);
-      map.setView([loc.lat, loc.lng], 14);
-      statusText.innerText = "Tracking your washer in real time.";
-    }
-
-    await loadInitialLocation();
-
-    // -----------------------------
-    // 4. Realtime updates:
-    //    - If washer changes
-    //    - If washer location changes
-    // -----------------------------
-
-    // Order subscription: to catch washer assignment changes
-    supabase
-      .channel("order-map-" + orderId)
-      .on(
-        "postgres_changes",
-        { event:"UPDATE", schema:"public", table:"orders", filter:`id=eq.${orderId}` },
-        payload => {
-          const updated = payload.new;
-          if (updated.washer_id && updated.washer_id !== washerId) {
-            washerId = updated.washer_id;
-            statusText.innerText = "A washer has been assigned. Waiting for their location...";
-            loadInitialLocation();
-          }
-        }
-      )
-      .subscribe();
-
-    // Locations subscription: track washer movement
-    supabase
-      .channel("location-updates-map")
-      .on(
-        "postgres_changes",
-        { event:"UPDATE", schema:"public", table:"locations" },
-        payload => {
-          if (washerId && payload.new.user_id === washerId) {
-            updateWasherMarker(payload.new.lat, payload.new.lng);
-            statusText.innerText = "Your washer is moving...";
-          }
-        }
-      )
-      .subscribe();
+    // Initialize
+    renderMarkers();
   </script>
 </body>
 </html>

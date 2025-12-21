@@ -2,308 +2,177 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Request Pickup – Laundry Bubbles</title>
+  <title>Select Pickup Location – Laundry Bubbles</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
     :root {
       --primary:#4da6ff; --accent:#7a5cff; --text:#f9fbff; --muted:#9aa3c7;
-      --card:rgba(255,255,255,0.04);
     }
     * { margin:0; padding:0; box-sizing:border-box; font-family:system-ui,sans-serif; }
 
     body {
-      min-height:100vh;
-      background:
-        radial-gradient(circle at 20% 20%,rgba(77,166,255,0.18),transparent 60%),
-        radial-gradient(circle at 80% 80%,rgba(122,92,255,0.18),transparent 60%),
-        #030715;
+      background:#030715;
       color:var(--text);
-      padding:16px;
-      position:relative;
-      overflow-x:hidden;
+      height:100vh;
+      display:flex;
+      flex-direction:column;
+      padding:14px;
     }
 
     header {
       display:flex;
       align-items:center;
-      gap:10px;
-      margin-bottom:16px;
+      gap:12px;
+      margin-bottom:14px;
     }
 
     .back {
-      width:34px; height:34px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,0.16);
-      background:rgba(5,7,18,0.9);
+      width:36px; height:36px;
+      border-radius:50%;
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.15);
       display:flex; align-items:center; justify-content:center;
       cursor:pointer;
-      font-size:16px;
+      font-size:18px;
     }
 
-    h1 { font-size:20px; margin-bottom:4px; }
-    .sub { font-size:13px; color:var(--muted); }
-
-    .card {
-      background:var(--card);
-      border:1px solid rgba(255,255,255,0.12);
-      border-radius:16px;
-      padding:14px;
-      margin-bottom:12px;
-    }
-
-    .mini-map {
-      width:100%;
-      height:170px;
+    #map {
+      flex:1;
       border-radius:18px;
-      border:1px solid rgba(255,255,255,0.14);
+      border:1px solid rgba(255,255,255,0.15);
       overflow:hidden;
-      margin:14px 0;
-      box-shadow:0 12px 30px rgba(0,0,0,0.6);
     }
 
-    #miniMapPreview {
-      width:100%;
-      height:100%;
-    }
-
-    label {
-      font-size:13px;
-      color:var(--muted);
-      display:block;
-      margin-bottom:3px;
-    }
-
-    input, select {
-      width:100%;
-      padding:10px;
+    .address-box {
+      margin-top:12px;
+      background:rgba(255,255,255,0.05);
+      padding:12px;
       border-radius:12px;
       border:1px solid rgba(255,255,255,0.12);
-      background:rgba(255,255,255,0.06);
-      color:var(--text);
-      margin-bottom:10px;
-      font-size:14px;
     }
 
-    .btn {
+    .address-label {
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
+
+    .address-value {
+      font-size:14px;
+      font-weight:600;
+    }
+
+    button {
+      margin-top:14px;
       width:100%;
-      padding:12px;
+      padding:14px;
       border-radius:999px;
       border:none;
-      cursor:pointer;
-      font-weight:600;
-      font-size:16px;
-      margin-top:10px;
-    }
-
-    .btn-primary {
       background:linear-gradient(135deg,var(--primary),var(--accent));
-      color:#fff;
-      box-shadow:0 12px 28px rgba(77,166,255,0.45);
-    }
-
-    .btn-secondary {
-      background:rgba(255,255,255,0.06);
-      border:1px solid rgba(255,255,255,0.14);
-      color:var(--muted);
-    }
-
-    .btn-row {
-      display:flex;
-      gap:10px;
-      margin-bottom:10px;
+      color:white;
+      font-size:16px;
+      font-weight:600;
+      cursor:pointer;
     }
   </style>
 </head>
 
 <body>
   <header>
-    <div class="back" onclick="window.location.href='client-map.html'">←</div>
-    <div>
-      <h1>Request pickup</h1>
-      <p class="sub">Confirm your washer & pickup details.</p>
-    </div>
+    <div class="back" onclick="window.location.href='request-pickup.html'">←</div>
+    <h2>Select Pickup Location</h2>
   </header>
 
-  <!-- Washer Summary -->
-  <section class="card">
-    <div style="font-size:15px; font-weight:600;" id="washerName">Washer</div>
-    <div class="sub" id="washerMeta"></div>
-    <div class="sub" id="washerTags"></div>
-    <div class="sub" id="washerPrice"></div>
+  <div id="map"></div>
 
-    <div class="btn-row">
-      <button class="btn btn-secondary" id="messageBtn">Message</button>
-      <button class="btn btn-secondary" id="directionsBtn">Directions</button>
-    </div>
-  </section>
-
-  <!-- Mini Map Preview -->
-  <div class="mini-map">
-    <div id="miniMapPreview"></div>
+  <div class="address-box">
+    <div class="address-label">Selected Address</div>
+    <div class="address-value" id="addressText">Move the pin to choose a location…</div>
   </div>
 
-  <!-- Location Controls -->
-  <div class="btn-row">
-    <button class="btn btn-secondary" onclick="useMyLocation()">Use My Location</button>
-    <button class="btn btn-secondary" onclick="window.location.href='pickup-map.html'">Change Location</button>
-  </div>
+  <button onclick="saveLocation()">Confirm Location</button>
 
-  <!-- Pickup Form -->
-  <section class="card">
-    <label>Pickup address</label>
-    <input id="pickupAddress" placeholder="Enter address or choose on map" />
-
-    <label>Pickup window</label>
-    <select id="pickupWindow">
-      <option value="morning">Morning (8am – 11am)</option>
-      <option value="afternoon">Afternoon (12pm – 4pm)</option>
-      <option value="evening">Evening (5pm – 9pm)</option>
-    </select>
-
-    <label>Notes</label>
-    <input id="notes" placeholder="Gate code, special instructions, etc." />
-
-    <button class="btn btn-primary" id="confirmBtn">Confirm pickup</button>
-  </section>
-
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB02c_eleXuhHWdSMJzqk9mESbXn_PT2zc"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB02c_eleXuhHWdSMJzqk9mESbXn_PT2zc&libraries=places"></script>
 
   <script>
-    let washer = null;
-    let miniMap, miniMarker;
+    let map, marker, geocoder;
+    let selectedLat = null;
+    let selectedLng = null;
+    let selectedAddress = "";
 
-    function openDirections(lat, lng) {
-      window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, "_blank");
-    }
+    function initMap() {
+      geocoder = new google.maps.Geocoder();
 
-    function loadWasher() {
-      try {
-        const raw = localStorage.getItem("lb_selected_washer");
-        if (!raw) return;
+      const defaultPos = { lat: 33.7490, lng: -84.3880 };
 
-        washer = JSON.parse(raw);
-
-        document.getElementById("washerName").textContent = washer.name;
-        document.getElementById("washerMeta").textContent =
-          `${washer.distance_mi?.toFixed(1)} mi · ${washer.rating}★ · ${washer.jobs} jobs`;
-        document.getElementById("washerTags").textContent = washer.tags?.join(" · ") || "";
-        document.getElementById("washerPrice").textContent =
-          washer.price_per_load ? `$${washer.price_per_load} per load` : "";
-      } catch (e) {}
-    }
-
-    function loadMiniMap(lat, lng) {
-      miniMap = new google.maps.Map(document.getElementById("miniMapPreview"), {
-        center: { lat, lng },
-        zoom: 15,
-        disableDefaultUI: true,
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: defaultPos,
+        zoom: 14,
         styles: [
           { elementType:"geometry", stylers:[{color:"#1d1d2b"}] },
-          { elementType:"labels.text.fill", stylers:[{color:"#f9fbff"}] }
+          { elementType:"labels.text.fill", stylers:[{color:"#f9fbff"}] },
+          { featureType:"water", stylers:[{color:"#0b0f1a"}] }
         ]
       });
 
-      miniMarker = new google.maps.Marker({
-        position: { lat, lng },
-        map: miniMap,
+      marker = new google.maps.Marker({
+        position: defaultPos,
+        map,
+        draggable: true,
         icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
       });
-    }
 
-    function loadPickupLocation() {
-      try {
-        const raw = localStorage.getItem("lb_pickup_location");
-        if (!raw) return;
+      google.maps.event.addListener(marker, "dragend", function() {
+        const pos = marker.getPosition();
+        selectedLat = pos.lat();
+        selectedLng = pos.lng();
+        reverseGeocode(selectedLat, selectedLng);
+      });
 
-        const loc = JSON.parse(raw);
-
-        document.getElementById("pickupAddress").value = loc.address;
-        loadMiniMap(loc.lat, loc.lng);
-      } catch (e) {}
-    }
-
-    function useMyLocation() {
-      if (!navigator.geolocation) {
-        alert("GPS not supported.");
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition((pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-
-        const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-          if (status === "OK" && results[0]) {
-            const address = results[0].formatted_address;
-
-            document.getElementById("pickupAddress").value = address;
-
-            localStorage.setItem("lb_pickup_location", JSON.stringify({
-              lat, lng, address
-            }));
-
-            loadMiniMap(lat, lng);
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const userPos = {
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude
+            };
+            map.setCenter(userPos);
+            marker.setPosition(userPos);
+            selectedLat = userPos.lat;
+            selectedLng = userPos.lng;
+            reverseGeocode(selectedLat, selectedLng);
           }
-        });
+        );
+      }
+    }
+
+    function reverseGeocode(lat, lng) {
+      geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+        if (status === "OK" && results[0]) {
+          selectedAddress = results[0].formatted_address;
+          document.getElementById("addressText").textContent = selectedAddress;
+        }
       });
     }
 
-    document.getElementById("messageBtn").onclick = () => {
-      const user = JSON.parse(localStorage.getItem("lb_user"));
-      const convId = `conversation_${user.id}_${washer.id}`;
-
-      let list = JSON.parse(localStorage.getItem("lb_conversations") || "[]");
-      if (!list.find(c => c.id === convId)) {
-        list.push({
-          id: convId,
-          clientId: user.id,
-          washerId: washer.id,
-          otherName: washer.name,
-          messages: []
-        });
-        localStorage.setItem("lb_conversations", JSON.stringify(list));
-      }
-
-      localStorage.setItem("lb_active_conversation", convId);
-      window.location.href = "inbox.html";
-    };
-
-    document.getElementById("directionsBtn").onclick = () => {
-      openDirections(washer.lat, washer.lng);
-    };
-
-    document.getElementById("confirmBtn").onclick = () => {
-      const address = document.getElementById("pickupAddress").value.trim();
-      if (!address) {
-        alert("Please choose a pickup location.");
+    function saveLocation() {
+      if (!selectedLat || !selectedLng || !selectedAddress) {
+        alert("Please choose a location first.");
         return;
       }
 
-      const loc = JSON.parse(localStorage.getItem("lb_pickup_location") || "{}");
-
-      const payload = {
-        washer,
-        pickupAddress: address,
-        pickupLat: loc.lat,
-        pickupLng: loc.lng,
-        pickupWindow: document.getElementById("pickupWindow").value,
-        notes: document.getElementById("notes").value.trim(),
-        status: "pending",
-        created_at: new Date().toISOString()
+      const loc = {
+        lat: selectedLat,
+        lng: selectedLng,
+        address: selectedAddress
       };
 
-      const history = JSON.parse(localStorage.getItem("lb_pickup_history") || "[]");
-      history.unshift(payload);
-      localStorage.setItem("lb_pickup_history", JSON.stringify(history));
+      localStorage.setItem("lb_pickup_location", JSON.stringify(loc));
+      window.location.href = "request-pickup.html";
+    }
 
-      alert("Pickup request saved.");
-      window.location.href = "client-dashboard.html";
-    };
-
-    loadWasher();
-    loadPickupLocation();
+    window.onload = initMap;
   </script>
 </body>
 </html>

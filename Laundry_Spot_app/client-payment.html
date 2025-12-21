@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Payment method – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --primary:#4da6ff;--accent:#7a5cff;--text:#f9fbff;--muted:#9aa3c7;--card:rgba(255,255,255,0.05); }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif;}
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at 20% 20%,rgba(77,166,255,0.18),transparent 60%),
+        radial-gradient(circle at 80% 80%,rgba(122,92,255,0.18),transparent 60%),
+        #030715;
+      color:var(--text);
+      padding:16px;
+    }
+    header{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+    .back{
+      width:34px;height:34px;border-radius:999px;
+      border:1px solid rgba(255,255,255,0.16);
+      background:rgba(5,7,18,0.9);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;font-size:16px;
+    }
+    h1{font-size:20px;margin-bottom:4px;}
+    .sub{font-size:13px;color:var(--muted);margin-bottom:10px;}
+    .card{
+      background:var(--card);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:16px;
+      padding:14px;
+      margin-bottom:12px;
+    }
+    label{
+      font-size:13px;color:var(--muted);
+      display:block;margin-bottom:4px;
+    }
+    input,select{
+      width:100%;padding:10px;border-radius:12px;
+      border:1px solid rgba(255,255,255,0.12);
+      background:rgba(255,255,255,0.06);
+      color:var(--text);
+      margin-bottom:10px;
+      font-size:14px;
+    }
+    .btn{
+      width:100%;padding:12px;border-radius:999px;
+      border:none;cursor:pointer;font-weight:600;font-size:16px;margin-top:6px;
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,var(--primary),var(--accent));
+      color:#fff;
+      box-shadow:0 12px 28px rgba(77,166,255,0.45);
+    }
+    .hint{font-size:11px;color:var(--muted);margin-top:6px;}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="back" onclick="window.location.href='settings.html'">←</div>
+    <div>
+      <h1>Payment method</h1>
+      <p class="sub">Choose how you pay for your loads.</p>
+    </div>
+  </header>
+
+  <section class="card">
+    <h3 style="font-size:16px;margin-bottom:6px;">Saved card (placeholder)</h3>
+    <label>Card brand</label>
+    <input id="cardBrand" placeholder="Visa, Mastercard, etc." />
+
+    <label>Last 4 digits</label>
+    <input id="cardLast4" placeholder="4242" />
+
+    <p class="hint">
+      In production, this will be a real card token from a PCI‑compliant provider (like Stripe). Here it's just demo data.
+    </p>
+  </section>
+
+  <section class="card">
+    <h3 style="font-size:16px;margin-bottom:6px;">Manual methods</h3>
+
+    <label>CashApp tag (optional)</label>
+    <input id="cashappTagClient" placeholder="$yourtag" />
+
+    <label>PayPal email (optional)</label>
+    <input id="paypalEmailClient" placeholder="you@example.com" />
+
+    <label>Venmo handle (optional)</label>
+    <input id="venmoHandleClient" placeholder="@yourhandle" />
+
+    <label>Zelle email/phone (optional)</label>
+    <input id="zelleClient" placeholder="you@example.com or phone" />
+  </section>
+
+  <section class="card">
+    <h3 style="font-size:16px;margin-bottom:6px;">Default payment method</h3>
+    <label>Use this when paying for loads</label>
+    <select id="defaultPaymentType">
+      <option value="card">Saved card</option>
+      <option value="cashapp">CashApp</option>
+      <option value="paypal">PayPal</option>
+      <option value="venmo">Venmo</option>
+      <option value="zelle">Zelle</option>
+    </select>
+
+    <button class="btn btn-primary" id="savePaymentBtn">Save payment settings</button>
+  </section>
+
+  <script>
+    function loadClientPayment(){
+      const raw = localStorage.getItem("lb_client_payment");
+      if(!raw) return;
+      const p = JSON.parse(raw);
+
+      document.getElementById("cardBrand").value = p.brand || "";
+      document.getElementById("cardLast4").value = p.last4 || "";
+      document.getElementById("cashappTagClient").value = p.cashappTag || "";
+      document.getElementById("paypalEmailClient").value = p.paypalEmail || "";
+      document.getElementById("venmoHandleClient").value = p.venmoHandle || "";
+      document.getElementById("zelleClient").value = p.zelle || "";
+      document.getElementById("defaultPaymentType").value = p.type || "card";
+    }
+
+    document.getElementById("savePaymentBtn").onclick = () => {
+      const payment = {
+        type: document.getElementById("defaultPaymentType").value,
+        brand: document.getElementById("cardBrand").value.trim(),
+        last4: document.getElementById("cardLast4").value.trim(),
+        cashappTag: document.getElementById("cashappTagClient").value.trim(),
+        paypalEmail: document.getElementById("paypalEmailClient").value.trim(),
+        venmoHandle: document.getElementById("venmoHandleClient").value.trim(),
+        zelle: document.getElementById("zelleClient").value.trim()
+      };
+      localStorage.setItem("lb_client_payment", JSON.stringify(payment));
+      alert("Payment method saved.");
+    };
+
+    loadClientPayment();
+  </script>
+</body>
+</html>

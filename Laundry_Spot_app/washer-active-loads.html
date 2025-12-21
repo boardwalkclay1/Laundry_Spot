@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Active Loads – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --primary:#4da6ff;--accent:#7a5cff;--text:#f9fbff;--muted:#9aa3c7;--card:rgba(255,255,255,0.05); }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif;}
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at 20% 20%,rgba(77,166,255,0.18),transparent 60%),
+        radial-gradient(circle at 80% 80%,rgba(122,92,255,0.18),transparent 60%),
+        #030715;
+      color:var(--text);
+      padding:16px;
+    }
+    header{
+      display:flex;align-items:center;gap:10px;margin-bottom:16px;
+    }
+    .back{
+      width:34px;height:34px;border-radius:999px;
+      border:1px solid rgba(255,255,255,0.16);
+      background:rgba(5,7,18,0.9);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;font-size:16px;
+    }
+    h1{font-size:20px;margin-bottom:4px;}
+    .sub{font-size:13px;color:var(--muted);margin-bottom:10px;}
+    .card{
+      background:var(--card);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:16px;
+      padding:14px;
+      margin-bottom:12px;
+    }
+    .title-row{
+      display:flex;justify-content:space-between;align-items:center;
+      margin-bottom:4px;
+    }
+    .load-title{font-size:15px;font-weight:600;}
+    .badge{
+      font-size:11px;padding:3px 8px;border-radius:999px;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.14);
+      color:var(--muted);
+    }
+    .meta{font-size:12px;color:var(--muted);margin-bottom:4px;}
+    .btn-row{
+      display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;
+    }
+    .btn{
+      flex:1;min-width:90px;
+      padding:8px;border-radius:999px;
+      border:none;cursor:pointer;font-size:12px;font-weight:600;
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,var(--primary),var(--accent));
+      color:#fff;
+    }
+    .btn-secondary{
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.14);
+      color:var(--muted);
+    }
+    .btn-danger{
+      background:rgba(255,0,0,0.18);
+      border:1px solid rgba(255,0,0,0.4);
+      color:#ff6b6b;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="back" onclick="window.location.href='washer-dashboard.html'">←</div>
+    <div>
+      <h1>Active loads</h1>
+      <p class="sub">Pickups you’re currently handling.</p>
+    </div>
+  </header>
+
+  <div id="loadsContainer"></div>
+
+  <script>
+    function openDirections(lat,lng){
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,"_blank");
+    }
+
+    function loadActiveLoads(){
+      const container = document.getElementById("loadsContainer");
+      container.innerHTML = "";
+
+      const history = JSON.parse(localStorage.getItem("lb_pickup_history") || "[]");
+
+      const active = history.filter(h => h.status !== "completed" && h.status !== "canceled");
+
+      if(active.length === 0){
+        container.innerHTML = "<p style='font-size:13px;color:var(--muted);'>No active loads right now.</p>";
+        return;
+      }
+
+      active.forEach((load, index) => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const statusLabel = load.status || "pending";
+        const time = new Date(load.created_at || Date.now()).toLocaleString();
+
+        card.innerHTML = `
+          <div class="title-row">
+            <div class="load-title">${load.washer?.name || "Client load"}</div>
+            <div class="badge">${statusLabel}</div>
+          </div>
+          <div class="meta">${load.pickupAddress}</div>
+          <div class="meta">Window: ${load.pickupWindow || "Not set"}</div>
+          <div class="meta">Created: ${time}</div>
+          <div class="meta">${load.notes ? "Notes: " + load.notes : ""}</div>
+          <div class="btn-row">
+            <button class="btn btn-secondary" data-role="message" data-idx="${index}">Message</button>
+            <button class="btn btn-secondary" data-role="directions" data-idx="${index}">Directions</button>
+            <button class="btn btn-primary" data-role="start" data-idx="${index}">Start</button>
+            <button class="btn btn-primary" data-role="complete" data-idx="${index}">Complete</button>
+            <button class="btn btn-danger" data-role="cancel" data-idx="${index}">Cancel</button>
+          </div>
+        `;
+
+        card.addEventListener("click",(e)=>{
+          const role = e.target.getAttribute("data-role");
+          const idx = e.target.getAttribute("data-idx");
+          if(!role) return;
+
+          const all = JSON.parse(localStorage.getItem("lb_pickup_history") || "[]");
+          const item = all[idx];
+          if(!item) return;
+
+          if(role === "directions" && item.pickupLat && item.pickupLng){
+            openDirections(item.pickupLat, item.pickupLng);
+          }
+
+          if(role === "start"){
+            item.status = "in_progress";
+          }
+          if(role === "complete"){
+            item.status = "completed";
+          }
+          if(role === "cancel"){
+            item.status = "canceled";
+          }
+
+          if(role === "message"){
+            const washer = JSON.parse(localStorage.getItem("lb_user") || "null");
+            if(!washer){ return; }
+            const clientId = item.clientId || "client";
+            const convId = `conversation_${clientId}_${washer.id}`;
+            const rawConvs = localStorage.getItem("lb_conversations");
+            const list = rawConvs ? JSON.parse(rawConvs) : [];
+            let conv = list.find(c=>c.id===convId);
+            if(!conv){
+              conv = { id:convId, clientId, washerId:washer.id, otherName:item.washer?.name || "Client", messages:[] };
+              list.push(conv);
+              localStorage.setItem("lb_conversations",JSON.stringify(list));
+            }
+            localStorage.setItem("lb_active_conversation",convId);
+            window.location.href = "inbox.html";
+            return;
+          }
+
+          all[idx] = item;
+          localStorage.setItem("lb_pickup_history",JSON.stringify(all));
+          loadActiveLoads();
+        });
+
+        container.appendChild(card);
+      });
+    }
+
+    loadActiveLoads();
+  </script>
+</body>
+</html>

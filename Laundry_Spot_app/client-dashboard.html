@@ -231,7 +231,7 @@
       window.location.href = page;
     }
 
-    // Load user info from localStorage
+    // Load user info
     try {
       const raw = localStorage.getItem("lb_user");
       if (raw) {
@@ -248,7 +248,7 @@
     document.getElementById("miniMap").onclick = () => nav("client-map.html");
     document.getElementById("findWasherCard").onclick = () => nav("client-map.html");
     document.getElementById("requestPickupCard").onclick = () => nav("request-pickup.html");
-    document.getElementById("ordersCard").onclick = () => alert("Orders screen coming soon.");
+    document.getElementById("ordersCard").onclick = () => nav("track-orders.html");
     document.getElementById("settingsCard").onclick = () => nav("settings.html");
   </script>
 </body>

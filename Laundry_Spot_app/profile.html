@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Your Profile – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --primary:#4da6ff; --accent:#7a5cff; --bg:#050816;
+      --card:#141827; --text:#f9fbff; --muted:#8f9ac4;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif;}
+    body{background:radial-gradient(circle at top,#243b6b,#050816);color:var(--text);padding:14px;}
+    header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+    .back{width:32px;height:32px;border-radius:999px;border:1px solid rgba(255,255,255,0.16);background:rgba(5,7,18,0.9);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+    h1{font-size:20px;}
+    .card{background:linear-gradient(145deg,#181c30,#0d1121);border-radius:20px;padding:14px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.08);}
+    label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px;}
+    input{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:rgba(7,9,18,0.9);color:var(--text);margin-bottom:12px;}
+    .btn{width:100%;padding:10px;border-radius:999px;border:none;cursor:pointer;font-weight:600;font-size:14px;}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="back" id="backBtn">←</div>
+    <h1>Your Profile</h1>
+  </header>
+
+  <div class="card">
+    <label>Name</label>
+    <input id="name" />
+
+    <label>Email</label>
+    <input id="email" disabled />
+
+    <label>Phone</label>
+    <input id="phone" />
+
+    <button class="btn btn-primary" id="saveBtn">Save Changes</button>
+  </div>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem("lb_user") || "{}");
+
+    document.getElementById("name").value = user.name || "";
+    document.getElementById("email").value = user.email || "";
+    document.getElementById("phone").value = user.phone || "";
+
+    document.getElementById("saveBtn").onclick = () => {
+      user.name = document.getElementById("name").value;
+      user.phone = document.getElementById("phone").value;
+      localStorage.setItem("lb_user", JSON.stringify(user));
+      alert("Profile updated!");
+    };
+
+    document.getElementById("backBtn").onclick = () => window.location.href = "client-dashboard.html";
+  </script>
+</body>
+</html>

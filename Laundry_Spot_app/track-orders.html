@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Track Orders – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    :root {
+      --primary: #4da6ff;
+      --accent: #7a5cff;
+      --text: #f9fbff;
+      --muted: #9aa3c7;
+      --card: rgba(255,255,255,0.05);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(77,166,255,0.18), transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(122,92,255,0.18), transparent 60%),
+        #030715;
+      color: var(--text);
+      padding: 18px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .grid-overlay {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .back {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .order-card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+    }
+
+    .order-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .order-meta {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .pending { background: rgba(255,255,0,0.15); color: #fffaa0; }
+    .accepted { background: rgba(0,150,255,0.15); color: #7ac8ff; }
+    .in_progress { background: rgba(122,92,255,0.15); color: #b8a4ff; }
+    .completed { background: rgba(0,255,150,0.15); color: #9affd9; }
+
+    .btn {
+      width: 100%;
+      padding: 10px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      box-shadow: 0 12px 28px rgba(77,166,255,0.45);
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      margin-top: 40px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="grid-overlay"></div>
+
+  <header>
+    <div class="back" id="backBtn">←</div>
+    <h1>Track Orders</h1>
+  </header>
+
+  <div id="ordersContainer"></div>
+
+  <script>
+    function nav(page) {
+      window.location.href = page;
+    }
+
+    document.getElementById("backBtn").onclick = () => nav("client-dashboard.html");
+
+    // Load pickup requests from localStorage
+    function loadOrders() {
+      const container = document.getElementById("ordersContainer");
+      container.innerHTML = "";
+
+      let orders = [];
+      try {
+        const raw = localStorage.getItem("lb_pickup_history");
+        if (raw) orders = JSON.parse(raw);
+      } catch (e) {}
+
+      if (orders.length === 0) {
+        container.innerHTML = "<p class='empty'>You have no orders yet.</p>";
+        return;
+      }
+
+      orders.forEach(order => {
+        const card = document.createElement("div");
+        card.className = "order-card";
+
+        const statusClass = order.status.replace(" ", "_");
+
+        card.innerHTML = `
+          <div class="order-title">${order.pickup_address || "Pickup Request"}</div>
+          <div class="status-badge ${statusClass}">${order.status}</div>
+          <div class="order-meta">
+            Pickup Window: ${order.pickup_window || "Not set"}<br>
+            Notes: ${order.notes || "None"}<br>
+            Created: ${order.created_at || "Unknown"}
+          </div>
+          <button class="btn btn-primary">View Details</button>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    loadOrders();
+  </script>
+</body>
+</html>

@@ -142,6 +142,7 @@
       color: #fff;
       box-shadow: 0 12px 28px rgba(77,166,255,0.45);
     }
+    .subline { font-size: 12px; color: var(--muted); margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -161,6 +162,7 @@
       <div class="badge" id="washerMeta">Select from map</div>
     </div>
     <p class="sub" id="washerTags">Pick a washer from the map to see details here.</p>
+    <p class="subline" id="washerPrice"></p>
   </section>
 
   <div class="mini-map" id="pickupMiniMap">
@@ -188,7 +190,7 @@
   <script>
     function nav(page) { window.location.href = page; }
 
-    document.getElementById("backBtn").onclick = () => nav("client-dashboard.html");
+    document.getElementById("backBtn").onclick = () => nav("client-map.html");
     document.getElementById("pickupMiniMap").onclick = () => nav("pickup-map.html");
 
     // Load washer from localStorage if available
@@ -197,10 +199,19 @@
       if (raw) {
         const w = JSON.parse(raw);
         document.getElementById("washerName").textContent = w.name || "Selected washer";
+
+        const distance = w.distance_mi
+          ? w.distance_mi.toFixed(1) + " mi away"
+          : (w.distance || "") + " away";
+
         document.getElementById("washerMeta").textContent =
-          `${w.distance || ""} ${w.rating ? "· " + w.rating + "★" : ""}`.trim();
+          `${distance} · ${(w.rating || "5.0")}★${w.jobs ? " · " + w.jobs + " jobs" : ""}`;
+
         document.getElementById("washerTags").textContent =
           Array.isArray(w.tags) ? w.tags.join(" · ") : "Selected from map.";
+
+        document.getElementById("washerPrice").textContent =
+          w.price_per_load ? `Approx. $${w.price_per_load} per load` : "";
       }
     } catch (e) {}
 
@@ -221,11 +232,18 @@
         pickupAddress: document.getElementById("pickupAddress").value.trim(),
         pickupWindow: document.getElementById("pickupWindow").value,
         notes: document.getElementById("notes").value.trim(),
+        status: "pending",
+        created_at: new Date().toISOString()
       };
       try {
         const wRaw = localStorage.getItem("lb_selected_washer");
         if (wRaw) payload.washer = JSON.parse(wRaw);
-        localStorage.setItem("lb_pickup_request", JSON.stringify(payload));
+
+        // Simple local "history" list
+        const historyRaw = localStorage.getItem("lb_pickup_history");
+        const history = historyRaw ? JSON.parse(historyRaw) : [];
+        history.unshift(payload);
+        localStorage.setItem("lb_pickup_history", JSON.stringify(history));
       } catch (e) {}
       alert("Pickup request saved (front-end demo).");
       nav("client-dashboard.html");

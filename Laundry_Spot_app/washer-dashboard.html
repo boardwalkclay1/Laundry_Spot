@@ -2,184 +2,55 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Washer Dashboard – Laundry Bubbles</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <title>Washer Dashboard – Roll & Connect</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #d96e30, #f4c542);
-      min-height: 100vh;
-      padding: 20px;
-      color: #5a3e2b;
-    }
-    h1 { text-align: center; margin-bottom: 20px; }
-    .card {
-      background: #fff4d9;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-      max-width: 520px;
-      margin: 0 auto 20px;
-    }
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 10px;
-    }
-    input, textarea {
-      width: 100%;
-      padding: 12px;
-      margin-top: 6px;
-      border-radius: 10px;
-      border: 2px solid #d96e30;
-      background: white;
-      box-sizing: border-box;
-    }
-    textarea {
-      height: 100px;
-      resize: none;
-    }
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      background: #d96e30;
-      color: white;
-      text-align: center;
-      border-radius: 10px;
-      font-weight: bold;
-      text-decoration: none;
-      margin-top: 14px;
-      border: none;
-      cursor: pointer;
-    }
-    .secondary {
-      background: #f4c542;
-      color: #5a3e2b;
-      border: 2px solid #d96e30;
-    }
-    .toggle-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 12px;
-    }
+    :root{--primary:#4da6ff;--accent:#7a5cff;--bg:#050816;--text:#f9fbff;--muted:#8f9ac4;}
+    *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif;}
+    body{background:radial-gradient(circle at top,#243b6b,#050816);color:var(--text);padding:14px;}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+    .logo{font-size:20px;font-weight:700;}
+    .avatar{width:34px;height:34px;border-radius:50%;background:#0d1121;border:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;}
+    .card{background:linear-gradient(145deg,#181c30,#0d1121);border-radius:20px;padding:14px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.08);}
+    .job{padding:10px;border-bottom:1px solid rgba(255,255,255,0.06);cursor:pointer;}
+    .job:last-child{border-bottom:none;}
+    .job:hover{background:rgba(255,255,255,0.04);}
+    .btn{width:100%;padding:10px;border-radius:999px;border:none;cursor:pointer;font-weight:600;font-size:14px;margin-top:10px;}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;}
   </style>
 </head>
-
 <body>
-  <h1>Washer Dashboard</h1>
+  <header>
+    <div class="logo">Roll & Connect</div>
+    <div class="avatar" id="avatar">W</div>
+  </header>
 
-  <div class="card">
-    <h2>Your Washer Profile</h2>
+  <h2 style="margin-bottom:6px;">Available Jobs</h2>
 
-    <label>Name</label>
-    <input id="name">
+  <div class="card" id="jobsList"></div>
 
-    <label>Email</label>
-    <input id="email" disabled>
+  <button class="btn btn-primary" id="mapBtn">Open Map</button>
 
-    <label>Phone</label>
-    <input id="phone">
+  <script>
+    const jobs = [
+      { id:"J-201", address:"123 Peachtree St", bags:2, time:"ASAP" },
+      { id:"J-198", address:"88 North Ave", bags:1, time:"Today · 6–8 PM" },
+      { id:"J-190", address:"45 Midtown Cir", bags:3, time:"Tomorrow · 9–12 AM" },
+    ];
 
-    <label>Bio / Description</label>
-    <textarea id="bio" placeholder="Tell clients about your service..."></textarea>
-
-    <label>Service Radius (miles)</label>
-    <input id="radius" type="number" min="1" max="50">
-
-    <label>Price Per Load ($)</label>
-    <input id="price" type="number" min="5" max="100">
-
-    <div class="toggle-row">
-      <span>Available for Orders</span>
-      <input type="checkbox" id="available">
-    </div>
-
-    <button class="btn" onclick="saveWasherProfile()">Save Washer Profile</button>
-  </div>
-
-  <div class="card">
-    <h2>Quick Links</h2>
-    <a class="btn" href="washer-orders.html">My Orders</a>
-    <a class="btn" href="washer-availability.html">Availability</a>
-    <a class="btn" href="washer-earnings.html">Earnings</a>
-    <a class="btn" href="washer-verification.html">Verification</a>
-  </div>
-
-  <a class="btn secondary" href="dashboard.html">Client Dashboard</a>
-  <a class="btn" href="settings.html">Settings</a>
-  <a class="btn secondary" onclick="logout()">Logout</a>
-
-  <script type="module">
-    import { supabase } from "./supabase.js";
-
-    // Ensure user is logged in
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) window.location.href = "login.html";
-
-    // Load washer profile
-    async function loadWasherProfile() {
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .single();
-
-      if (error) {
-        console.error("Load washer profile error:", error);
-        return;
-      }
-
-      if (profile.role !== "washer") {
-        window.location.href = "dashboard.html";
-        return;
-      }
-
-      document.getElementById("name").value = profile.name || "";
-      document.getElementById("email").value = profile.email || "";
-      document.getElementById("phone").value = profile.phone || "";
-      document.getElementById("bio").value = profile.bio || "";
-      document.getElementById("radius").value = profile.radius || 5;
-      document.getElementById("price").value = profile.price || 15;
-      document.getElementById("available").checked = profile.available || false;
-    }
-
-    await loadWasherProfile();
-
-    // Save washer profile
-    window.saveWasherProfile = async function () {
-      const updates = {
-        name: document.getElementById("name").value,
-        phone: document.getElementById("phone").value,
-        bio: document.getElementById("bio").value,
-        radius: Number(document.getElementById("radius").value),
-        price: Number(document.getElementById("price").value),
-        available: document.getElementById("available").checked
+    const list = document.getElementById("jobsList");
+    jobs.forEach(j => {
+      const row = document.createElement("div");
+      row.className = "job";
+      row.innerHTML = `<strong>${j.id}</strong> – ${j.address}<br><span style="font-size:12px;color:var(--muted);">${j.bags} bag(s) · ${j.time}</span>`;
+      row.onclick = () => {
+        localStorage.setItem("lb_job", JSON.stringify(j));
+        window.location.href = "washer-job-details.html";
       };
+      list.appendChild(row);
+    });
 
-      const { error } = await supabase
-        .from("profiles")
-        .update(updates)
-        .eq("id", session.user.id);
-
-      if (error) {
-        console.error("Save washer profile error:", error);
-        alert("Error saving washer profile.");
-        return;
-      }
-
-      alert("Washer profile updated!");
-      await loadWasherProfile();
-    };
-
-    // Logout
-    window.logout = async function () {
-      await supabase.auth.signOut();
-      window.location.href = "login.html";
-    };
+    document.getElementById("mapBtn").onclick = () => window.location.href = "washer-map.html";
   </script>
 </body>
 </html>

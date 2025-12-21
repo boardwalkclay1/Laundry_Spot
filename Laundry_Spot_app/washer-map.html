@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Washer Map – Roll & Connect</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{--primary:#4da6ff;--accent:#7a5cff;--bg:#050816;--text:#f9fbff;--muted:#8f9ac4;}
+    *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif;}
+    body{background:radial-gradient(circle at top,#243b6b,#050816);color:var(--text);padding:14px;overflow:hidden;}
+    header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+    .back{width:32px;height:32px;border-radius:999px;border:1px solid rgba(255,255,255,0.16);background:rgba(5,7,18,0.9);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+    h1{font-size:18px;}
+    #map{flex:1;border-radius:20px;border:1px solid rgba(255,255,255,0.16);background:#030715;position:relative;overflow:hidden;}
+    .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.05) 1px,transparent 1px);background-size:48px 48px;opacity:0.45;}
+    .marker{position:absolute;width:18px;height:18px;border-radius

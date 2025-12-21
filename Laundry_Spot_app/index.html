@@ -1,79 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laundry Bubbles</title>
+  <meta charset="UTF-8" />
+  <title>Laundry Bubbles · Roll & Connect</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <style>
-        body {
-            margin: 0;
-            font-family: "Arial", sans-serif;
-            background: linear-gradient(135deg, #D96E30, #F4C542);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #5A3E2B;
-        }
+  <style>
+    :root {
+      --primary: #4da6ff;
+      --accent: #7a5cff;
+      --bg: #050816;
+      --card: #0d1121;
+      --text: #f9fbff;
+      --muted: #8f9ac4;
+    }
 
-        .container {
-            background: #FFF4D9;
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-            text-align: center;
-            width: 90%;
-            max-width: 420px;
-        }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+    }
 
-        h1 {
-            font-size: 2.4rem;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
+    body {
+      background: radial-gradient(circle at top, #243b6b 0%, #050816 55%, #02030a 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      overflow-x: hidden;
+    }
 
-        p {
-            font-size: 1.1rem;
-            margin-bottom: 30px;
-        }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+    }
 
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 14px;
-            margin: 10px 0;
-            background: #D96E30;
-            color: white;
-            text-decoration: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            transition: 0.2s;
-        }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-        .btn:hover {
-            background: #B85D28;
-        }
+    .logo-circle {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--primary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+      color: #fff;
+      box-shadow: 0 0 18px rgba(77,166,255,0.4);
+    }
 
-        .secondary {
-            background: #F4C542;
-            color: #5A3E2B;
-        }
+    .logo-text {
+      font-size: 18px;
+      font-weight: 600;
+    }
 
-        .secondary:hover {
-            background: #D9AD36;
-        }
-    </style>
+    .hero {
+      text-align: center;
+      margin-top: 40px;
+      animation: fadeIn 1s ease-out forwards;
+    }
+
+    .hero h1 {
+      font-size: 32px;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    .hero p {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      width: 100%;
+      max-width: 320px;
+      padding: 12px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 16px;
+      margin: 10px auto;
+      display: block;
+      transition: 0.15s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      box-shadow: 0 12px 28px rgba(77,166,255,0.45);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 34px rgba(77,166,255,0.6);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--muted);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+    }
+
+    .features {
+      margin-top: 50px;
+      text-align: center;
+    }
+
+    .feature {
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 
 <body>
-    <div class="container">
-        <h1>Laundry Bubbles</h1>
-        <p>Your retro‑fresh laundry service experience.</p>
 
-        <a href="login.html" class="btn">Login</a>
-        <a href="client.html" class="btn secondary">Continue as Guest</a>
+  <header>
+    <div class="logo">
+      <div class="logo-circle">LB</div>
+      <div class="logo-text">Laundry Bubbles</div>
     </div>
+  </header>
+
+  <div class="hero">
+    <h1>Fresh laundry,<br> right from your doorstep</h1>
+    <p>Pickup, wash, dry & fold — powered by trusted local washers.</p>
+
+    <button class="btn btn-primary" id="loginBtn">Log In</button>
+    <button class="btn btn-secondary" id="signupBtn">Create Account</button>
+  </div>
+
+  <div class="features">
+    <div class="feature">• Fast pickup & delivery</div>
+    <div class="feature">• Trusted local washers</div>
+    <div class="feature">• Real-time tracking</div>
+    <div class="feature">• Secure payments</div>
+  </div>
+
+  <script>
+    document.getElementById("loginBtn").onclick = () => {
+      window.location.href = "login.html";
+    };
+
+    document.getElementById("signupBtn").onclick = () => {
+      window.location.href = "signup.html";
+    };
+  </script>
+
 </body>
 </html>

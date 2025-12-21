@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Payout settings – Laundry Bubbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --primary:#4da6ff;--accent:#7a5cff;--text:#f9fbff;--muted:#9aa3c7;--card:rgba(255,255,255,0.05); }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif;}
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at 20% 20%,rgba(77,166,255,0.18),transparent 60%),
+        radial-gradient(circle at 80% 80%,rgba(122,92,255,0.18),transparent 60%),
+        #030715;
+      color:var(--text);
+      padding:16px;
+    }
+    header{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+    .back{
+      width:34px;height:34px;border-radius:999px;
+      border:1px solid rgba(255,255,255,0.16);
+      background:rgba(5,7,18,0.9);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;font-size:16px;
+    }
+    h1{font-size:20px;margin-bottom:4px;}
+    .sub{font-size:13px;color:var(--muted);margin-bottom:10px;}
+    .card{
+      background:var(--card);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:16px;
+      padding:14px;
+      margin-bottom:12px;
+    }
+    label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px;}
+    input{
+      width:100%;padding:10px;border-radius:12px;
+      border:1px solid rgba(255,255,255,0.12);
+      background:rgba(255,255,255,0.06);
+      color:var(--text);
+      margin-bottom:10px;
+      font-size:14px;
+    }
+    .btn{
+      width:100%;padding:12px;border-radius:999px;
+      border:none;cursor:pointer;font-weight:600;font-size:16px;margin-top:6px;
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,var(--primary),var(--accent));
+      color:#fff;
+      box-shadow:0 12px 28px rgba(77,166,255,0.45);
+    }
+    .hint{font-size:11px;color:var(--muted);margin-top:6px;}
+    .summary{font-size:13px;color:var(--muted);margin-top:8px;}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="back" onclick="window.location.href='settings.html'">←</div>
+    <div>
+      <h1>Payout settings</h1>
+      <p class="sub">Set how you receive your earnings.</p>
+    </div>
+  </header>
+
+  <section class="card">
+    <label>PayPal email</label>
+    <input id="paypalEmailWasher" placeholder="washer@example.com" />
+
+    <label>CashApp tag</label>
+    <input id="cashappTagWasher" placeholder="$washer" />
+
+    <label>Bank nickname</label>
+    <input id="bankNicknameWasher" placeholder="e.g. 'Chase checking'" />
+
+    <button class="btn btn-primary" id="savePayoutBtn">Save payout settings</button>
+    <p class="hint">
+      In production, payouts will be processed via a PCI‑compliant provider (like Stripe Connect), using these details.
+    </p>
+    <p class="summary" id="payoutSummary"></p>
+  </section>
+
+  <script>
+    function loadPayoutSettings(){
+      const raw = localStorage.getItem("lb_payout_settings");
+      if(!raw) return;
+      const s = JSON.parse(raw);
+      document.getElementById("paypalEmailWasher").value = s.paypalEmail || "";
+      document.getElementById("cashappTagWasher").value = s.cashappTag || "";
+      document.getElementById("bankNicknameWasher").value = s.bankNickname || "";
+      renderSummary(s);
+    }
+
+    function renderSummary(s){
+      const parts = [];
+      if(s.paypalEmail) parts.push("PayPal: " + s.paypalEmail);
+      if(s.cashappTag) parts.push("CashApp: " + s.cashappTag);
+      if(s.bankNickname) parts.push("Bank: " + s.bankNickname);
+      const el = document.getElementById("payoutSummary");
+      el.textContent = parts.length ? "Current: " + parts.join(" · ") : "No payout method set yet.";
+    }
+
+    document.getElementById("savePayoutBtn").onclick = () => {
+      const s = {
+        paypalEmail: document.getElementById("paypalEmailWasher").value.trim(),
+        cashappTag: document.getElementById("cashappTagWasher").value.trim(),
+        bankNickname: document.getElementById("bankNicknameWasher").value.trim()
+      };
+      localStorage.setItem("lb_payout_settings", JSON.stringify(s));
+      renderSummary(s);
+      alert("Payout settings saved.");
+    };
+
+    loadPayoutSettings();
+  </script>
+</body>
+</html>

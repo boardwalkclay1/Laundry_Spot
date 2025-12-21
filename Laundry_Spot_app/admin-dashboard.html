@@ -1,43 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Admin Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard – Control Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{--primary:#4da6ff;--accent:#7a5cff;--bg:#050816;--text:#f9fbff;--muted:#8f9ac4;}
+    *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif;}
+    body{background:#050816;color:var(--text);padding:16px;}
+    h1{font-size:22px;margin-bottom:10px;}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;}
+    .card{background:#0d1121;border-radius:16px;padding:14px;border:1px solid rgba(255,255,255,0.08);cursor:pointer;}
+    .card:hover{background:#141a33;}
+    .title{font-size:15px;margin-bottom:4px;}
+    .sub{font-size:12px;color:var(--muted);}
+  </style>
 </head>
-<body style="font-family:Arial; padding:20px;">
-
+<body>
   <h1>Admin Dashboard</h1>
-  <p id="status">Checking access...</p>
 
-  <button id="logoutBtn" style="padding:10px; margin-top:10px;">Log Out</button>
+  <div class="grid">
+    <div class="card" onclick="go('admin-users.html')">
+      <div class="title">Users</div>
+      <div class="sub">View & manage all users</div>
+    </div>
 
-  <script type="module">
-    import { supabase } from "./supabase.js";
+    <div class="card" onclick="go('admin-washers.html')">
+      <div class="title">Washers</div>
+      <div class="sub">Approve & manage washers</div>
+    </div>
 
-    const SUPER_ADMIN = "boardwalkclay1@gmail.com";
+    <div class="card" onclick="go('admin-orders.html')">
+      <div class="title">Orders</div>
+      <div class="sub">Track all orders</div>
+    </div>
 
-    const { data } = await supabase.auth.getSession();
-    const session = data.session;
+    <div class="card" onclick="go('admin-map.html')">
+      <div class="title">Map</div>
+      <div class="sub">View all activity</div>
+    </div>
 
-    if (!session) {
-      window.location.href = "login.html";
-    }
+    <div class="card" onclick="go('login.html')">
+      <div class="title">Logout</div>
+      <div class="sub">Sign out of admin</div>
+    </div>
+  </div>
 
-    const email = session.user.email;
-
-    if (email !== SUPER_ADMIN) {
-      document.getElementById("status").innerText = "Access denied.";
-      setTimeout(() => window.location.href = "dashboard.html", 1500);
-    } else {
-      document.getElementById("status").innerText = "Welcome, Admin.";
-    }
-
-    document.getElementById("logoutBtn").onclick = async () => {
-      await supabase.auth.signOut();
-      window.location.href = "login.html";
-    };
+  <script>
+    function go(p){ window.location.href = p; }
   </script>
-
 </body>
 </html>

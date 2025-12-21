@@ -4,147 +4,87 @@
   <meta charset="UTF-8" />
   <title>Settings – Laundry Bubbles</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <style>
-    :root {
-      --primary: #4da6ff;
-      --accent: #7a5cff;
-      --text: #f9fbff;
-      --muted: #9aa3c7;
-      --card: rgba(255,255,255,0.05);
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: system-ui, sans-serif;
-    }
-
-    body {
-      min-height: 100vh;
+    :root { --primary:#4da6ff;--accent:#7a5cff;--text:#f9fbff;--muted:#9aa3c7;--card:rgba(255,255,255,0.05); }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif;}
+    body{
+      min-height:100vh;
       background:
-        radial-gradient(circle at 20% 20%, rgba(77,166,255,0.18), transparent 60%),
-        radial-gradient(circle at 80% 80%, rgba(122,92,255,0.18), transparent 60%),
+        radial-gradient(circle at 20% 20%,rgba(77,166,255,0.18),transparent 60%),
+        radial-gradient(circle at 80% 80%,rgba(122,92,255,0.18),transparent 60%),
         #030715;
-      color: var(--text);
-      padding: 18px;
-      overflow-x: hidden;
-      position: relative;
+      color:var(--text);
+      padding:18px;
+      overflow-x:hidden;
+      position:relative;
     }
-
-    .grid-overlay {
-      position: fixed;
-      inset: 0;
+    .grid-overlay{
+      position:fixed;inset:0;
       background-image:
-        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
-      background-size: 48px 48px;
-      opacity: 0.35;
-      pointer-events: none;
-      z-index: 0;
+        linear-gradient(rgba(255,255,255,0.06) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,0.05) 1px,transparent 1px);
+      background-size:48px 48px;
+      opacity:0.35;pointer-events:none;z-index:0;
     }
-
-    header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
-      position: relative;
-      z-index: 2;
+    header{
+      display:flex;align-items:center;gap:12px;
+      margin-bottom:20px;position:relative;z-index:2;
     }
-
-    .back {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 18px;
+    .back{
+      width:36px;height:36px;border-radius:50%;
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.15);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;font-size:18px;
     }
-
-    h1 {
-      font-size: 22px;
-      font-weight: 600;
+    h1{font-size:22px;font-weight:600;}
+    .section{margin-bottom:26px;position:relative;z-index:2;}
+    .section-title{
+      font-size:14px;color:var(--muted);margin-bottom:10px;
+      text-transform:uppercase;letter-spacing:1px;
     }
-
-    .section {
-      margin-bottom: 26px;
+    .card{
+      background:var(--card);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:16px;
+      padding:16px;
+      margin-bottom:12px;
+      box-shadow:0 10px 24px rgba(0,0,0,0.4);
     }
-
-    .section-title {
-      font-size: 14px;
-      color: var(--muted);
-      margin-bottom: 10px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+    label{
+      font-size:13px;color:var(--muted);
+      display:block;margin-bottom:4px;
     }
-
-    .card {
-      background: var(--card);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+    input,select{
+      width:100%;padding:10px;border-radius:12px;
+      border:1px solid rgba(255,255,255,0.12);
+      background:rgba(255,255,255,0.06);
+      color:var(--text);
+      margin-bottom:12px;
+      font-size:14px;
     }
-
-    label {
-      font-size: 13px;
-      color: var(--muted);
-      display: block;
-      margin-bottom: 4px;
+    .btn{
+      width:100%;padding:12px;border-radius:999px;
+      border:none;cursor:pointer;font-weight:600;
+      font-size:16px;margin-top:8px;
     }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.06);
-      color: var(--text);
-      margin-bottom: 12px;
-      font-size: 14px;
+    .btn-primary{
+      background:linear-gradient(135deg,var(--primary),var(--accent));
+      color:#fff;box-shadow:0 12px 28px rgba(77,166,255,0.45);
     }
-
-    .btn {
-      width: 100%;
-      padding: 12px;
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 16px;
-      margin-top: 10px;
+    .btn-danger{
+      background:rgba(255,0,0,0.15);
+      border:1px solid rgba(255,0,0,0.3);
+      color:#ff6b6b;
     }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      color: #fff;
-      box-shadow: 0 12px 28px rgba(77,166,255,0.45);
+    .nav-card{
+      display:flex;justify-content:space-between;align-items:center;
+      cursor:pointer;
     }
-
-    .btn-danger {
-      background: rgba(255,0,0,0.15);
-      border: 1px solid rgba(255,0,0,0.3);
-      color: #ff6b6b;
-    }
-
-    .location-item {
-      padding: 10px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      margin-bottom: 8px;
-      font-size: 14px;
-    }
+    .nav-title{font-size:15px;font-weight:500;}
+    .nav-sub{font-size:12px;color:var(--muted);}
   </style>
 </head>
-
 <body>
   <div class="grid-overlay"></div>
 
@@ -153,111 +93,100 @@
     <h1>Settings</h1>
   </header>
 
-  <!-- PROFILE SECTION -->
   <div class="section">
     <div class="section-title">Profile</div>
-
     <div class="card">
-      <label>Full Name</label>
+      <label>Full name</label>
       <input id="fullName" placeholder="Your name" />
-
       <label>Email</label>
       <input id="email" placeholder="Email" disabled />
-
       <label>Phone</label>
       <input id="phone" placeholder="Phone number" />
-
-      <button class="btn btn-primary" id="saveProfileBtn">Save Profile</button>
+      <button class="btn btn-primary" id="saveProfileBtn">Save profile</button>
     </div>
   </div>
 
-  <!-- SAVED LOCATIONS -->
   <div class="section">
-    <div class="section-title">Saved Locations</div>
-
-    <div id="locationsList"></div>
-
-    <button class="btn btn-primary" id="addLocationBtn">Add New Location</button>
+    <div class="section-title">Mode</div>
+    <div class="card">
+      <label>Current mode</label>
+      <select id="roleSelect">
+        <option value="client">Client</option>
+        <option value="washer">Washer</option>
+      </select>
+      <button class="btn btn-primary" id="saveRoleBtn">Switch mode</button>
+      <p style="font-size:12px;color:var(--muted);margin-top:6px;">
+        Switching mode changes your experience between booking washers and picking up loads.
+      </p>
+    </div>
   </div>
 
-  <!-- ACCOUNT -->
+  <div class="section">
+    <div class="section-title">Money & safety</div>
+    <div class="card nav-card" id="paymentsCard">
+      <div>
+        <div class="nav-title">Payments & payouts</div>
+        <div class="nav-sub">Set how you get paid. Card data stays tokenized and safe.</div>
+      </div>
+      <div style="font-size:18px;color:var(--muted);">›</div>
+    </div>
+  </div>
+
   <div class="section">
     <div class="section-title">Account</div>
-
     <div class="card">
-      <button class="btn btn-danger" id="logoutBtn">Log Out</button>
+      <button class="btn btn-danger" id="logoutBtn">Log out</button>
     </div>
   </div>
 
   <script>
-    function nav(page) {
-      window.location.href = page;
-    }
+    function nav(page){ window.location.href = page; }
 
-    document.getElementById("backBtn").onclick = () => nav("client-dashboard.html");
+    document.getElementById("paymentsCard").onclick = () => nav("payments.html");
 
-    // Load user profile
-    let user = null;
-    try {
+    document.getElementById("backBtn").onclick = () => {
       const raw = localStorage.getItem("lb_user");
-      if (raw) {
+      if(!raw){ nav("login.html"); return; }
+      const u = JSON.parse(raw);
+      nav(u.role === "washer" ? "washer-dashboard.html" : "client-dashboard.html");
+    };
+
+    let user = null;
+    try{
+      const raw = localStorage.getItem("lb_user");
+      if(raw){
         user = JSON.parse(raw);
         document.getElementById("fullName").value = user.full_name || "";
         document.getElementById("email").value = user.email || "";
         document.getElementById("phone").value = user.phone || "";
+        document.getElementById("roleSelect").value = user.role || "client";
       }
-    } catch (e) {}
+    }catch(e){}
 
-    // Save profile
     document.getElementById("saveProfileBtn").onclick = () => {
-      if (!user) return;
-
+      if(!user) return;
       user.full_name = document.getElementById("fullName").value.trim();
       user.phone = document.getElementById("phone").value.trim();
-
       localStorage.setItem("lb_user", JSON.stringify(user));
       alert("Profile updated.");
     };
 
-    // Load saved locations
-    function loadLocations() {
-      const list = document.getElementById("locationsList");
-      list.innerHTML = "";
-
-      let locations = [];
-      try {
-        const raw = localStorage.getItem("lb_locations");
-        if (raw) locations = JSON.parse(raw);
-      } catch (e) {}
-
-      if (locations.length === 0) {
-        list.innerHTML = "<p style='color: var(--muted); font-size: 13px;'>No saved locations yet.</p>";
-        return;
-      }
-
-      locations.forEach(loc => {
-        const div = document.createElement("div");
-        div.className = "location-item";
-        div.textContent = `${loc.label}: ${loc.address}`;
-        list.appendChild(div);
-      });
-    }
-
-    loadLocations();
-
-    // Add location
-    document.getElementById("addLocationBtn").onclick = () => {
-      nav("pickup-map.html");
+    document.getElementById("saveRoleBtn").onclick = () => {
+      if(!user) return;
+      const role = document.getElementById("roleSelect").value;
+      user.role = role;
+      localStorage.setItem("lb_user", JSON.stringify(user));
+      alert("Mode switched to " + role + ".");
+      nav(role === "washer" ? "washer-dashboard.html" : "client-dashboard.html");
     };
 
-    // Logout
     document.getElementById("logoutBtn").onclick = () => {
       localStorage.removeItem("lb_user");
       localStorage.removeItem("lb_selected_washer");
       localStorage.removeItem("lb_pickup_location");
-      localStorage.removeItem("lb_locations");
       localStorage.removeItem("lb_pickup_history");
-
+      localStorage.removeItem("lb_conversations");
+      localStorage.removeItem("lb_active_conversation");
       nav("login.html");
     };
   </script>

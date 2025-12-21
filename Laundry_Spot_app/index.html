@@ -10,9 +10,8 @@
       --primary: #4da6ff;
       --accent: #7a5cff;
       --bg: #050816;
-      --card: #0d1121;
       --text: #f9fbff;
-      --muted: #8f9ac4;
+      --muted: #9aa3c7;
     }
 
     * {
@@ -23,57 +22,79 @@
     }
 
     body {
-      background: radial-gradient(circle at top, #243b6b 0%, #050816 55%, #02030a 100%);
-      color: var(--text);
       min-height: 100vh;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(77,166,255,0.18), transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(122,92,255,0.18), transparent 60%),
+        #030715;
+      color: var(--text);
       display: flex;
       flex-direction: column;
-      padding: 20px;
+      align-items: center;
+      padding: 30px 20px;
       overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Grid overlay like the map page */
+    .grid-overlay {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
     }
 
     header {
+      width: 100%;
+      max-width: 600px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      justify-content: center;
       margin-bottom: 40px;
+      z-index: 2;
     }
 
     .logo {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
     .logo-circle {
-      width: 42px;
-      height: 42px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       background: linear-gradient(135deg, var(--accent), var(--primary));
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 18px;
+      font-size: 20px;
       color: #fff;
-      box-shadow: 0 0 18px rgba(77,166,255,0.4);
+      box-shadow: 0 0 18px rgba(77,166,255,0.45);
     }
 
     .logo-text {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 600;
+      letter-spacing: 0.5px;
     }
 
     .hero {
       text-align: center;
-      margin-top: 40px;
-      animation: fadeIn 1s ease-out forwards;
+      margin-top: 20px;
+      z-index: 2;
     }
 
     .hero h1 {
       font-size: 32px;
       line-height: 1.2;
       margin-bottom: 12px;
+      text-shadow: 0 0 12px rgba(77,166,255,0.4);
     }
 
     .hero p {
@@ -94,6 +115,8 @@
       margin: 10px auto;
       display: block;
       transition: 0.15s ease;
+      z-index: 2;
+      position: relative;
     }
 
     .btn-primary {
@@ -121,22 +144,20 @@
     .features {
       margin-top: 50px;
       text-align: center;
+      z-index: 2;
     }
 
     .feature {
-      margin-bottom: 20px;
+      margin-bottom: 12px;
       font-size: 14px;
       color: var(--muted);
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 
 <body>
+
+  <div class="grid-overlay"></div>
 
   <header>
     <div class="logo">
@@ -146,7 +167,7 @@
   </header>
 
   <div class="hero">
-    <h1>Fresh laundry,<br> right from your doorstep</h1>
+    <h1>Fresh laundry,<br> delivered with care</h1>
     <p>Pickup, wash, dry & fold — powered by trusted local washers.</p>
 
     <button class="btn btn-primary" id="loginBtn">Log In</button>

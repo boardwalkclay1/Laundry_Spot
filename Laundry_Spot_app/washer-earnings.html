@@ -2,140 +2,359 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Earnings – Laundry Bubbles</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Edit Profile – Roll ’n Connect</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="rollnconnect.css" />
   <style>
-    :root { --primary:#4da6ff;--accent:#7a5cff;--text:#f9fbff;--muted:#9aa3c7;--card:rgba(255,255,255,0.05); }
-    *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif;}
-    body{
-      min-height:100vh;
-      background:
-        radial-gradient(circle at 20% 20%,rgba(77,166,255,0.18),transparent 60%),
-        radial-gradient(circle at 80% 80%,rgba(122,92,255,0.18),transparent 60%),
-        #030715;
-      color:var(--text);
-      padding:16px;
+    .form-section {
+      margin-bottom: 18px;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border-soft);
+      background: var(--glass);
     }
-    header{
-      display:flex;align-items:center;gap:10px;margin-bottom:16px;
+    .form-section h2 {
+      margin: 0 0 8px;
+      font-size: 16px;
     }
-    .back{
-      width:34px;height:34px;border-radius:999px;
-      border:1px solid rgba(255,255,255,0.16);
-      background:rgba(5,7,18,0.9);
-      display:flex;align-items:center;justify-content:center;
-      cursor:pointer;font-size:16px;
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 10px;
     }
-    h1{font-size:20px;margin-bottom:4px;}
-    .sub{font-size:13px;color:var(--muted);margin-bottom:10px;}
-    .summary-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
-      gap:12px;
-      margin-bottom:16px;
+    .field label {
+      font-size: 13px;
+      color: var(--muted);
     }
-    .summary-card{
-      background:var(--card);
-      border:1px solid rgba(255,255,255,0.12);
-      border-radius:16px;
-      padding:12px;
+    .field input,
+    .field textarea {
+      background: #050509;
+      border-radius: 10px;
+      border: 1px solid var(--border-soft);
+      padding: 7px 9px;
+      font-size: 13px;
+      color: #fff;
+      outline: none;
     }
-    .summary-label{font-size:12px;color:var(--muted);margin-bottom:4px;}
-    .summary-value{font-size:18px;font-weight:600;}
-    .summary-sub{font-size:11px;color:var(--muted);}
-    .load-card{
-      background:var(--card);
-      border:1px solid rgba(255,255,255,0.12);
-      border-radius:16px;
-      padding:12px;
-      margin-bottom:10px;
+    .field textarea {
+      min-height: 60px;
+      resize: vertical;
     }
-    .load-title-row{
-      display:flex;justify-content:space-between;align-items:center;
-      margin-bottom:4px;
+
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
     }
-    .load-title{font-size:14px;font-weight:600;}
-    .load-amount{font-size:14px;font-weight:600;}
-    .load-meta{font-size:12px;color:var(--muted);}
+    .switch {
+      position: relative;
+      width: 40px;
+      height: 22px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #333;
+      transition: .2s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .2s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: var(--purple);
+    }
+    input:checked + .slider:before {
+      transform: translateX(18px);
+    }
+
+    .lesson-fields {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border-soft);
+      display: none;
+    }
+
+    .pill-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      font-size: 11px;
+      cursor: pointer;
+      color: var(--muted);
+    }
+    .pill.active {
+      border-color: var(--purple);
+      color: var(--purple);
+      background: rgba(168,85,247,0.12);
+    }
+
+    .btn-primary {
+      width: 100%;
+      margin-top: 12px;
+      padding: 8px 0;
+      border-radius: 999px;
+      border: none;
+      background: var(--purple);
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <header>
-    <div class="back" onclick="window.location.href='washer-dashboard.html'">←</div>
-    <div>
-      <h1>Earnings</h1>
-      <p class="sub">See what you’ve made from completed loads.</p>
+<div class="app-shell">
+
+  <header class="app-header">
+    <div class="app-header-left">
+      <div class="brand-logo">R</div>
+      <div class="brand-name">Edit Profile</div>
+    </div>
+    <div class="app-header-right">
+      <a href="profile.html" class="icon-btn">✓</a>
     </div>
   </header>
 
-  <section class="summary-grid">
-    <div class="summary-card">
-      <div class="summary-label">Total earned</div>
-      <div class="summary-value" id="totalEarned">$0</div>
-      <div class="summary-sub">All time</div>
-    </div>
-    <div class="summary-card">
-      <div class="summary-label">This week</div>
-      <div class="summary-value" id="weekEarned">$0</div>
-      <div class="summary-sub">Mon–Sun</div>
-    </div>
-    <div class="summary-card">
-      <div class="summary-label">Completed loads</div>
-      <div class="summary-value" id="completedCount">0</div>
-      <div class="summary-sub">Across all clients</div>
-    </div>
-  </section>
+  <main class="page">
+    <form id="edit-form" onsubmit="saveProfile(event)">
 
-  <section id="loadsContainer"></section>
-
-  <script>
-    function loadEarnings(){
-      const history = JSON.parse(localStorage.getItem("lb_pickup_history") || "[]");
-
-      const completed = history.filter(h => h.status === "completed");
-
-      const now = new Date();
-      const startOfWeek = new Date(now);
-      startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
-      startOfWeek.setHours(0,0,0,0);
-
-      let total = 0;
-      let weekTotal = 0;
-
-      const container = document.getElementById("loadsContainer");
-      container.innerHTML = "";
-
-      completed.forEach(load => {
-        const amount = load.washer?.price_per_load || 0;
-        total += amount;
-
-        const created = new Date(load.created_at || Date.now());
-        if(created >= startOfWeek){
-          weekTotal += amount;
-        }
-
-        const card = document.createElement("div");
-        card.className = "load-card";
-        card.innerHTML = `
-          <div class="load-title-row">
-            <div class="load-title">${load.washer?.name || "Client load"}</div>
-            <div class="load-amount">$${amount.toFixed(2)}</div>
+      <div class="form-section">
+        <h2>Basic info</h2>
+        <div class="field">
+          <label>Username</label>
+          <input id="username" type="text" />
+        </div>
+        <div class="field">
+          <label>City</label>
+          <input id="city" type="text" placeholder="e.g. Atlanta, GA" />
+        </div>
+        <div class="field">
+          <label>Disciplines</label>
+          <input id="disciplines" type="text" placeholder="e.g. Longboard, Downhill" />
+          <div class="pill-row">
+            <div class="pill" data-disc="Longboard">Longboard</div>
+            <div class="pill" data-disc="Downhill">Downhill</div>
+            <div class="pill" data-disc="Street / Park">Street / Park</div>
+            <div class="pill" data-disc="Roller Rhythm">Roller Rhythm</div>
+            <div class="pill" data-disc="Inline Urban">Inline Urban</div>
+            <div class="pill" data-disc="Cruising / Meetup">Cruising / Meetup</div>
+            <div class="pill" data-disc="Beginners">Beginners</div>
+            <div class="pill" data-disc="Rinks">Rinks</div>
           </div>
-          <div class="load-meta">${load.pickupAddress || "No address saved"}</div>
-          <div class="load-meta">
-            Completed: ${new Date(load.created_at || Date.now()).toLocaleString()}
-            · Window: ${load.pickupWindow || "Not set"}
-          </div>
-        `;
-        container.appendChild(card);
-      });
+        </div>
+        <div class="field">
+          <label>Bio</label>
+          <textarea id="bio" placeholder="Tell people about your style, vibe, and experience..."></textarea>
+        </div>
+      </div>
 
-      document.getElementById("totalEarned").textContent = `$${total.toFixed(2)}`;
-      document.getElementById("weekEarned").textContent = `$${weekTotal.toFixed(2)}`;
-      document.getElementById("completedCount").textContent = completed.length;
+      <div class="form-section">
+        <h2>Media</h2>
+        <div class="field">
+          <label>Photo URL (add one at a time)</label>
+          <input id="photo-url" type="text" placeholder="https://..." />
+        </div>
+        <button type="button" class="btn-primary" onclick="addPhoto()">Add Photo</button>
+        <div id="photo-list" style="margin-top:8px;font-size:12px;color:var(--muted);"></div>
+
+        <div class="field" style="margin-top:14px;">
+          <label>Video URL (MP4 or embed src)</label>
+          <input id="video-url" type="text" placeholder="https://..." />
+        </div>
+        <button type="button" class="btn-primary" onclick="addVideo()">Add Video</button>
+        <div id="video-list" style="margin-top:8px;font-size:12px;color:var(--muted);"></div>
+      </div>
+
+      <div class="form-section">
+        <div class="toggle-row">
+          <h2>Offer lessons</h2>
+          <label class="switch">
+            <input id="lessons-toggle" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="lesson-fields" id="lesson-fields">
+          <div class="field">
+            <label>Price (per hour or per session)</label>
+            <input id="lesson-price" type="text" placeholder="$40 / hour" />
+          </div>
+          <div class="field">
+            <label>Location</label>
+            <input id="lesson-location" type="text" placeholder="e.g. Atlanta BeltLine, local rink, online" />
+          </div>
+          <div class="field">
+            <label>Level you teach</label>
+            <input id="lesson-level" type="text" placeholder="Beginners, Intermediate, Advanced" />
+          </div>
+          <div class="field">
+            <label>Lesson description</label>
+            <textarea id="lesson-description" placeholder="What do your lessons focus on? Style, safety, tricks, flow..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary">Save profile</button>
+    </form>
+  </main>
+
+  <footer>
+    <div class="footer-row">
+      <span>© <span id="year"></span> Roll ’n Connect.</span>
+    </div>
+  </footer>
+</div>
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  function getJSON(key, fallback) {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    try { return JSON.parse(raw); } catch { return fallback; }
+  }
+
+  // Load existing data
+  const usernameInput = document.getElementById("username");
+  const cityInput = document.getElementById("city");
+  const discInput = document.getElementById("disciplines");
+  const bioInput = document.getElementById("bio");
+  const photoList = document.getElementById("photo-list");
+  const videoList = document.getElementById("video-list");
+  const lessonsToggle = document.getElementById("lessons-toggle");
+  const lessonFields = document.getElementById("lesson-fields");
+
+  const lessonPrice = document.getElementById("lesson-price");
+  const lessonLocation = document.getElementById("lesson-location");
+  const lessonLevel = document.getElementById("lesson-level");
+  const lessonDescription = document.getElementById("lesson-description");
+
+  usernameInput.value = localStorage.getItem("username") || "";
+  cityInput.value = localStorage.getItem("profile_city") || "";
+  discInput.value = localStorage.getItem("profile_disciplines") || "";
+  bioInput.value = localStorage.getItem("profile_bio") || "";
+
+  let photos = getJSON("user_photos", []);
+  let videos = getJSON("user_videos", []);
+
+  function renderMediaLists() {
+    photoList.innerHTML = photos.length
+      ? "Photos: " + photos.join(", ")
+      : "No photos added yet.";
+    videoList.innerHTML = videos.length
+      ? "Videos: " + videos.join(", ")
+      : "No videos added yet.";
+  }
+  renderMediaLists();
+
+  // Lessons
+  const lessonsEnabled = localStorage.getItem("lessons_enabled") === "true";
+  lessonsToggle.checked = lessonsEnabled;
+  lessonFields.style.display = lessonsEnabled ? "block" : "none";
+
+  const lessonInfo = getJSON("lesson_info", {});
+  if (lessonInfo) {
+    lessonPrice.value = lessonInfo.price || "";
+    lessonLocation.value = lessonInfo.location || "";
+    lessonLevel.value = lessonInfo.level || "";
+    lessonDescription.value = lessonInfo.description || "";
+  }
+
+  lessonsToggle.addEventListener("change", () => {
+    lessonFields.style.display = lessonsToggle.checked ? "block" : "none";
+  });
+
+  // Discipline pills
+  document.querySelectorAll(".pill").forEach(pill => {
+    pill.addEventListener("click", () => {
+      pill.classList.toggle("active");
+      const current = discInput.value ? discInput.value.split(",").map(x => x.trim()).filter(Boolean) : [];
+      const val = pill.dataset.disc;
+      const idx = current.indexOf(val);
+      if (pill.classList.contains("active")) {
+        if (idx === -1) current.push(val);
+      } else {
+        if (idx !== -1) current.splice(idx, 1);
+      }
+      discInput.value = current.join(", ");
+    });
+  });
+
+  // Media adders
+  function addPhoto() {
+    const url = document.getElementById("photo-url").value.trim();
+    if (!url) return;
+    photos.push(url);
+    localStorage.setItem("user_photos", JSON.stringify(photos));
+    document.getElementById("photo-url").value = "";
+    renderMediaLists();
+  }
+  function addVideo() {
+    const url = document.getElementById("video-url").value.trim();
+    if (!url) return;
+    videos.push(url);
+    localStorage.setItem("user_videos", JSON.stringify(videos));
+    document.getElementById("video-url").value = "";
+    renderMediaLists();
+  }
+  window.addPhoto = addPhoto;
+  window.addVideo = addVideo;
+
+  function saveProfile(e) {
+    e.preventDefault();
+
+    const uname = usernameInput.value.trim();
+    if (uname) localStorage.setItem("username", uname);
+
+    localStorage.setItem("profile_city", cityInput.value.trim());
+    localStorage.setItem("profile_disciplines", discInput.value.trim());
+    localStorage.setItem("profile_bio", bioInput.value.trim());
+
+    // media already stored on add
+
+    const enabled = lessonsToggle.checked;
+    localStorage.setItem("lessons_enabled", enabled ? "true" : "false");
+
+    if (enabled) {
+      const info = {
+        price: lessonPrice.value.trim(),
+        location: lessonLocation.value.trim(),
+        level: lessonLevel.value.trim(),
+        description: lessonDescription.value.trim()
+      };
+      localStorage.setItem("lesson_info", JSON.stringify(info));
+    } else {
+      localStorage.removeItem("lesson_info");
     }
 
-    loadEarnings();
-  </script>
+    // go back to profile
+    window.location.href = "profile.html";
+  }
+  window.saveProfile = saveProfile;
+</script>
 </body>
 </html>

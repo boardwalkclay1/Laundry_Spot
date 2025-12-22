@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Sign Up</title>
+  <title>Login</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
-  <h2>Create Account</h2>
+  <h2>Login</h2>
 
   <input id="email" placeholder="Email" type="email">
   <input id="password" placeholder="Password" type="password">
@@ -17,39 +17,76 @@
     <option value="washer">Washer</option>
   </select>
 
-  <button onclick="signup()">Sign Up</button>
+  <label style="display:flex; align-items:center; margin-top:10px;">
+    <input type="checkbox" id="remember" style="margin-right:8px;">
+    Remember this device
+  </label>
+
+  <button onclick="handleLogin()">Continue</button>
+
+  <p id="status" style="margin-top:10px;"></p>
 
   <p style="text-align:center; margin-top:15px;">
-    Already have an account?
-    <a href="login.html" style="color:var(--accent2);">Login</a>
+    Don’t have an account?
+    <a href="signup.html" style="color:var(--accent2);">Sign Up</a>
   </p>
 </div>
 
+<!-- Supabase and shared auth helpers -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 <script>
-function signup() {
+(async function init() {
+  // Auto-select role from query parameter: ?role=customer or ?role=washer
+  const params = new URLSearchParams(window.location.search);
+  const roleParam = params.get("role");
+  if (roleParam === "customer" || roleParam === "washer") {
+    document.getElementById("role").value = roleParam;
+  }
+
+  // If already logged in, redirect directly to correct dashboard
+  const user = await getCurrentUser();
+  if (user) {
+    const role = getRoleFromUser(user);
+    if (role === 'customer') {
+      window.location.href = 'customer-dashboard.html';
+    } else if (role === 'washer') {
+      window.location.href = 'washer-dashboard.html';
+    }
+  }
+})();
+
+async function handleLogin() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
-  const role = document.getElementById("role").value;
+  const chosenRole = document.getElementById("role").value;
+  const statusEl = document.getElementById("status");
 
   if (!email || !password) {
-    alert("Please enter email and password");
+    statusEl.innerText = "Please enter email and password.";
     return;
   }
 
-  const user = {
-    email,
-    role,
-    profileCompleted: false,
-    paymentSetup: false
-  };
+  statusEl.innerText = "Logging in...";
 
-  localStorage.setItem("laundryUser", JSON.stringify(user));
-  sessionStorage.removeItem("laundryUser");
+  try {
+    const data = await loginUser(email, password);
+    const user = data.user;
 
-  if (role === "customer") {
-    window.location.href = "customer-dashboard.html";
-  } else {
-    window.location.href = "washer-onboarding.html";
+    const actualRole = getRoleFromUser(user);
+    if (actualRole && actualRole !== chosenRole) {
+      statusEl.innerText = `This account is registered as ${actualRole}, not ${chosenRole}.`;
+      return;
+    }
+
+    if (chosenRole === 'customer') {
+      window.location.href = 'customer-dashboard.html';
+    } else {
+      window.location.href = 'washer-dashboard.html';
+    }
+  } catch (err) {
+    console.error(err);
+    statusEl.innerText = err.message || "Login failed.";
   }
 }
 </script>

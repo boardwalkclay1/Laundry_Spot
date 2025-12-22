@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Payment Setup</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .card {
+      background: rgba(10, 15, 30, 0.9);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Payment & Billing</h2>
+  <button onclick="location.href='customer-dashboard.html'" style="float:right;">Back to Dashboard</button>
+
+  <div class="card">
+    <h3>Payment options (Stripe)</h3>
+    <p>Choose how you’d like to set up and manage your payments.</p>
+    <button onclick="addCard()">Add New Card</button>
+    <button onclick="managePaymentMethods()">Manage Payment Methods</button>
+    <button onclick="viewBillingHistory()">View Billing History</button>
+    <p id="status" style="margin-top:10px;"></p>
+  </div>
+
+  <div class="card">
+    <h3>Coming soon</h3>
+    <ul>
+      <li>Apple Pay / Google Pay</li>
+      <li>Saved preferred payment method</li>
+      <li>Per-request cost breakdown</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+function getUser() {
+  let user = localStorage.getItem("laundryUser");
+  if (!user) user = sessionStorage.getItem("laundryUser");
+  return user ? JSON.parse(user) : null;
+}
+
+let user = getUser();
+if (!user || user.role !== "customer") {
+  location.href = "login.html?role=customer";
+}
+
+function updateUserPaymentSetup() {
+  user.paymentSetup = true;
+  if (localStorage.getItem("laundryUser")) {
+    localStorage.setItem("laundryUser", JSON.stringify(user));
+  } else {
+    sessionStorage.setItem("laundryUser", JSON.stringify(user));
+  }
+}
+
+async function addCard() {
+  // Here you'd call your backend to create a Stripe SetupIntent or Checkout
+  // Example (when backend is ready):
+  // const res = await fetch('/api/payments/create-setup-intent', { method: 'POST' });
+
+  document.getElementById("status").innerText = "Redirecting to Stripe to add a card (placeholder)…";
+  updateUserPaymentSetup();
+}
+
+function managePaymentMethods() {
+  document.getElementById("status").innerText = "Opening Stripe customer portal (placeholder)…";
+  updateUserPaymentSetup();
+}
+
+function viewBillingHistory() {
+  document.getElementById("status").innerText = "Loading billing history (placeholder)…";
+}
+</script>
+
+</body>
+</html>

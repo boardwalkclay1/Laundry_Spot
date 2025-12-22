@@ -7,42 +7,61 @@
 <body>
 
 <div class="container">
-  <h2>Create Account</h2>
+  <h2 id="signupTitle">Create Account</h2>
 
   <input id="email" placeholder="Email" type="email">
   <input id="password" placeholder="Password" type="password">
 
-  <select id="role">
-    <option value="customer">Customer</option>
-    <option value="washer">Washer</option>
-  </select>
+  <button onclick="handleSignup()">Sign Up</button>
 
-  <button onclick="signup()">Sign Up</button>
+  <p id="status" style="margin-top:10px;"></p>
 
   <p style="text-align:center; margin-top:15px;">
     Already have an account?
-    <a href="login.html" style="color:var(--accent2);">Login</a>
+    <a id="loginLink" href="#" style="color:var(--accent2);">Login</a>
   </p>
 </div>
 
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 <script>
-function signup() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  const role = document.getElementById("role").value;
+let forcedRole = null;
 
-  if (!email || !password) {
-    alert("Please enter email and password");
+(async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const roleParam = params.get("role");
+
+  if (roleParam !== "customer" && roleParam !== "washer") {
+    window.location.href = "index.html";
     return;
   }
 
-  const user = { email, role };
-  localStorage.setItem("laundryUser", JSON.stringify(user));
+  forcedRole = roleParam;
 
-  if (role === "customer") {
-    location.href = "customer-dashboard.html";
-  } else {
-    location.href = "washer-onboarding.html";
+  document.getElementById("signupTitle").innerText =
+    roleParam === "customer" ? "Customer Sign Up" : "Washer Sign Up";
+
+  document.getElementById("loginLink").href =
+    "login.html?role=" + roleParam;
+})();
+
+async function handleSignup() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const statusEl = document.getElementById("status");
+
+  if (!email || !password) {
+    statusEl.innerText = "Please enter email and password.";
+    return;
+  }
+
+  statusEl.innerText = "Creating account...";
+
+  try {
+    await signupUser(email, password, forcedRole);
+    statusEl.innerText = "Account created. Check your email to confirm, then log in.";
+  } catch (err) {
+    statusEl.innerText = err.message || "Signup failed.";
   }
 }
 </script>

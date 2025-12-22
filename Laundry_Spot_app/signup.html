@@ -1,7 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sign Up</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="container">
+  <h2 id="signupTitle">Create Account</h2>
+
+  <input id="email" type="email" placeholder="Email" />
+  <input id="password" type="password" placeholder="Password" />
+
+  <button id="signupBtn">Create Account</button>
+
+  <p id="status" style="margin-top: 12px; color: #ff8080;"></p>
+
+  <p style="margin-top: 20px; text-align: center;">
+    Already have an account?
+    <a id="loginLink" href="#">Log In</a>
+  </p>
+</div>
+
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <script>
-// Safe global Supabase initializer
+// SAFE SUPABASE INITIALIZER
 async function initSupabase() {
   const cfg = await fetch("config.json").then(r => r.json());
 
@@ -17,7 +43,13 @@ async function initSupabase() {
 
 let forcedRole = null;
 
-async function init() {
+// RUN AFTER PAGE LOADS
+window.onload = () => {
+  setupPage();
+  document.getElementById("signupBtn").addEventListener("click", handleSignup);
+};
+
+async function setupPage() {
   const params = new URLSearchParams(window.location.search);
   const role = params.get("role");
 
@@ -61,13 +93,13 @@ async function handleSignup() {
     return;
   }
 
+  // Redirect based on role
   window.location.href =
     forcedRole === "customer"
       ? "customer-dashboard.html"
       : "washer-dashboard.html";
 }
-
-document.getElementById("signupBtn").addEventListener("click", handleSignup);
-
-init();
 </script>
+
+</body>
+</html>

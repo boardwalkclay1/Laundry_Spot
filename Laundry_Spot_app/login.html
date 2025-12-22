@@ -7,15 +7,10 @@
 <body>
 
 <div class="container">
-  <h2>Login</h2>
+  <h2 id="loginTitle">Login</h2>
 
   <input id="email" placeholder="Email" type="email">
   <input id="password" placeholder="Password" type="password">
-
-  <select id="role">
-    <option value="customer">Customer</option>
-    <option value="washer">Washer</option>
-  </select>
 
   <label style="display:flex; align-items:center; margin-top:10px;">
     <input type="checkbox" id="remember" style="margin-right:8px;">
@@ -28,30 +23,43 @@
 
   <p style="text-align:center; margin-top:15px;">
     Don’t have an account?
-    <a href="signup.html" style="color:var(--accent2);">Sign Up</a>
+    <a id="signupLink" href="#" style="color:var(--accent2);">Sign Up</a>
   </p>
 </div>
 
-<!-- Supabase and shared auth helpers -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 <script>
+let forcedRole = null;
+
 (async function init() {
-  // Auto-select role from query parameter: ?role=customer or ?role=washer
+  // Read role from URL
   const params = new URLSearchParams(window.location.search);
   const roleParam = params.get("role");
-  if (roleParam === "customer" || roleParam === "washer") {
-    document.getElementById("role").value = roleParam;
+
+  // If no role was passed, send user back to landing page
+  if (roleParam !== "customer" && roleParam !== "washer") {
+    window.location.href = "index.html";
+    return;
   }
 
-  // If already logged in, redirect directly to correct dashboard
+  forcedRole = roleParam;
+
+  // Update UI text
+  document.getElementById("loginTitle").innerText =
+    roleParam === "customer" ? "Customer Login" : "Washer Login";
+
+  document.getElementById("signupLink").href =
+    "signup.html?role=" + roleParam;
+
+  // If already logged in, redirect immediately
   const user = await getCurrentUser();
   if (user) {
-    const role = getRoleFromUser(user);
-    if (role === 'customer') {
-      window.location.href = 'customer-dashboard.html';
-    } else if (role === 'washer') {
-      window.location.href = 'washer-dashboard.html';
+    const actualRole = getRoleFromUser(user);
+    if (actualRole === "customer") {
+      window.location.href = "customer-dashboard.html";
+    } else if (actualRole === "washer") {
+      window.location.href = "washer-dashboard.html";
     }
   }
 })();
@@ -59,7 +67,6 @@
 async function handleLogin() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
-  const chosenRole = document.getElementById("role").value;
   const statusEl = document.getElementById("status");
 
   if (!email || !password) {
@@ -74,16 +81,21 @@ async function handleLogin() {
     const user = data.user;
 
     const actualRole = getRoleFromUser(user);
-    if (actualRole && actualRole !== chosenRole) {
-      statusEl.innerText = `This account is registered as ${actualRole}, not ${chosenRole}.`;
+
+    // Prevent role mismatch
+    if (actualRole !== forcedRole) {
+      statusEl.innerText =
+        `This account is registered as ${actualRole}, not ${forcedRole}.`;
       return;
     }
 
-    if (chosenRole === 'customer') {
-      window.location.href = 'customer-dashboard.html';
+    // Redirect based on role
+    if (forcedRole === "customer") {
+      window.location.href = "customer-dashboard.html";
     } else {
-      window.location.href = 'washer-dashboard.html';
+      window.location.href = "washer-dashboard.html";
     }
+
   } catch (err) {
     console.error(err);
     statusEl.innerText = err.message || "Login failed.";

@@ -1,71 +1,82 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Sign Up</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
 <div class="container">
   <h2 id="signupTitle">Create Account</h2>
 
-  <input id="email" placeholder="Email" type="email">
-  <input id="password" placeholder="Password" type="password">
+  <input id="email" type="email" placeholder="Email" />
+  <input id="password" type="password" placeholder="Password" />
 
-  <button onclick="handleSignup()">Sign Up</button>
+  <button id="signupBtn">Create Account</button>
 
-  <p id="status" style="margin-top:10px;"></p>
+  <p id="status" style="margin-top: 12px; color: #ff8080;"></p>
 
-  <p style="text-align:center; margin-top:15px;">
+  <p style="margin-top: 20px; text-align: center;">
     Already have an account?
-    <a id="loginLink" href="#" style="color:var(--accent2);">Login</a>
+    <a id="loginLink" href="#">Log In</a>
   </p>
 </div>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <script>
-let supabase = null;
-let forcedRole = null;
+// Safe global Supabase initializer
+async function initSupabase() {
+  const cfg = await fetch("config.json").then(r => r.json());
 
-async function loadConfig() {
-  const res = await fetch('/config');
-  return await res.json();
+  if (!window.__supabaseClient) {
+    window.__supabaseClient = window.supabase.createClient(
+      cfg.supabaseUrl,
+      cfg.supabaseAnonKey
+    );
+  }
+
+  return window.__supabaseClient;
 }
+
+let forcedRole = null;
 
 async function init() {
   const params = new URLSearchParams(window.location.search);
-  const roleParam = params.get("role");
+  const role = params.get("role");
 
-  if (roleParam !== "customer" && roleParam !== "washer") {
+  // Validate role
+  if (!role || (role !== "customer" && role !== "washer")) {
     window.location.href = "index.html";
     return;
   }
 
-  forcedRole = roleParam;
+  forcedRole = role;
 
+  // Update UI
   document.getElementById("signupTitle").innerText =
-    roleParam === "customer" ? "Customer Sign Up" : "Washer Sign Up";
+    role === "customer" ? "Customer Sign Up" : "Washer Sign Up";
 
-  document.getElementById("loginLink").href =
-    "login.html?role=" + roleParam;
-
-  const cfg = await loadConfig();
-  supabase = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+  document.getElementById("loginLink").href = `login.html?role=${role}`;
 }
 
 async function handleSignup() {
+  const supabase = await initSupabase();
+
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
-  const statusEl = document.getElementById("status");
+  const status = document.getElementById("status");
 
   if (!email || !password) {
-    statusEl.innerText = "Please enter email and password.";
+    status.textContent = "Please enter email and password.";
     return;
   }
 
-  statusEl.innerText = "Creating account...";
+  status.textContent = "Creating account...";
 
+  // Create user with metadata.role
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -75,16 +86,18 @@ async function handleSignup() {
   });
 
   if (error) {
-    statusEl.innerText = error.message;
+    status.textContent = error.message;
     return;
   }
 
-  statusEl.innerText = "Account created! Check your email to confirm.";
-
-  setTimeout(() => {
-    window.location.href = "login.html?role=" + forcedRole;
-  }, 1500);
+  // Redirect based on role
+  window.location.href =
+    forcedRole === "customer"
+      ? "customer-dashboard.html"
+      : "washer-dashboard.html";
 }
+
+document.getElementById("signupBtn").addEventListener("click", handleSignup);
 
 init();
 </script>

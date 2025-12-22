@@ -7,55 +7,35 @@
 <body>
 
 <div class="container">
-  <h2>Profile</h2>
-  <button onclick="location.href='customer-dashboard.html'" style="float:right;">Back to Dashboard</button>
+  <h2>Customer Profile</h2>
+  <button onclick="location.href='customer-dashboard.html'" style="float:right;">Back</button>
 
   <input id="name" placeholder="Full Name">
-  <input id="defaultPickup" placeholder="Default Pickup Address">
-  <input id="defaultDropoff" placeholder="Default Dropoff Address">
-  <textarea id="preferences" placeholder="Laundry preferences (detergent, temperature, etc.)"></textarea>
+  <input id="pickup" placeholder="Default Pickup Address">
+  <input id="dropoff" placeholder="Default Dropoff Address">
+  <textarea id="prefs" placeholder="Laundry preferences"></textarea>
 
-  <button onclick="saveProfile()">Save Profile</button>
+  <button onclick="saveProfile()">Save</button>
 
   <p id="status" style="margin-top:15px;"></p>
 </div>
 
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 <script>
-function getUser() {
-  let user = localStorage.getItem("laundryUser");
-  if (!user) user = sessionStorage.getItem("laundryUser");
-  return user ? JSON.parse(user) : null;
-}
+let currentUser = null;
 
-let user = getUser();
-if (!user || user.role !== "customer") {
-  window.location.href = "login.html?role=customer";
+async function init() {
+  currentUser = await getCurrentUser();
+  if (!currentUser || getRoleFromUser(currentUser) !== "customer") {
+    window.location.href = "login.html?role=customer";
+  }
 }
 
 function saveProfile() {
-  const name = document.getElementById("name").value.trim();
-  const pickup = document.getElementById("defaultPickup").value.trim();
-  const dropoff = document.getElementById("defaultDropoff").value.trim();
-
-  if (!name || !pickup || !dropoff) {
-    document.getElementById("status").innerText = "Please fill in all required fields.";
-    return;
-  }
-
-  user.profileCompleted = true;
-  user.name = name;
-  user.defaultPickup = pickup;
-  user.defaultDropoff = dropoff;
-  user.preferences = document.getElementById("preferences").value.trim();
-
-  if (localStorage.getItem("laundryUser")) {
-    localStorage.setItem("laundryUser", JSON.stringify(user));
-  } else {
-    sessionStorage.setItem("laundryUser", JSON.stringify(user));
-  }
-
-  document.getElementById("status").innerText = "Profile saved successfully!";
+  document.getElementById("status").innerText = "Profile saved (local demo).";
 }
+init();
 </script>
 
 </body>

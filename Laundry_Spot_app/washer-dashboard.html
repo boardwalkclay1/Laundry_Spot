@@ -3,54 +3,135 @@
 <head>
   <title>Washer Dashboard</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .job-card {
+      background: rgba(10, 15, 30, 0.9);
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .grid {
+      display:grid;
+      grid-template-columns: 2fr 1.5fr;
+      gap:20px;
+      margin-top:20px;
+    }
+    .card {
+      background: rgba(10, 15, 30, 0.9);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    #map {
+      width:100%;
+      height:250px;
+      border-radius:12px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,0.1);
+    }
+  </style>
 </head>
 <body>
 
 <div class="container">
-  <h2>Washer Dashboard</h2>
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div>
+      <h2>Washer Dashboard</h2>
+      <small id="washerEmail"></small>
+    </div>
+    <div>
+      <button onclick="location.href='washer-settings.html'">Settings</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
 
-  <button onclick="logout()" style="float:right;">Logout</button>
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h3>Available Jobs</h3>
+        <div id="availableJobs"></div>
+      </div>
 
-  <h3>Available Jobs</h3>
-  <div id="availableJobs"></div>
+      <div class="card">
+        <h3>Your Accepted Jobs</h3>
+        <div id="acceptedJobs"></div>
+      </div>
+    </div>
 
-  <h3>Your Accepted Jobs</h3>
-  <div id="acceptedJobs"></div>
+    <div>
+      <div class="card">
+        <h3>Your Area</h3>
+        <div id="map">
+          <iframe
+            width="100%"
+            height="100%"
+            style="border:0;"
+            loading="lazy"
+            allowfullscreen
+            src="https://www.google.com/maps/embed/v1/view?key=YOUR_GOOGLE_MAPS_API_KEY&center=26.7153,-80.0534&zoom=11">
+          </iframe>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Stripe Onboarding</h3>
+        <p>Make sure your Stripe payout account is set up.</p>
+        <button onclick="location.href='washer-onboarding.html'">Start / Continue Onboarding</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-// Redirect protection
-const user = JSON.parse(localStorage.getItem("laundryUser"));
-if (!user || user.role !== "washer") location.href = "login.html";
+function getUser() {
+  let user = localStorage.getItem("laundryUser");
+  if (!user) user = sessionStorage.getItem("laundryUser");
+  return user ? JSON.parse(user) : null;
+}
+const user = getUser();
+if (!user || user.role !== "washer") {
+  window.location.href = "login.html?role=washer";
+} else {
+  document.getElementById("washerEmail").innerText = user.email;
+}
+
+function logout() {
+  localStorage.removeItem("laundryUser");
+  sessionStorage.removeItem("laundryUser");
+  window.location.href = "login.html?role=washer";
+}
 
 async function loadJobs() {
-  const res = await fetch('/api/jobs');
-  const data = await res.json();
+  try {
+    const res = await fetch('/api/jobs');
+    const data = await res.json();
+    const jobs = data.jobs || [];
 
-  const available = document.getElementById('availableJobs');
-  const accepted = document.getElementById('acceptedJobs');
+    const available = document.getElementById('availableJobs');
+    const accepted = document.getElementById('acceptedJobs');
 
-  available.innerHTML = '';
-  accepted.innerHTML = '';
+    available.innerHTML = '';
+    accepted.innerHTML = '';
 
-  data.jobs.forEach(job => {
-    const div = document.createElement('div');
-    div.className = 'job-card';
-
-    div.innerHTML = `
-      <p><strong>${job.customerName}</strong></p>
-      <p>${job.address}</p>
-      <p>${job.notes}</p>
-      <p>Status: ${job.status}</p>
-      ${job.status === "pending" ? `<button onclick="acceptJob(${job.id})">Accept Job</button>` : ""}
-    `;
-
-    if (job.status === "pending") {
-      available.appendChild(div);
-    } else {
-      accepted.appendChild(div);
-    }
-  });
+    jobs.forEach(job => {
+      const div = document.createElement('div');
+      div.className = 'job-card';
+      div.innerHTML = `
+        <p><strong>${job.customerName}</strong></p>
+        <p>${job.address}</p>
+        <p>${job.notes || ''}</p>
+        <p>Status: ${job.status}</p>
+        ${job.status === "pending" ? `<button onclick="acceptJob(${job.id})">Accept Job</button>` : ""}
+      `;
+      if (job.status === "pending") {
+        available.appendChild(div);
+      } else if (job.status === "accepted") {
+        accepted.appendChild(div);
+      }
+    });
+  } catch (e) {
+    document.getElementById('availableJobs').innerText = "Error loading jobs.";
+  }
 }
 
 async function acceptJob(id) {
@@ -59,13 +140,7 @@ async function acceptJob(id) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ washerAccountId: user.email })
   });
-
   loadJobs();
-}
-
-function logout() {
-  localStorage.removeItem("laundryUser");
-  location.href = "login.html";
 }
 
 loadJobs();

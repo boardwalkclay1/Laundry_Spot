@@ -1,24 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Login</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
 <div class="container">
   <h2 id="loginTitle">Login</h2>
 
-  <input id="email" placeholder="Email" type="email">
-  <input id="password" placeholder="Password" type="password">
+  <input id="email" type="email" placeholder="Email" />
+  <input id="password" type="password" placeholder="Password" />
 
-  <button onclick="handleLogin()">Continue</button>
+  <button id="loginBtn">Continue</button>
 
-  <p id="status" style="margin-top:10px;"></p>
+  <p id="status" style="margin-top: 12px; color: #ff8080;"></p>
 
-  <p style="text-align:center; margin-top:15px;">
+  <p style="margin-top: 20px; text-align: center;">
     Don’t have an account?
-    <a id="signupLink" href="#" style="color:var(--accent2);">Sign Up</a>
+    <a id="signupLink" href="#">Sign Up</a>
   </p>
 </div>
 
@@ -28,70 +29,76 @@
 let supabase = null;
 let forcedRole = null;
 
+// Load config from server
 async function loadConfig() {
-  const res = await fetch('/config');
-  return await res.json();
+  const res = await fetch("/config");
+  return res.json();
 }
 
+// Initialize page
 async function init() {
   const params = new URLSearchParams(window.location.search);
-  const roleParam = params.get("role");
+  const role = params.get("role");
 
-  if (roleParam !== "customer" && roleParam !== "washer") {
+  if (!role || (role !== "customer" && role !== "washer")) {
     window.location.href = "index.html";
     return;
   }
 
-  forcedRole = roleParam;
+  forcedRole = role;
 
   document.getElementById("loginTitle").innerText =
-    roleParam === "customer" ? "Customer Login" : "Washer Login";
+    role === "customer" ? "Customer Login" : "Washer Login";
 
-  document.getElementById("signupLink").href =
-    "signup.html?role=" + roleParam;
+  document.getElementById("signupLink").href = `signup.html?role=${role}`;
 
   const cfg = await loadConfig();
+
   supabase = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
 }
 
+// Handle login
 async function handleLogin() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
-  const statusEl = document.getElementById("status");
+  const status = document.getElementById("status");
 
   if (!email || !password) {
-    statusEl.innerText = "Please enter email and password.";
+    status.textContent = "Please enter email and password.";
     return;
   }
 
-  statusEl.innerText = "Logging in...";
+  status.textContent = "Logging in...";
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
-    password
+    password,
   });
 
   if (error) {
-    statusEl.innerText = error.message;
+    status.textContent = error.message;
     return;
   }
 
   const user = data.user;
-  const actualRole = user.user_metadata?.role;
+  const role = user.user_metadata?.role;
 
-  if (actualRole !== forcedRole) {
-    statusEl.innerText =
-      `This account is registered as ${actualRole}, not ${forcedRole}.`;
+  if (role !== forcedRole) {
+    status.textContent = `This account is registered as ${role}, not ${forcedRole}.`;
     return;
   }
 
-  if (forcedRole === "customer") {
-    window.location.href = "customer-dashboard.html";
-  } else {
-    window.location.href = "washer-dashboard.html";
-  }
+  // Redirect
+  window.location.href =
+    forcedRole === "customer"
+      ? "customer-dashboard.html"
+      : "washer-dashboard.html";
 }
 
+// Attach event listener
+document.getElementById("loginBtn").addEventListener("click", handleLogin);
+
+// Start page
 init();
 </script>
 

@@ -27,12 +27,13 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <script>
-let forcedRole = null;
+// DO NOT DECLARE let supabase ANYWHERE.
+// This is the safe, Edge-proof Supabase initializer.
 
-// SAFE SUPABASE INITIALIZATION
 async function initSupabase() {
   const cfg = await fetch("config.json").then(r => r.json());
 
+  // Create Supabase client ONCE globally
   if (!window.__supabaseClient) {
     window.__supabaseClient = window.supabase.createClient(
       cfg.supabaseUrl,
@@ -42,6 +43,8 @@ async function initSupabase() {
 
   return window.__supabaseClient;
 }
+
+let forcedRole = null;
 
 async function init() {
   const params = new URLSearchParams(window.location.search);

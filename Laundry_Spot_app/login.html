@@ -1,214 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Login – Laundry Bubbles</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <style>
-    :root {
-      --primary: #4da6ff;
-      --accent: #7a5cff;
-      --text: #f9fbff;
-      --muted: #9aa3c7;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: system-ui, sans-serif;
-    }
-
-    body {
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at 20% 20%, rgba(77,166,255,0.18), transparent 60%),
-        radial-gradient(circle at 80% 80%, rgba(122,92,255,0.18), transparent 60%),
-        #030715;
-      color: var(--text);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      position: relative;
-    }
-
-    /* Grid overlay */
-    .grid-overlay {
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
-      background-size: 48px 48px;
-      opacity: 0.35;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .card {
-      width: 100%;
-      max-width: 420px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 20px;
-      padding: 26px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.5);
-      position: relative;
-      z-index: 2;
-    }
-
-    h1 {
-      font-size: 24px;
-      margin-bottom: 6px;
-      text-shadow: 0 0 12px rgba(77,166,255,0.4);
-    }
-
-    .subtitle {
-      font-size: 14px;
-      color: var(--muted);
-      margin-bottom: 20px;
-    }
-
-    label {
-      display: block;
-      font-size: 13px;
-      margin-bottom: 4px;
-      color: var(--muted);
-    }
-
-    input, select {
-      width: 100%;
-      padding: 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.06);
-      color: var(--text);
-      margin-bottom: 14px;
-      font-size: 14px;
-    }
-
-    input:focus, select:focus {
-      border-color: var(--primary);
-      outline: none;
-      box-shadow: 0 0 8px rgba(77,166,255,0.4);
-    }
-
-    .btn {
-      width: 100%;
-      padding: 12px;
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 16px;
-      margin-top: 10px;
-      transition: 0.15s ease;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      color: #fff;
-      box-shadow: 0 12px 28px rgba(77,166,255,0.45);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 16px 34px rgba(77,166,255,0.6);
-    }
-
-    .link {
-      color: var(--primary);
-      font-size: 13px;
-      cursor: pointer;
-      text-decoration: none;
-    }
-
-    .link:hover {
-      text-decoration: underline;
-    }
-
-    .footer {
-      text-align: center;
-      margin-top: 14px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .error {
-      color: #ff4d6a;
-      font-size: 13px;
-      margin-bottom: 10px;
-      min-height: 16px;
-    }
-  </style>
+  <title>Login</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-  <div class="grid-overlay"></div>
+<div class="container">
+  <h2>Login</h2>
 
-  <div class="card">
-    <h1>Welcome back</h1>
-    <p class="subtitle">Sign in to continue</p>
+  <input id="email" placeholder="Email">
 
-    <div class="error" id="error"></div>
+  <select id="role">
+    <option value="customer">Customer</option>
+    <option value="washer">Washer</option>
+  </select>
 
-    <label>Email</label>
-    <input id="email" type="email" placeholder="you@example.com" />
+  <button onclick="login()">Continue</button>
 
-    <label>Password</label>
-    <input id="password" type="password" placeholder="••••••••" />
+  <p style="text-align:center; margin-top:15px;">
+    Don't have an account?
+    <a href="signup.html" style="color:var(--accent2);">Sign Up</a>
+  </p>
+</div>
 
-    <label>Sign in as</label>
-    <select id="role">
-      <option value="client">Client</option>
-      <option value="washer">Washer</option>
-    </select>
+<script>
+// Preselect role based on landing page choice
+const params = new URLSearchParams(window.location.search);
+const role = params.get("role");
+if (role) {
+  document.getElementById("role").value = role;
+}
 
-    <button class="btn btn-primary" id="loginBtn">Log In</button>
+function login() {
+  const role = document.getElementById('role').value;
 
-    <div class="footer">
-      Need an account?
-      <a class="link" id="signupLink">Sign up</a>
-    </div>
-  </div>
-
-  <script>
-    const loginBtn = document.getElementById("loginBtn");
-    const signupLink = document.getElementById("signupLink");
-    const errorEl = document.getElementById("error");
-
-    function go(page) {
-      window.location.href = page;
-    }
-
-    loginBtn.onclick = () => {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const role = document.getElementById("role").value;
-
-      if (!email || !password) {
-        errorEl.textContent = "Please enter both email and password.";
-        return;
-      }
-
-      errorEl.textContent = "";
-
-      // Save user locally (fake auth)
-      localStorage.setItem("lb_user", JSON.stringify({ email, role }));
-
-      // Redirect based on role (NO ADMIN LOGIC)
-      if (role === "client") {
-        go("client-dashboard.html");
-      } else {
-        go("washer-dashboard.html");
-      }
-    };
-
-    signupLink.onclick = () => go("signup.html");
-  </script>
+  if (role === "customer") {
+    location.href = "customer-dashboard.html";
+  } else {
+    location.href = "washer-dashboard.html";
+  }
+}
+</script>
 
 </body>
 </html>

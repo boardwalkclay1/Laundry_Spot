@@ -7,7 +7,9 @@
 <body>
 
 <div class="container">
-  <h2>Welcome, Customer</h2>
+  <h2>Your Dashboard</h2>
+
+  <button onclick="logout()" style="float:right;">Logout</button>
 
   <h3>Create a Laundry Job</h3>
 
@@ -24,6 +26,10 @@
 </div>
 
 <script>
+// Redirect protection
+const user = JSON.parse(localStorage.getItem("laundryUser"));
+if (!user || user.role !== "customer") location.href = "login.html";
+
 async function createJob() {
   const customerName = document.getElementById('name').value;
   const address = document.getElementById('address').value;
@@ -59,6 +65,11 @@ async function loadJobs() {
     `;
     container.appendChild(div);
   });
+}
+
+function logout() {
+  localStorage.removeItem("laundryUser");
+  location.href = "login.html";
 }
 
 loadJobs();

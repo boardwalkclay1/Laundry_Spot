@@ -27,10 +27,9 @@ function getUser() {
   if (!user) user = sessionStorage.getItem("laundryUser");
   return user ? JSON.parse(user) : null;
 }
-
 const user = getUser();
 if (!user || user.role !== "customer") {
-  location.href = "login.html?role=customer";
+  window.location.href = "login.html?role=customer";
 }
 </script>
 

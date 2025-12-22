@@ -7,7 +7,9 @@
 <body>
 
 <div class="container">
-  <h2>Create a Laundry Job</h2>
+  <h2>Welcome, Customer</h2>
+
+  <h3>Create a Laundry Job</h3>
 
   <input id="name" placeholder="Your Name">
   <input id="address" placeholder="Pickup Address">
@@ -15,7 +17,10 @@
 
   <button onclick="createJob()">Create Job</button>
 
-  <p id="status" style="margin-top:20px; text-align:center;"></p>
+  <p id="status" style="margin-top:20px;"></p>
+
+  <h3>Your Jobs</h3>
+  <div id="jobList"></div>
 </div>
 
 <script>
@@ -33,7 +38,30 @@ async function createJob() {
   const data = await res.json();
   document.getElementById('status').innerText =
     data.job ? "Job Created Successfully!" : "Error creating job.";
+
+  loadJobs();
 }
+
+async function loadJobs() {
+  const res = await fetch('/api/jobs');
+  const data = await res.json();
+
+  const container = document.getElementById('jobList');
+  container.innerHTML = '';
+
+  data.jobs.forEach(job => {
+    const div = document.createElement('div');
+    div.className = 'job-card';
+    div.innerHTML = `
+      <p><strong>${job.customerName}</strong></p>
+      <p>${job.address}</p>
+      <p>Status: ${job.status}</p>
+    `;
+    container.appendChild(div);
+  });
+}
+
+loadJobs();
 </script>
 
 </body>

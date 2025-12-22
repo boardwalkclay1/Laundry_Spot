@@ -27,12 +27,20 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <script>
-let supabase = null;
 let forcedRole = null;
 
-async function loadConfig() {
-  const res = await fetch("config.json");
-  return res.json();
+// SAFE SUPABASE INITIALIZATION
+async function initSupabase() {
+  const cfg = await fetch("config.json").then(r => r.json());
+
+  if (!window.__supabaseClient) {
+    window.__supabaseClient = window.supabase.createClient(
+      cfg.supabaseUrl,
+      cfg.supabaseAnonKey
+    );
+  }
+
+  return window.__supabaseClient;
 }
 
 async function init() {
@@ -50,12 +58,11 @@ async function init() {
     role === "customer" ? "Customer Login" : "Washer Login";
 
   document.getElementById("signupLink").href = `signup.html?role=${role}`;
-
-  const cfg = await loadConfig();
-  supabase = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
 }
 
 async function handleLogin() {
+  const supabase = await initSupabase();
+
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
   const status = document.getElementById("status");

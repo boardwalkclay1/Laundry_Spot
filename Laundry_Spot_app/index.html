@@ -8,11 +8,26 @@
 
 <div class="container">
   <h1>Laundry Spot</h1>
+  <p style="text-align:center; margin-bottom:25px;">
+    Who are you?
+  </p>
 
-  <button onclick="location.href='/customer'">I'm a Customer</button>
+  <button onclick="goCustomer()">I am a Customer</button>
   <br><br>
-  <button onclick="location.href='/washer/onboarding'">I'm a Washer</button>
+  <button onclick="goWasher()">I am a Washer</button>
 </div>
+
+<script>
+function goCustomer() {
+  // Send customer to login page with role preselected
+  window.location.href = "login.html?role=customer";
+}
+
+function goWasher() {
+  // Send washer to login page with role preselected
+  window.location.href = "login.html?role=washer";
+}
+</script>
 
 </body>
 </html>

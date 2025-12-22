@@ -29,7 +29,7 @@ function getUser() {
 
 let user = getUser();
 if (!user || user.role !== "customer") {
-  location.href = "login.html?role=customer";
+  window.location.href = "login.html?role=customer";
 }
 
 function saveProfile() {

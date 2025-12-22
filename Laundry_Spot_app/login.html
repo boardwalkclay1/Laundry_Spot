@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -23,6 +24,7 @@
   </p>
 </div>
 
+<!-- Load Supabase ONCE -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <script>
@@ -40,6 +42,7 @@ async function init() {
   const params = new URLSearchParams(window.location.search);
   const role = params.get("role");
 
+  // Validate role
   if (!role || (role !== "customer" && role !== "washer")) {
     window.location.href = "index.html";
     return;
@@ -47,13 +50,16 @@ async function init() {
 
   forcedRole = role;
 
+  // Update UI
   document.getElementById("loginTitle").innerText =
     role === "customer" ? "Customer Login" : "Washer Login";
 
   document.getElementById("signupLink").href = `signup.html?role=${role}`;
 
+  // Load Supabase config
   const cfg = await loadConfig();
 
+  // Create Supabase client
   supabase = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
 }
 

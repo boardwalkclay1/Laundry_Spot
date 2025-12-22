@@ -1,110 +1,248 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Login Debug</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Laundry Spot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #050816;
+      --card: #0b1020;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.12);
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --danger: #f97373;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1f2937 0, #020617 40%, #000 90%);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 480px;
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(3, 7, 18, 0.98));
+      border-radius: 24px;
+      padding: 28px 22px 22px;
+      box-shadow:
+        0 24px 80px rgba(15, 23, 42, 0.9),
+        0 0 0 1px rgba(148, 163, 184, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glow {
+      position: absolute;
+      inset: -120px;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(56, 189, 248, 0.16) 0, transparent 45%),
+        radial-gradient(circle at 90% 100%, rgba(251, 113, 133, 0.14) 0, transparent 50%);
+      opacity: 0.8;
+      pointer-events: none;
+    }
+
+    .shell-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 14px;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #4ade80;
+      box-shadow: 0 0 10px rgba(74, 222, 128, 0.9);
+    }
+
+    h1 {
+      font-size: 26px;
+      letter-spacing: 0.02em;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .card {
+      border-radius: 18px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      padding: 16px 14px 14px;
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .role-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    @media (min-width: 480px) {
+      .role-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .role-btn {
+      position: relative;
+      overflow: hidden;
+      border-radius: 14px;
+      padding: 12px 11px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), rgba(15, 23, 42, 0.96));
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.14s ease-out, box-shadow 0.14s ease-out,
+        border-color 0.14s ease-out, background 0.14s ease-out;
+    }
+
+    .role-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 40px rgba(15, 23, 42, 0.75);
+      border-color: rgba(56, 189, 248, 0.9);
+    }
+
+    .role-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.11em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .role-name {
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    .role-desc {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .hint {
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .footer {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(75, 85, 99, 0.7);
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
 
-<div class="container">
-  <h2 id="loginTitle">Login</h2>
+<div class="shell">
+  <div class="glow"></div>
+  <div class="shell-inner">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      Live beta · Laundry Spot
+    </div>
 
-  <input id="email" placeholder="Email" type="email">
-  <input id="password" placeholder="Password" type="password">
+    <h1>Laundry, picked up and protected.</h1>
+    <p class="subtitle">
+      Choose how you’re using Laundry Spot today. We’ll send you into the right experience instantly.
+    </p>
 
-  <button onclick="handleLogin()">Continue</button>
+    <div class="card">
+      <div class="card-title">Who’s signing in right now?</div>
 
-  <pre id="debug" style="margin-top:20px; background:#111; padding:10px; border-radius:8px; color:#0f0; height:200px; overflow:auto;"></pre>
+      <div class="role-grid">
+        <button class="role-btn" id="customerBtn">
+          <div class="role-label">I’m a</div>
+          <div class="role-name">Customer</div>
+          <div class="role-desc">
+            Request a pickup or drop-off, track your job, and pay securely.
+          </div>
+        </button>
+
+        <button class="role-btn" id="washerBtn">
+          <div class="role-label">I’m a</div>
+          <div class="role-name">Washer</div>
+          <div class="role-desc">
+            Accept local jobs, manage your queue, and build loyal customers.
+          </div>
+        </button>
+      </div>
+
+      <p class="hint">
+        You’ll pick or create your account on the next screen. No app download needed.
+      </p>
+    </div>
+
+    <div class="footer">
+      <span>Built for joy, speed, and real humans.</span>
+      <a href="mailto:support@laundryspot.app">Need help?</a>
+    </div>
+  </div>
 </div>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
 <script>
-let supabase = null;
-let forcedRole = null;
-
-function log(msg) {
-  const box = document.getElementById("debug");
-  box.textContent += msg + "\n";
-  box.scrollTop = box.scrollHeight;
-}
-
-async function loadConfig() {
-  log("Loading /config...");
-  const res = await fetch('/config');
-  const json = await res.json();
-  log("Config loaded: " + JSON.stringify(json));
-  return json;
-}
-
-async function init() {
-  log("Initializing login page...");
-
-  const params = new URLSearchParams(window.location.search);
-  const roleParam = params.get("role");
-  log("Role param: " + roleParam);
-
-  if (roleParam !== "customer" && roleParam !== "washer") {
-    log("Invalid role, redirecting to index...");
-    window.location.href = "index.html";
-    return;
-  }
-
-  forcedRole = roleParam;
-  document.getElementById("loginTitle").innerText =
-    roleParam === "customer" ? "Customer Login" : "Washer Login";
-
-  const cfg = await loadConfig();
-  log("Creating Supabase client...");
-  supabase = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
-  log("Supabase client created.");
-}
-
-async function handleLogin() {
-  log("Login button clicked.");
-
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-
-  log("Email: " + email);
-  log("Password length: " + password.length);
-
-  if (!email || !password) {
-    log("Missing email or password.");
-    return;
-  }
-
-  log("Calling supabase.auth.signInWithPassword...");
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password
+  // Route users into the login flow with the right role
+  document.getElementById("customerBtn").addEventListener("click", () => {
+    window.location.href = "login.html?role=customer";
   });
 
-  if (error) {
-    log("Supabase error: " + error.message);
-    return;
-  }
-
-  log("Login success: " + JSON.stringify(data));
-
-  const user = data.user;
-  const actualRole = user.user_metadata?.role;
-  log("User role: " + actualRole);
-
-  if (actualRole !== forcedRole) {
-    log("Role mismatch: expected " + forcedRole + " but got " + actualRole);
-    return;
-  }
-
-  log("Redirecting to dashboard...");
-  if (forcedRole === "customer") {
-    window.location.href = "customer-dashboard.html";
-  } else {
-    window.location.href = "washer-dashboard.html";
-  }
-}
-
-init();
+  document.getElementById("washerBtn").addEventListener("click", () => {
+    window.location.href = "login.html?role=washer";
+  });
 </script>
 
 </body>

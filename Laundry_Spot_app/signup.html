@@ -9,7 +9,8 @@
 <div class="container">
   <h2>Create Account</h2>
 
-  <input id="email" placeholder="Email">
+  <input id="email" placeholder="Email" type="email">
+  <input id="password" placeholder="Password" type="password">
 
   <select id="role">
     <option value="customer">Customer</option>
@@ -26,7 +27,17 @@
 
 <script>
 function signup() {
-  const role = document.getElementById('role').value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const role = document.getElementById("role").value;
+
+  if (!email || !password) {
+    alert("Please enter email and password");
+    return;
+  }
+
+  const user = { email, role };
+  localStorage.setItem("laundryUser", JSON.stringify(user));
 
   if (role === "customer") {
     location.href = "customer-dashboard.html";

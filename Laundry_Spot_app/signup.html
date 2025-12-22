@@ -22,12 +22,21 @@
   </p>
 </div>
 
+<!-- Supabase -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="auth.js"></script>
+
 <script>
+let supabase = null;
 let forcedRole = null;
 
-(async function init() {
+// Load config from backend
+async function loadConfig() {
+  const res = await fetch('/config');
+  return await res.json();
+}
+
+async function init() {
+  // Read role from URL
   const params = new URLSearchParams(window.location.search);
   const roleParam = params.get("role");
 
@@ -38,12 +47,17 @@ let forcedRole = null;
 
   forcedRole = roleParam;
 
+  // Update UI
   document.getElementById("signupTitle").innerText =
     roleParam === "customer" ? "Customer Sign Up" : "Washer Sign Up";
 
   document.getElementById("loginLink").href =
     "login.html?role=" + roleParam;
-})();
+
+  // Load Supabase config
+  const cfg = await loadConfig();
+  supabase = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+}
 
 async function handleSignup() {
   const email = document.getElementById("email").value.trim();
@@ -57,13 +71,28 @@ async function handleSignup() {
 
   statusEl.innerText = "Creating account...";
 
-  try {
-    await signupUser(email, password, forcedRole);
-    statusEl.innerText = "Account created. Check your email to confirm, then log in.";
-  } catch (err) {
-    statusEl.innerText = err.message || "Signup failed.";
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { role: forcedRole }
+    }
+  });
+
+  if (error) {
+    statusEl.innerText = error.message;
+    return;
   }
+
+  statusEl.innerText = "Account created! Check your email to confirm.";
+
+  // After signup, send them to login page
+  setTimeout(() => {
+    window.location.href = "login.html?role=" + forcedRole;
+  }, 1500);
 }
+
+init();
 </script>
 
 </body>

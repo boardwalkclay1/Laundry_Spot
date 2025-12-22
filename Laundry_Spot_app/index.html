@@ -1,25 +1,111 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Laundry Spot</title>
+  <title>Login Debug</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
-  <h1>Laundry Spot</h1>
-  <p style="text-align:center; margin-bottom:25px;">Who are you?</p>
+  <h2 id="loginTitle">Login</h2>
 
-  <button onclick="location.href='login.html?role=customer'">
-    I am a Customer
-  </button>
+  <input id="email" placeholder="Email" type="email">
+  <input id="password" placeholder="Password" type="password">
 
-  <br><br>
+  <button onclick="handleLogin()">Continue</button>
 
-  <button onclick="location.href='login.html?role=washer'">
-    I am a Washer
-  </button>
+  <pre id="debug" style="margin-top:20px; background:#111; padding:10px; border-radius:8px; color:#0f0; height:200px; overflow:auto;"></pre>
 </div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<script>
+let supabase = null;
+let forcedRole = null;
+
+function log(msg) {
+  const box = document.getElementById("debug");
+  box.textContent += msg + "\n";
+  box.scrollTop = box.scrollHeight;
+}
+
+async function loadConfig() {
+  log("Loading /config...");
+  const res = await fetch('/config');
+  const json = await res.json();
+  log("Config loaded: " + JSON.stringify(json));
+  return json;
+}
+
+async function init() {
+  log("Initializing login page...");
+
+  const params = new URLSearchParams(window.location.search);
+  const roleParam = params.get("role");
+  log("Role param: " + roleParam);
+
+  if (roleParam !== "customer" && roleParam !== "washer") {
+    log("Invalid role, redirecting to index...");
+    window.location.href = "index.html";
+    return;
+  }
+
+  forcedRole = roleParam;
+  document.getElementById("loginTitle").innerText =
+    roleParam === "customer" ? "Customer Login" : "Washer Login";
+
+  const cfg = await loadConfig();
+  log("Creating Supabase client...");
+  supabase = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+  log("Supabase client created.");
+}
+
+async function handleLogin() {
+  log("Login button clicked.");
+
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  log("Email: " + email);
+  log("Password length: " + password.length);
+
+  if (!email || !password) {
+    log("Missing email or password.");
+    return;
+  }
+
+  log("Calling supabase.auth.signInWithPassword...");
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    log("Supabase error: " + error.message);
+    return;
+  }
+
+  log("Login success: " + JSON.stringify(data));
+
+  const user = data.user;
+  const actualRole = user.user_metadata?.role;
+  log("User role: " + actualRole);
+
+  if (actualRole !== forcedRole) {
+    log("Role mismatch: expected " + forcedRole + " but got " + actualRole);
+    return;
+  }
+
+  log("Redirecting to dashboard...");
+  if (forcedRole === "customer") {
+    window.location.href = "customer-dashboard.html";
+  } else {
+    window.location.href = "washer-dashboard.html";
+  }
+}
+
+init();
+</script>
 
 </body>
 </html>

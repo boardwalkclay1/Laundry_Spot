@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login</title>
+  <title>Sign Up</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
-  <h2>Login</h2>
+  <h2>Create Account</h2>
 
   <input id="email" placeholder="Email" type="email">
   <input id="password" placeholder="Password" type="password">
@@ -17,55 +17,25 @@
     <option value="washer">Washer</option>
   </select>
 
-  <label style="display:flex; align-items:center; margin-top:10px;">
-    <input type="checkbox" id="remember" style="margin-right:8px;">
-    Remember this device
-  </label>
-
-  <button onclick="login()">Continue</button>
+  <button onclick="signup()">Sign Up</button>
 
   <p style="text-align:center; margin-top:15px;">
-    Don’t have an account?
-    <a href="signup.html" style="color:var(--accent2);">Sign Up</a>
+    Already have an account?
+    <a href="login.html" style="color:var(--accent2);">Login</a>
   </p>
 </div>
 
 <script>
-function getSavedUser() {
-  let user = localStorage.getItem("laundryUser");
-  if (!user) user = sessionStorage.getItem("laundryUser");
-  return user ? JSON.parse(user) : null;
-}
-
-// 1) Auto-select role from query
-const params = new URLSearchParams(window.location.search);
-const roleParam = params.get("role");
-if (roleParam === "customer" || roleParam === "washer") {
-  document.getElementById("role").value = roleParam;
-}
-
-// 2) Auto-redirect ONLY if a valid saved user exists
-const saved = getSavedUser();
-if (saved && saved.email && saved.role) {
-  if (saved.role === "customer") {
-    window.location.href = "customer-dashboard.html";
-  } else if (saved.role === "washer") {
-    window.location.href = "washer-dashboard.html";
-  }
-}
-
-function login() {
+function signup() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
   const role = document.getElementById("role").value;
-  const remember = document.getElementById("remember").checked;
 
   if (!email || !password) {
     alert("Please enter email and password");
     return;
   }
 
-  // Demo auth — replace with real backend auth later
   const user = {
     email,
     role,
@@ -73,18 +43,13 @@ function login() {
     paymentSetup: false
   };
 
-  if (remember) {
-    localStorage.setItem("laundryUser", JSON.stringify(user));
-    sessionStorage.removeItem("laundryUser");
-  } else {
-    sessionStorage.setItem("laundryUser", JSON.stringify(user));
-    localStorage.removeItem("laundryUser");
-  }
+  localStorage.setItem("laundryUser", JSON.stringify(user));
+  sessionStorage.removeItem("laundryUser");
 
   if (role === "customer") {
     window.location.href = "customer-dashboard.html";
   } else {
-    window.location.href = "washer-dashboard.html";
+    window.location.href = "washer-onboarding.html";
   }
 }
 </script>

@@ -31,18 +31,27 @@
 </div>
 
 <script>
-// Preselect role based on index.html choice
+function getSavedUser() {
+  let user = localStorage.getItem("laundryUser");
+  if (!user) user = sessionStorage.getItem("laundryUser");
+  return user ? JSON.parse(user) : null;
+}
+
+// 1) Auto-select role from query
 const params = new URLSearchParams(window.location.search);
 const roleParam = params.get("role");
-if (roleParam) {
+if (roleParam === "customer" || roleParam === "washer") {
   document.getElementById("role").value = roleParam;
 }
 
-// Auto-redirect if already remembered
-const saved = JSON.parse(localStorage.getItem("laundryUser"));
-if (saved) {
-  if (saved.role === "customer") location.href = "customer-dashboard.html";
-  if (saved.role === "washer") location.href = "washer-dashboard.html";
+// 2) Auto-redirect ONLY if a valid saved user exists
+const saved = getSavedUser();
+if (saved && saved.email && saved.role) {
+  if (saved.role === "customer") {
+    window.location.href = "customer-dashboard.html";
+  } else if (saved.role === "washer") {
+    window.location.href = "washer-dashboard.html";
+  }
 }
 
 function login() {
@@ -56,7 +65,7 @@ function login() {
     return;
   }
 
-  // For now: fake auth. Later you can plug in Supabase Auth here.
+  // Demo auth — replace with real backend auth later
   const user = {
     email,
     role,
@@ -66,14 +75,16 @@ function login() {
 
   if (remember) {
     localStorage.setItem("laundryUser", JSON.stringify(user));
+    sessionStorage.removeItem("laundryUser");
   } else {
     sessionStorage.setItem("laundryUser", JSON.stringify(user));
+    localStorage.removeItem("laundryUser");
   }
 
   if (role === "customer") {
-    location.href = "customer-dashboard.html";
+    window.location.href = "customer-dashboard.html";
   } else {
-    location.href = "washer-dashboard.html";
+    window.location.href = "washer-dashboard.html";
   }
 }
 </script>

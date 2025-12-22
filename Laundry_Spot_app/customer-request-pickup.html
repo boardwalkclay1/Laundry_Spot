@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Request Pickup</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+  <h2>Request Pickup</h2>
+  <button onclick="location.href='customer-dashboard.html'" style="float:right;">Back to Dashboard</button>
+
+  <input id="address" placeholder="Pickup Address">
+  <textarea id="notes" placeholder="Pickup notes (optional)"></textarea>
+
+  <button onclick="createPickup()">Submit Pickup Request</button>
+
+  <p id="status" style="margin-top:15px;"></p>
+</div>
+
+<script>
+function getUser() {
+  let user = localStorage.getItem("laundryUser");
+  if (!user) user = sessionStorage.getItem("laundryUser");
+  return user ? JSON.parse(user) : null;
+}
+const user = getUser();
+if (!user || user.role !== "customer") {
+  window.location.href = "login.html?role=customer";
+}
+
+async function createPickup() {
+  const address = document.getElementById("address").value.trim();
+  const notes = document.getElementById("notes").value.trim();
+
+  if (!address) {
+    document.getElementById("status").innerText = "Please provide a pickup address.";
+    return;
+  }
+
+  const res = await fetch('/api/jobs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ customerName: user.email, address, notes, type: "pickup" })
+  });
+
+  const data = await res.json();
+  document.getElementById("status").innerText =
+    data.job ? "Pickup request created!" : "Error creating pickup.";
+}
+</script>
+
+</body>
+</html>

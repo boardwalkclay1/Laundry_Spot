@@ -1,57 +1,117 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Washer Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
 <div class="container">
-  <h2>Washer Dashboard</h2>
-  <p id="status" style="margin-bottom:20px; color:#0f0;"></p>
+  <h2>Washer Setup</h2>
+  <p>Complete your profile so customers can hire you.</p>
 
-  <button onclick="logout()">Logout</button>
+  <input id="fullName" type="text" placeholder="Full Name" />
+  <input id="phone" type="text" placeholder="Phone Number" />
+  <input id="price" type="number" placeholder="Price per Load ($)" />
+
+  <h3>Skills</h3>
+  <label><input type="checkbox" id="folding" /> Folding</label><br>
+  <label><input type="checkbox" id="ironing" /> Ironing</label><br>
+  <label><input type="checkbox" id="stain" /> Stain Removal</label><br>
+  <label><input type="checkbox" id="shoe" /> Shoe Cleaning</label><br>
+
+  <button id="saveBtn">Save Profile</button>
+
+  <p id="status" style="margin-top: 12px; color: #ff8080;"></p>
 </div>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <script>
-let supabase = null;
+// Safe Supabase initializer
+async function initSupabase() {
+  const cfg = await fetch("config.json").then(r => r.json());
 
-async function loadConfig() {
-  const res = await fetch('/config');
-  return await res.json();
-}
-
-async function init() {
-  document.getElementById("status").innerText = "Loading...";
-
-  const cfg = await loadConfig();
-  supabase = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
-
-  const { data } = await supabase.auth.getUser();
-  const user = data.user;
-
-  if (!user) {
-    document.getElementById("status").innerText = "Not logged in. Redirecting...";
-    return window.location.href = "login.html?role=washer";
+  if (!window.__supabaseClient) {
+    window.__supabaseClient = window.supabase.createClient(
+      cfg.supabaseUrl,
+      cfg.supabaseAnonKey
+    );
   }
 
-  const role = user.user_metadata?.role;
-  if (role !== "washer") {
-    document.getElementById("status").innerText = "Wrong role. Redirecting...";
-    return window.location.href = "login.html?role=washer";
+  return window.__supabaseClient;
+}
+
+async function initDashboard() {
+  const supabase = await initSupabase();
+
+  // Check session
+  const { data } = await supabase.auth.getSession();
+  const session = data.session;
+
+  if (!session) {
+    window.location.href = "login.html?role=washer";
+    return;
   }
 
-  document.getElementById("status").innerText = "Welcome, " + user.email;
+  const user = session.user;
+
+  // Check role in SQL
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || profile.role !== "washer") {
+    window.location.href = "index.html";
+    return;
+  }
 }
 
-async function logout() {
-  await supabase.auth.signOut();
-  window.location.href = "login.html?role=washer";
+async function saveProfile() {
+  const supabase = await initSupabase();
+  const status = document.getElementById("status");
+
+  const { data: sessionData } = await supabase.auth.getSession();
+  const user = sessionData.session.user;
+
+  const fullName = document.getElementById("fullName").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const price = document.getElementById("price").value.trim();
+
+  const skills = {
+    folding: document.getElementById("folding").checked,
+    ironing: document.getElementById("ironing").checked,
+    stain: document.getElementById("stain").checked,
+    shoe_cleaning: document.getElementById("shoe").checked
+  };
+
+  status.textContent = "Saving...";
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      full_name: fullName,
+      phone: phone,
+      price_per_load: price,
+      skills: skills
+    })
+    .eq("id", user.id);
+
+  if (error) {
+    status.textContent = error.message;
+    return;
+  }
+
+  status.textContent = "Profile saved!";
 }
 
-init();
+document.getElementById("saveBtn").addEventListener("click", saveProfile);
+
+initDashboard();
 </script>
 
 </body>

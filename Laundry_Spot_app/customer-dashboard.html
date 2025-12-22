@@ -60,26 +60,23 @@
     </div>
   </div>
 
-  <!-- Important prompts up top -->
   <div class="card" id="profilePrompt" style="display:none;">
     <h3>Complete your profile</h3>
-    <p>Set your name, default addresses, and preferences so we can serve you better.</p>
+    <p>Set your name, default addresses, and preferences.</p>
     <button onclick="location.href='customer-profile.html'">Set Up Profile</button>
   </div>
 
   <div class="card" id="paymentPrompt" style="display:none;">
     <h3>Set up your payment</h3>
-    <p>Securely add your payment methods with Stripe to pay for pickups and dropoffs.</p>
+    <p>Securely add payment methods with Stripe.</p>
     <button onclick="location.href='customer-payment.html'">Set Up Payment</button>
   </div>
 
   <div class="grid">
-    <!-- Left side: Map + Quick Actions -->
     <div>
       <div class="card">
         <h3>Your Area</h3>
         <div id="map">
-          <!-- Simple placeholder map: replace with real map later -->
           <iframe
             width="100%"
             height="100%"
@@ -87,7 +84,7 @@
             loading="lazy"
             allowfullscreen
             referrerpolicy="no-referrer-when-downgrade"
-            src="https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=Gainesville,FL">
+            src="https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=West+Palm+Beach,FL">
           </iframe>
         </div>
       </div>
@@ -108,7 +105,6 @@
       </div>
     </div>
 
-    <!-- Right side: Overview -->
     <div>
       <div class="card">
         <h3>Overview</h3>
@@ -138,10 +134,9 @@ function getUser() {
   return user ? JSON.parse(user) : null;
 }
 
-// Redirect protection + personalization
-const user = getUser();
+let user = getUser();
 if (!user || user.role !== "customer") {
-  location.href = "login.html?role=customer";
+  window.location.href = "login.html?role=customer";
 } else {
   document.getElementById("welcomeText").innerText = "Welcome, Customer";
   document.getElementById("userEmail").innerText = user.email;
@@ -157,21 +152,22 @@ if (!user || user.role !== "customer") {
 function logout() {
   localStorage.removeItem("laundryUser");
   sessionStorage.removeItem("laundryUser");
-  location.href = "login.html?role=customer";
+  window.location.href = "login.html?role=customer";
 }
 
 function goSettings() {
-  location.href = "customer-settings.html";
+  window.location.href = "customer-settings.html";
 }
 
-// Load summary of jobs
 async function loadSummary() {
   try {
     const res = await fetch('/api/jobs');
     const data = await res.json();
     const jobs = data.jobs || [];
-    const active = jobs.filter(j => j.status !== "completed");
-    const completed = jobs.filter(j => j.status === "completed");
+    const mine = jobs.filter(j => j.customerName === user.email);
+
+    const active = mine.filter(j => j.status !== "completed");
+    const completed = mine.filter(j => j.status === "completed");
 
     const summaryDiv = document.getElementById('summary');
     summaryDiv.innerHTML = `
@@ -183,7 +179,7 @@ async function loadSummary() {
   }
 }
 
-loadSummary();
+if (user) loadSummary();
 </script>
 
 </body>

@@ -1,97 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Washer Onboarding – Laundry Bubbles</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body {
-      margin: 0;
-      font-family: system-ui, sans-serif;
-      background: radial-gradient(circle at top, #020617, #020617);
-      color: #fff;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    header {
-      padding: 14px 20px;
-      background: rgba(15, 23, 42, 0.95);
-      border-bottom: 1px solid rgba(148, 163, 184, 0.3);
-    }
-    .card {
-      max-width: 600px;
-      margin: 40px auto;
-      padding: 20px;
-      background: rgba(15, 23, 42, 0.9);
-      border-radius: 16px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid rgba(148, 163, 184, 0.5);
-      background: rgba(15, 23, 42, 0.9);
-      color: #fff;
-      margin-bottom: 12px;
-    }
-    .btn {
-      padding: 12px 20px;
-      border-radius: 999px;
-      border: none;
-      background: linear-gradient(135deg, #4f46e5, #6366f1);
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 12px;
-    }
-    .status {
-      margin-top: 12px;
-      color: #a5b4fc;
-    }
-  </style>
+  <title>Washer Onboarding</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h2>Washer Payout Setup</h2>
-  </header>
 
-  <div class="card">
-    <form id="onboard-form">
-      <input id="email" type="email" placeholder="Your Email" required />
-      <button class="btn" type="submit">Start Stripe Onboarding</button>
-      <div id="status" class="status"></div>
-    </form>
-  </div>
+<div class="container">
+  <h2>Washer Onboarding</h2>
 
-  <script>
-    const form = document.getElementById('onboard-form');
-    const statusEl = document.getElementById('status');
+  <input id="email" placeholder="Your Email">
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+  <button onclick="startOnboarding()">Start Stripe Onboarding</button>
 
-      const email = document.getElementById('email').value;
+  <p id="status" style="margin-top:20px; text-align:center;"></p>
+</div>
 
-      const accountRes = await fetch('/api/washer/create-account', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
+<script>
+async function startOnboarding() {
+  const email = document.getElementById('email').value;
 
-      const accountData = await accountRes.json();
-      statusEl.textContent = 'Account created. Redirecting…';
+  const accountRes = await fetch('/api/washer/create-account', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  });
 
-      const linkRes = await fetch('/api/washer/create-account-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accountId: accountData.accountId })
-      });
+  const { accountId } = await accountRes.json();
 
-      const linkData = await linkRes.json();
-      window.location.href = linkData.url;
-    });
-  </script>
+  const linkRes = await fetch('/api/washer/create-account-link', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ accountId })
+  });
+
+  const { url } = await linkRes.json();
+  window.location.href = url;
+}
+</script>
+
 </body>
 </html>

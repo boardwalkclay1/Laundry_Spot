@@ -8,29 +8,28 @@
 
 <div class="container">
   <h2>Settings</h2>
-  <button onclick="location.href='customer-dashboard.html'" style="float:right;">Back to Dashboard</button>
+  <button onclick="location.href='customer-dashboard.html'" style="float:right;">Back</button>
 
   <h3>Account</h3>
   <button onclick="location.href='customer-profile.html'">Profile</button>
   <button onclick="location.href='customer-payment.html'">Payment</button>
 
   <h3 style="margin-top:20px;">Security</h3>
-  <button onclick="alert('Password change flow coming soon.')">Change Password</button>
+  <button onclick="alert('Password change coming soon.')">Change Password</button>
 
   <h3 style="margin-top:20px;">App</h3>
-  <button onclick="alert('Notification preferences coming soon.')">Notification Preferences</button>
+  <button onclick="alert('Notifications coming soon.')">Notification Preferences</button>
 </div>
 
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 <script>
-function getUser() {
-  let user = localStorage.getItem("laundryUser");
-  if (!user) user = sessionStorage.getItem("laundryUser");
-  return user ? JSON.parse(user) : null;
-}
-const user = getUser();
-if (!user || user.role !== "customer") {
-  window.location.href = "login.html?role=customer";
-}
+(async function init() {
+  const user = await getCurrentUser();
+  if (!user || getRoleFromUser(user) !== "customer") {
+    window.location.href = "login.html?role=customer";
+  }
+})();
 </script>
 
 </body>

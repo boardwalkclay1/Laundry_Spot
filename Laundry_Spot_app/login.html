@@ -27,21 +27,18 @@
   </p>
 </div>
 
-<!-- Supabase -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <script>
 let supabase = null;
 let forcedRole = null;
 
-// Load config from backend
 async function loadConfig() {
   const res = await fetch('/config');
   return await res.json();
 }
 
 async function init() {
-  // Get role from URL
   const params = new URLSearchParams(window.location.search);
   const roleParam = params.get("role");
 
@@ -52,27 +49,14 @@ async function init() {
 
   forcedRole = roleParam;
 
-  // Update UI
   document.getElementById("loginTitle").innerText =
     roleParam === "customer" ? "Customer Login" : "Washer Login";
 
   document.getElementById("signupLink").href =
     "signup.html?role=" + roleParam;
 
-  // Load Supabase config
   const cfg = await loadConfig();
   supabase = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
-
-  // If already logged in, redirect
-  const { data } = await supabase.auth.getUser();
-  if (data.user) {
-    const actualRole = data.user.user_metadata?.role;
-    if (actualRole === "customer") {
-      window.location.href = "customer-dashboard.html";
-    } else if (actualRole === "washer") {
-      window.location.href = "washer-dashboard.html";
-    }
-  }
 }
 
 async function handleLogin() {
@@ -106,7 +90,6 @@ async function handleLogin() {
     return;
   }
 
-  // Redirect based on role
   if (forcedRole === "customer") {
     window.location.href = "customer-dashboard.html";
   } else {

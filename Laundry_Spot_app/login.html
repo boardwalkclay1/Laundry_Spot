@@ -31,6 +31,11 @@
 </div>
 
 <script>
+// Preselect role from landing page
+const params = new URLSearchParams(window.location.search);
+const roleParam = params.get("role");
+if (roleParam) document.getElementById("role").value = roleParam;
+
 // Auto-login if remembered
 const saved = JSON.parse(localStorage.getItem("laundryUser"));
 if (saved) {
@@ -49,7 +54,6 @@ function login() {
     return;
   }
 
-  // Fake login for now — replace with Supabase Auth later
   const user = { email, role };
 
   if (remember) {

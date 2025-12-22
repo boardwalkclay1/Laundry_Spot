@@ -22,21 +22,18 @@
   </p>
 </div>
 
-<!-- Supabase -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <script>
 let supabase = null;
 let forcedRole = null;
 
-// Load config from backend
 async function loadConfig() {
   const res = await fetch('/config');
   return await res.json();
 }
 
 async function init() {
-  // Read role from URL
   const params = new URLSearchParams(window.location.search);
   const roleParam = params.get("role");
 
@@ -47,14 +44,12 @@ async function init() {
 
   forcedRole = roleParam;
 
-  // Update UI
   document.getElementById("signupTitle").innerText =
     roleParam === "customer" ? "Customer Sign Up" : "Washer Sign Up";
 
   document.getElementById("loginLink").href =
     "login.html?role=" + roleParam;
 
-  // Load Supabase config
   const cfg = await loadConfig();
   supabase = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
 }
@@ -86,7 +81,6 @@ async function handleSignup() {
 
   statusEl.innerText = "Account created! Check your email to confirm.";
 
-  // After signup, send them to login page
   setTimeout(() => {
     window.location.href = "login.html?role=" + forcedRole;
   }, 1500);

@@ -46,7 +46,7 @@ function getUser() {
 
 let user = getUser();
 if (!user || user.role !== "customer") {
-  location.href = "login.html?role=customer";
+  window.location.href = "login.html?role=customer";
 }
 
 function updateUserPaymentSetup() {
@@ -58,11 +58,7 @@ function updateUserPaymentSetup() {
   }
 }
 
-async function addCard() {
-  // Here you'd call your backend to create a Stripe SetupIntent or Checkout
-  // Example (when backend is ready):
-  // const res = await fetch('/api/payments/create-setup-intent', { method: 'POST' });
-
+function addCard() {
   document.getElementById("status").innerText = "Redirecting to Stripe to add a card (placeholder)…";
   updateUserPaymentSetup();
 }

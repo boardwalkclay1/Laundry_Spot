@@ -4,78 +4,26 @@
   <meta charset="UTF-8" />
   <title>Laundry Spot</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #0b0f19;
-      color: #f1f5f9;
-      font-family: system-ui, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-
-    .container {
-      text-align: center;
-      max-width: 420px;
-      padding: 24px;
-      background: rgba(255, 255, 255, 0.04);
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
-    }
-
-    h1 {
-      margin-bottom: 10px;
-      font-size: 26px;
-      font-weight: 600;
-    }
-
-    p {
-      margin-bottom: 24px;
-      color: #94a3b8;
-      font-size: 14px;
-    }
-
-    .role-btn {
-      width: 100%;
-      padding: 14px;
-      margin: 8px 0;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.08);
-      color: #f1f5f9;
-      font-size: 16px;
-      cursor: pointer;
-      transition: 0.2s ease;
-    }
-
-    .role-btn:hover {
-      background: rgba(255, 255, 255, 0.18);
-      transform: translateY(-2px);
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
 <div class="container">
   <h1>Laundry Spot</h1>
-  <p>Choose how you're using the app today.</p>
+  <p>Select your role to continue.</p>
 
   <button class="role-btn" id="customerBtn">I am a Customer</button>
   <button class="role-btn" id="washerBtn">I am a Washer</button>
 </div>
 
 <script>
-  document.getElementById("customerBtn").addEventListener("click", () => {
+  document.getElementById("customerBtn").onclick = () => {
     window.location.href = "login.html?role=customer";
-  });
+  };
 
-  document.getElementById("washerBtn").addEventListener("click", () => {
+  document.getElementById("washerBtn").onclick = () => {
     window.location.href = "login.html?role=washer";
-  });
+  };
 </script>
 
 </body>

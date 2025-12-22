@@ -7,7 +7,9 @@
 <body>
 
 <div class="container">
-  <h2>Welcome, Washer</h2>
+  <h2>Washer Dashboard</h2>
+
+  <button onclick="logout()" style="float:right;">Logout</button>
 
   <h3>Available Jobs</h3>
   <div id="availableJobs"></div>
@@ -17,6 +19,10 @@
 </div>
 
 <script>
+// Redirect protection
+const user = JSON.parse(localStorage.getItem("laundryUser"));
+if (!user || user.role !== "washer") location.href = "login.html";
+
 async function loadJobs() {
   const res = await fetch('/api/jobs');
   const data = await res.json();
@@ -51,10 +57,15 @@ async function acceptJob(id) {
   await fetch(`/api/jobs/${id}/accept`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ washerAccountId: "demo-washer" })
+    body: JSON.stringify({ washerAccountId: user.email })
   });
 
   loadJobs();
+}
+
+function logout() {
+  localStorage.removeItem("laundryUser");
+  location.href = "login.html";
 }
 
 loadJobs();

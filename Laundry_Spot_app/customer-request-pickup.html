@@ -8,7 +8,7 @@
 
 <div class="container">
   <h2>Request Pickup</h2>
-  <button onclick="location.href='customer-dashboard.html'" style="float:right;">Back to Dashboard</button>
+  <button onclick="location.href='customer-dashboard.html'" style="float:right;">Back</button>
 
   <input id="address" placeholder="Pickup Address">
   <textarea id="notes" placeholder="Pickup notes (optional)"></textarea>
@@ -18,15 +18,16 @@
   <p id="status" style="margin-top:15px;"></p>
 </div>
 
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 <script>
-function getUser() {
-  let user = localStorage.getItem("laundryUser");
-  if (!user) user = sessionStorage.getItem("laundryUser");
-  return user ? JSON.parse(user) : null;
-}
-const user = getUser();
-if (!user || user.role !== "customer") {
-  window.location.href = "login.html?role=customer";
+let currentUser = null;
+
+async function init() {
+  currentUser = await getCurrentUser();
+  if (!currentUser || getRoleFromUser(currentUser) !== "customer") {
+    window.location.href = "login.html?role=customer";
+  }
 }
 
 async function createPickup() {
@@ -34,20 +35,27 @@ async function createPickup() {
   const notes = document.getElementById("notes").value.trim();
 
   if (!address) {
-    document.getElementById("status").innerText = "Please provide a pickup address.";
+    document.getElementById("status").innerText = "Please enter a pickup address.";
     return;
   }
 
-  const res = await fetch('/api/jobs', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ customerName: user.email, address, notes, type: "pickup" })
+  const res = await fetch("/api/jobs", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      customerName: currentUser.email,
+      address,
+      notes,
+      type: "pickup"
+    })
   });
 
   const data = await res.json();
   document.getElementById("status").innerText =
-    data.job ? "Pickup request created!" : "Error creating pickup.";
+    data.job ? "Pickup request created!" : "Error creating request.";
 }
+
+init();
 </script>
 
 </body>

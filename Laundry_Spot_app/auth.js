@@ -1,41 +1,52 @@
-<script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+let supabaseClient = null;
+let appConfig = null;
 
-    const SUPABASE_URL = "https://iorpijdiswctyawndzna.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvcnBpamRpc3djdHlhd25kem5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyMDU0NTUsImV4cCI6MjA4MTc4MTQ1NX0.Wv0P82zsthA7vr5yw2thWwmHE8aG-lX5qku9iriA5rM";
+async function loadConfig() {
+  if (appConfig) return appConfig;
+  const res = await fetch('/config');
+  appConfig = await res.json();
+  return appConfig;
+}
 
-    export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+async function initSupabase() {
+  if (supabaseClient) return supabaseClient;
+  const cfg = await loadConfig();
+  supabaseClient = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+  return supabaseClient;
+}
 
-    // LOGIN FUNCTION
-    export async function login(email, password) {
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password
-        });
+async function signupUser(email, password, role) {
+  const supabase = await initSupabase();
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: { data: { role } }
+  });
+  if (error) throw error;
+  return data;
+}
 
-        if (error) {
-            alert(error.message);
-            return false;
-        }
+async function loginUser(email, password) {
+  const supabase = await initSupabase();
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
+  if (error) throw error;
+  return data;
+}
 
-        window.location.href = "client.html";
-        return true;
-    }
+async function getCurrentUser() {
+  const supabase = await initSupabase();
+  const { data } = await supabase.auth.getUser();
+  return data.user;
+}
 
-    // SIGNUP FUNCTION
-    export async function signup(email, password) {
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password
-        });
+async function logoutUser() {
+  const supabase = await initSupabase();
+  await supabase.auth.signOut();
+}
 
-        if (error) {
-            alert(error.message);
-            return false;
-        }
-
-        alert("Account created! Please log in.");
-        window.location.href = "login.html";
-        return true;
-    }
-</script>
+function getRoleFromUser(user) {
+  return user?.user_metadata?.role || null;
+}

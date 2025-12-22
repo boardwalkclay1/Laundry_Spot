@@ -1,0 +1,8 @@
+laundry-bubbles-connect/
+  package.json
+  server.js
+  .env
+  public/
+    connect.html
+    connect.js
+    App.css        (optional – your CSS)

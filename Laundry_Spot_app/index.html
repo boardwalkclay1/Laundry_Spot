@@ -8,15 +8,18 @@
 </head>
 <body>
 
-<div class="container">
+<div class="container" style="text-align:center; margin-top:60px;">
   <h1>Welcome to Laundry Spot</h1>
   <p>Your fresh, fast, cosmic laundry experience starts here.</p>
 
-  <button class="role-btn" id="customerBtn">I'm a Customer</button>
-  <button class="role-btn" id="washerBtn">I'm a Washer</button>
+  <div style="margin-top:40px;">
+    <button id="customerBtn" class="role-btn">I'm a Customer</button>
+    <button id="washerBtn" class="role-btn" style="margin-left:20px;">I'm a Washer</button>
+  </div>
 </div>
 
 <script>
+  // These buttons simply send the user to login with the correct role
   document.getElementById("customerBtn").onclick = () => {
     window.location.href = "login.html?role=customer";
   };

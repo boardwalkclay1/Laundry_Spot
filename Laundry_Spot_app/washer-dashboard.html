@@ -9,8 +9,7 @@
 <body>
 
 <div class="container">
-  <h2>Washer Setup</h2>
-  <p>Complete your profile so customers can hire you.</p>
+  <h2>Washer Profile Setup</h2>
 
   <input id="fullName" type="text" placeholder="Full Name" />
   <input id="phone" type="text" placeholder="Phone Number" />
@@ -30,38 +29,36 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <script>
-// Safe Supabase initializer
 async function initSupabase() {
   const cfg = await fetch("config.json").then(r => r.json());
-
   if (!window.__supabaseClient) {
     window.__supabaseClient = window.supabase.createClient(
       cfg.supabaseUrl,
       cfg.supabaseAnonKey
     );
   }
-
   return window.__supabaseClient;
 }
+
+window.onload = () => {
+  initDashboard();
+  document.getElementById("saveBtn").addEventListener("click", saveProfile);
+};
 
 async function initDashboard() {
   const supabase = await initSupabase();
 
-  // Check session
   const { data } = await supabase.auth.getSession();
-  const session = data.session;
-
-  if (!session) {
+  if (!data.session) {
     window.location.href = "login.html?role=washer";
     return;
   }
 
-  const user = session.user;
+  const user = data.session.user;
 
-  // Check role in SQL
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("*")
     .eq("id", user.id)
     .single();
 
@@ -89,8 +86,6 @@ async function saveProfile() {
     shoe_cleaning: document.getElementById("shoe").checked
   };
 
-  status.textContent = "Saving...";
-
   const { error } = await supabase
     .from("profiles")
     .update({
@@ -106,12 +101,9 @@ async function saveProfile() {
     return;
   }
 
+  status.style.color = "#4CAF50";
   status.textContent = "Profile saved!";
 }
-
-document.getElementById("saveBtn").addEventListener("click", saveProfile);
-
-initDashboard();
 </script>
 
 </body>

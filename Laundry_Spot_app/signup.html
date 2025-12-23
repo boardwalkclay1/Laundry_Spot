@@ -124,3 +124,76 @@ async function handleSignup() {
 
 </body>
 </html>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<script>
+async function initSupabase() {
+  const cfg = await fetch("config.json").then(r => r.json());
+  if (!window.__supabaseClient) {
+    window.__supabaseClient = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+  }
+  return window.__supabaseClient;
+}
+
+let forcedRole = null;
+
+window.onload = () => {
+  setupPage();
+  document.getElementById("signupBtn").addEventListener("click", handleSignup);
+};
+
+function setupPage() {
+  const params = new URLSearchParams(window.location.search);
+  const role = params.get("role");
+
+  if (!role || (role !== "customer" && role !== "washer")) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  forcedRole = role;
+  document.getElementById("signupTitle").innerText =
+    role === "customer" ? "Customer Sign Up" : "Washer Sign Up";
+
+  document.getElementById("loginLink").href = `login.html?role=${role}`;
+}
+
+async function handleSignup() {
+  const supabase = await initSupabase();
+
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const status = document.getElementById("status");
+
+  status.textContent = "Creating account...";
+
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { role: forcedRole }
+      }
+    });
+
+    if (error) {
+      status.textContent = error.message;
+      return;
+    }
+
+    if (!forcedRole) {
+      status.textContent = "Role missing — URL must include ?role=washer or ?role=customer";
+      return;
+    }
+
+    window.location.href =
+      forcedRole === "customer"
+        ? "customer-dashboard.html"
+        : "washer-dashboard.html";
+
+  } catch (e) {
+    console.error("CRASH:", e);
+    status.textContent = e.message;
+  }
+}
+</script>

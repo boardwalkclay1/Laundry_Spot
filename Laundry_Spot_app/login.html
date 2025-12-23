@@ -2,24 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Login</title>
+  <title>Log In</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
 <div class="container">
-  <h2 id="loginTitle">Login</h2>
+  <h2 id="loginTitle">Log In</h2>
 
   <input id="email" type="email" placeholder="Email" />
   <input id="password" type="password" placeholder="Password" />
 
-  <button id="loginBtn">Continue</button>
+  <button id="loginBtn">Log In</button>
 
   <p id="status" style="margin-top: 12px; color: #ff8080;"></p>
 
   <p style="margin-top: 20px; text-align: center;">
-    Don’t have an account?
+    Need an account?
     <a id="signupLink" href="#">Sign Up</a>
   </p>
 </div>
@@ -27,26 +27,25 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <script>
-// DO NOT DECLARE let supabase ANYWHERE.
-// This is the safe, Edge-proof Supabase initializer.
-
 async function initSupabase() {
   const cfg = await fetch("config.json").then(r => r.json());
-
-  // Create Supabase client ONCE globally
   if (!window.__supabaseClient) {
     window.__supabaseClient = window.supabase.createClient(
       cfg.supabaseUrl,
       cfg.supabaseAnonKey
     );
   }
-
   return window.__supabaseClient;
 }
 
 let forcedRole = null;
 
-async function init() {
+window.onload = () => {
+  setupPage();
+  document.getElementById("loginBtn").addEventListener("click", handleLogin);
+};
+
+function setupPage() {
   const params = new URLSearchParams(window.location.search);
   const role = params.get("role");
 
@@ -70,16 +69,11 @@ async function handleLogin() {
   const password = document.getElementById("password").value.trim();
   const status = document.getElementById("status");
 
-  if (!email || !password) {
-    status.textContent = "Please enter email and password.";
-    return;
-  }
-
   status.textContent = "Logging in...";
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
-    password,
+    password
   });
 
   if (error) {
@@ -87,23 +81,13 @@ async function handleLogin() {
     return;
   }
 
-  const user = data.user;
-  const role = user.user_metadata?.role;
+  const redirectUrl =
+    forcedRole === "washer"
+      ? "washer-dashboard.html"
+      : "customer-dashboard.html";
 
-  if (role !== forcedRole) {
-    status.textContent = `This account is registered as ${role}, not ${forcedRole}.`;
-    return;
-  }
-
-  window.location.href =
-    forcedRole === "customer"
-      ? "customer-dashboard.html"
-      : "washer-dashboard.html";
+  window.location.href = redirectUrl;
 }
-
-document.getElementById("loginBtn").addEventListener("click", handleLogin);
-
-init();
 </script>
 
 </body>

@@ -56,9 +56,9 @@ async function handleSignup() {
 
   status.textContent = "Creating account...";
 
-  const redirectUrl = window.location.origin + "/choose-role.html";
+  const redirectUrl = window.location.origin + "/neutral-dashboard.html";
 
-  const { data, error } = await supabase.auth.signUp({
+  const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -72,8 +72,7 @@ async function handleSignup() {
   }
 
   status.style.color = "#4CAF50";
-  status.textContent =
-    "Account created! Check your email to verify your account.";
+  status.textContent = "Account created! Check your email to verify your account.";
 }
 </script>
 

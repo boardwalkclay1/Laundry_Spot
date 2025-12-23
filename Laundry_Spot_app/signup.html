@@ -27,7 +27,9 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <script>
-// SAFE SUPABASE INITIALIZER
+/* ---------------------------------------------------
+   SAFE SUPABASE INITIALIZER
+--------------------------------------------------- */
 async function initSupabase() {
   const cfg = await fetch("config.json").then(r => r.json());
 
@@ -43,13 +45,18 @@ async function initSupabase() {
 
 let forcedRole = null;
 
-// RUN AFTER PAGE LOADS
+/* ---------------------------------------------------
+   RUN AFTER PAGE LOADS
+--------------------------------------------------- */
 window.onload = () => {
   setupPage();
   document.getElementById("signupBtn").addEventListener("click", handleSignup);
 };
 
-async function setupPage() {
+/* ---------------------------------------------------
+   SETUP PAGE BASED ON ROLE
+--------------------------------------------------- */
+function setupPage() {
   const params = new URLSearchParams(window.location.search);
   const role = params.get("role");
 
@@ -66,6 +73,9 @@ async function setupPage() {
   document.getElementById("loginLink").href = `login.html?role=${role}`;
 }
 
+/* ---------------------------------------------------
+   HANDLE SIGNUP
+--------------------------------------------------- */
 async function handleSignup() {
   const supabase = await initSupabase();
 
@@ -80,73 +90,37 @@ async function handleSignup() {
 
   status.textContent = "Creating account...";
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: { role: forcedRole }
-    }
-  });
-
-  if (error) {
-    status.textContent = error.message;
-    return;
-  }
-
-  // Redirect based on role
-  window.location.href =
-    forcedRole === "customer"
-      ? "customer-dashboard.html"
-      : "washer-dashboard.html";
-}
-</script>
-
-</body>
-</html>
-window.onload = () => {
-  setupPage();
-  document.getElementById("signupBtn").addEventListener("click", handleSignup);
-};
-
-async function handleSignup() {
-  const supabase = await initSupabase();
-
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const status = document.getElementById("status");
-
-  status.textContent = "Creating account...";
-
   try {
+    const redirectUrl =
+      forcedRole === "washer"
+        ? "https://laundry-spot-g6fonku65-boardwalkclay1s-projects.vercel.app/washer-dashboard.html"
+        : "https://laundry-spot-g6fonku65-boardwalkclay1s-projects.vercel.app/customer-dashboard.html";
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: redirectUrl,
         data: { role: forcedRole }
       }
     });
-
-    console.log("signup error =", error);
 
     if (error) {
       status.textContent = error.message;
       return;
     }
 
-    console.log("forcedRole =", forcedRole);
-
-    if (!forcedRole) {
-      status.textContent = "Role missing — URL must include ?role=washer or ?role=customer";
-      return;
-    }
-
-    window.location.href =
-      forcedRole === "customer"
-        ? "customer-dashboard.html"
-        : "washer-dashboard.html";
+    // SUCCESS — user must verify email
+    status.style.color = "#4CAF50";
+    status.textContent =
+      "Account created! Check your email to verify your account.";
 
   } catch (e) {
     console.error("CRASH:", e);
     status.textContent = e.message;
   }
 }
+</script>
+
+</body>
+</html>

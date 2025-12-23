@@ -2,79 +2,117 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Sign Up</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Laundry Spot – Washer Sign Up</title>
 
-<div class="container">
-  <h2>Create Account</h2>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <input id="email" type="email" placeholder="Email" />
-  <input id="password" type="password" placeholder="Password" />
-
-  <button id="signupBtn">Create Account</button>
-
-  <p id="status" style="margin-top: 12px; color: #ff8080;"></p>
-
-  <p style="margin-top: 20px; text-align: center;">
-    Already have an account?
-    <a href="login.html">Log In</a>
-  </p>
-</div>
-
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
-<script>
-async function initSupabase() {
-  const cfg = await fetch("config.json").then(r => r.json());
-  if (!window.__supabaseClient) {
-    window.__supabaseClient = window.supabase.createClient(
-      cfg.supabaseUrl,
-      cfg.supabaseAnonKey
-    );
-  }
-  return window.__supabaseClient;
-}
-
-window.onload = () => {
-  document.getElementById("signupBtn").addEventListener("click", handleSignup);
-};
-
-async function handleSignup() {
-  const supabase = await initSupabase();
-
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const status = document.getElementById("status");
-
-  if (!email || !password) {
-    status.textContent = "Please enter email and password.";
-    return;
-  }
-
-  status.textContent = "Creating account...";
-
-  const redirectUrl = window.location.origin + "/neutral-dashboard.html";
-
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      emailRedirectTo: redirectUrl
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
-  });
 
-  if (error) {
-    status.textContent = error.message;
-    return;
-  }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
 
-  status.style.color = "#4CAF50";
-  status.textContent = "Account created! Check your email to verify your account.";
-}
-</script>
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: black;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>Create Washer Account</h2>
+
+    <input id="email" type="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Password" />
+
+    <button onclick="signUpWasher()">Sign Up</button>
+
+    <p class="error" id="error"></p>
+  </div>
+
+  <script>
+    const supabase = supabase.createClient(
+      "https://YOUR_PROJECT_ID.supabase.co",
+      "YOUR_PUBLIC_ANON_KEY"
+    );
+
+    async function signUpWasher() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const errorBox = document.getElementById("error");
+
+      errorBox.textContent = "";
+
+      // Force role
+      const role = "washer";
+
+      // Create auth user
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { role: role }
+        }
+      });
+
+      if (error) {
+        errorBox.textContent = error.message;
+        return;
+      }
+
+      // Insert into profiles table
+      await supabase.from("profiles").insert({
+        id: data.user.id,
+        email: email,
+        role: role
+      });
+
+      // Redirect to washer login
+      window.location.href = "/login.html?role=washer";
+    }
+  </script>
 </body>
 </html>

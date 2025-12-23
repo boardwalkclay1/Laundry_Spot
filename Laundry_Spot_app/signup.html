@@ -9,7 +9,7 @@
 <body>
 
 <div class="container">
-  <h2 id="signupTitle">Create Account</h2>
+  <h2>Create Account</h2>
 
   <input id="email" type="email" placeholder="Email" />
   <input id="password" type="password" placeholder="Password" />
@@ -20,7 +20,7 @@
 
   <p style="margin-top: 20px; text-align: center;">
     Already have an account?
-    <a id="loginLink" href="#">Log In</a>
+    <a href="login.html">Log In</a>
   </p>
 </div>
 
@@ -38,29 +38,9 @@ async function initSupabase() {
   return window.__supabaseClient;
 }
 
-let forcedRole = null;
-
 window.onload = () => {
-  setupPage();
   document.getElementById("signupBtn").addEventListener("click", handleSignup);
 };
-
-function setupPage() {
-  const params = new URLSearchParams(window.location.search);
-  const role = params.get("role");
-
-  if (!role || (role !== "customer" && role !== "washer")) {
-    window.location.href = "index.html";
-    return;
-  }
-
-  forcedRole = role;
-
-  document.getElementById("signupTitle").innerText =
-    role === "customer" ? "Customer Sign Up" : "Washer Sign Up";
-
-  document.getElementById("loginLink").href = `login.html?role=${role}`;
-}
 
 async function handleSignup() {
   const supabase = await initSupabase();
@@ -76,17 +56,13 @@ async function handleSignup() {
 
   status.textContent = "Creating account...";
 
-  const redirectUrl =
-    forcedRole === "washer"
-      ? window.location.origin + "/washer-dashboard.html"
-      : window.location.origin + "/customer-dashboard.html";
+  const redirectUrl = window.location.origin + "/choose-role.html";
 
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: redirectUrl,
-      data: { role: forcedRole }
+      emailRedirectTo: redirectUrl
     }
   });
 

@@ -103,3 +103,50 @@ async function handleSignup() {
 
 </body>
 </html>
+window.onload = () => {
+  setupPage();
+  document.getElementById("signupBtn").addEventListener("click", handleSignup);
+};
+
+async function handleSignup() {
+  const supabase = await initSupabase();
+
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const status = document.getElementById("status");
+
+  status.textContent = "Creating account...";
+
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { role: forcedRole }
+      }
+    });
+
+    console.log("signup error =", error);
+
+    if (error) {
+      status.textContent = error.message;
+      return;
+    }
+
+    console.log("forcedRole =", forcedRole);
+
+    if (!forcedRole) {
+      status.textContent = "Role missing — URL must include ?role=washer or ?role=customer";
+      return;
+    }
+
+    window.location.href =
+      forcedRole === "customer"
+        ? "customer-dashboard.html"
+        : "washer-dashboard.html";
+
+  } catch (e) {
+    console.error("CRASH:", e);
+    status.textContent = e.message;
+  }
+}

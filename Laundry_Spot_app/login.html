@@ -51,7 +51,7 @@ async function handleLogin() {
 
   status.textContent = "Logging in...";
 
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { error } = await supabase.auth.signInWithPassword({
     email,
     password
   });
@@ -61,7 +61,7 @@ async function handleLogin() {
     return;
   }
 
-  window.location.href = "choose-role.html";
+  window.location.href = "neutral-dashboard.html";
 }
 </script>
 
